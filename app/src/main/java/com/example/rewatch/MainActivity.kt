@@ -10,10 +10,11 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,6 +30,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import coil3.compose.AsyncImage
 import com.example.rewatch.ui.theme.RewatchTheme
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,10 +56,18 @@ fun RewatchApp() {
             AppDestinations.entries.forEach {
                 item(
                     icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
+                        when {
+                            it.imgVec != null -> Icon(
+                                imageVector = it.imgVec,
+                                contentDescription = it.label
+                            )
+
+                            else -> Icon(
+                                painter = painterResource(id = it.intIcon!!),
+                                contentDescription = it.label,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     },
                     label = { Text(it.label) },
                     selected = it == currentDestination,
@@ -72,9 +84,9 @@ fun RewatchApp() {
                     modifier = Modifier.fillMaxWidth()
                 )
                 Greeting(
-                name = "Android",
-                modifier = Modifier.padding(innerPadding)
-            )
+                    name = "Android",
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
         }
     }
@@ -82,10 +94,13 @@ fun RewatchApp() {
 
 enum class AppDestinations(
     val label: String,
-    val icon: ImageVector,
+    val imgVec: ImageVector? = null,
+    val intIcon: Int? = null,
 ) {
     HOME("Home", Icons.Default.Home),
-    FAVORITES("Favorites", Icons.Default.Favorite),
+    SEARCH("Search", Icons.Default.Search),
+    MOVIE("Movies", intIcon = R.drawable.movie_svgrepo_com),
+    TV("Tv Shows", intIcon = R.drawable.tv_svgrepo_com),
     PROFILE("Profile", Icons.Default.AccountBox),
 }
 
