@@ -4,7 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -23,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import coil3.compose.AsyncImage
 import com.example.rewatch.ui.theme.RewatchTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,10 +65,17 @@ fun RewatchApp() {
         }
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Greeting(
+            Column {
+                AsyncImage(
+                    model = "https://image.tmdb.org/t/p/original/b3nOTa2GUnEzzWPtIKMq0MmE6VM.jpg",
+                    contentDescription = "Translated description of what the image contains",
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Greeting(
                 name = "Android",
                 modifier = Modifier.padding(innerPadding)
             )
+            }
         }
     }
 }
