@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -49,9 +50,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageType
@@ -61,6 +64,7 @@ import app.moviebase.tmdb.model.TmdbReview
 import coil3.compose.AsyncImage
 import java.text.SimpleDateFormat
 import java.util.Locale
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -73,14 +77,12 @@ fun MoviePage(data: MovieData) {
     val scrollState = rememberLazyListState()
     val pad = 16.dp
 
-
     Box {
         LazyColumn(
             state = scrollState,
 //            verticalArrangement = Arrangement.spacedBy(pad),
         ) {
             item {
-
 
                 Box {
                     AsyncImage(
@@ -99,7 +101,7 @@ fun MoviePage(data: MovieData) {
                             .background(
                                 brush = Brush.verticalGradient(
                                     0.6f to Color.Transparent, // Stay transparent until 50% height
-                                    1.0f to Color.Black        // Fully black at the bottom
+                                    1f to MaterialTheme.colorScheme.surface        // Fully black at the bottom
                                 )
                             )
                     )
@@ -109,15 +111,19 @@ fun MoviePage(data: MovieData) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            pad
+                            horizontal = pad
                         )
+                        .relativeMove((-20).dp) // Pulls the item UP by 20dp
                 ) {
-                    Column {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Spacer(Modifier.height(10.dp))
+
                         Text(
                             movie.title!!,
                             style = MaterialTheme.typography.titleLarge,  // Use the Large Title style here
                         )
-                        Spacer(Modifier.height(pad))
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             PosterImage {
                                 Text(
@@ -146,8 +152,8 @@ fun MoviePage(data: MovieData) {
                 }
 
                 Column(
-                    modifier = Modifier.padding(horizontal = pad),
-                    verticalArrangement = Arrangement.spacedBy(pad)
+                    modifier = Modifier.padding(start = pad, end = pad, bottom = pad),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(text = movie.tagline!!)
                     Text(movie.overview!!)
@@ -157,6 +163,7 @@ fun MoviePage(data: MovieData) {
             }
 
             item {
+                HorizontalDivider()
 
                 PrimaryTabRow(selectedTabIndex = state) {
                     titles.forEachIndexed { index, title ->
@@ -228,8 +235,7 @@ fun MoviePage(data: MovieData) {
                         ) {
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                "Release: " + movie.releaseDate.toString()
-                                    .formatDate("d MMMM yyyy")
+                                "Release: " + movie.releaseDate.toString().formatDate("d MMMM yyyy")
                             )
                         }
                         Row(
@@ -285,13 +291,22 @@ fun MoviePage(data: MovieData) {
             }
 
             item {
-                HorizontalDivider()
-                Text("Reviews")
+                ExpandBtn("All Cast", {})
             }
 
-            items(5) {
+            item {
+                HorizontalDivider()
+                Text("Reviews", modifier = Modifier.padding(pad))
+
+            }
+
+            items(3) {
                 val review = movie.reviews?.results[it]!!
                 ReviewItem(review)
+            }
+
+            item {
+                ExpandBtn("All reviews", {})
             }
 
             item {
@@ -305,7 +320,9 @@ fun MoviePage(data: MovieData) {
 
                 ) {
 //                item { Spacer(Modifier.width(5.dp)) }
-                    item { Spacer(Modifier.width(pad)) }
+                    item {
+                        Spacer(Modifier.width(5.dp))
+                    }
                     for (movie in data.similar) item {
                         PosterImage {
                             if (movie.posterImage != null) AsyncImage(
@@ -332,7 +349,9 @@ fun MoviePage(data: MovieData) {
                             }
                         }
                     }
-
+                    item {
+                        Spacer(Modifier.width(5.dp))
+                    }
                 }
                 Spacer(Modifier.height(pad))
             }
@@ -341,6 +360,20 @@ fun MoviePage(data: MovieData) {
         }
 
         MovieTopBar(scrollState, movie.title!!)
+    }
+}
+
+@Composable
+private fun ExpandBtn(string: String, function: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = function)
+            .padding(15.dp)
+    ) {
+
+        Text(string)
     }
 }
 
@@ -409,7 +442,7 @@ private fun CastItem(actor: TmdbCast) {
                     bounded = true, // Set to false for a circular "icon button" style ripple
                 ), // Removes the ripple effect
                 onClick = { /* Action */ })
-            .padding(top = 15.dp, start = 15.dp, end = 15.dp)
+            .padding(vertical = 7.dp, horizontal = 15.dp)
 
 
     ) {
@@ -423,9 +456,8 @@ private fun CastItem(actor: TmdbCast) {
             contentScale = ContentScale.Crop,
             alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
             modifier = Modifier
-                .width(60.dp)
-                .height(70.dp)
-                .clip(RoundedCornerShape(5.dp)) // Set the corner radius
+                .size(55.dp, 60.dp)
+                .clip(RoundedCornerShape(7.dp)) // Set the corner radius
 
         )
         Column {
@@ -440,7 +472,10 @@ private fun CastItem(actor: TmdbCast) {
 @Composable
 private fun ReviewItem(review: TmdbReview) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(15.dp), modifier = Modifier.padding(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(15.dp),
+        modifier = Modifier
+            .clickable(onClick = {})
+            .padding(top = 7.dp, start = 15.dp, end = 0.dp)
     ) {
         AsyncImage(
             model = review.authorDetails?.avatarPath?.let {
@@ -454,8 +489,7 @@ private fun ReviewItem(review: TmdbReview) {
             "",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .width(50.dp)
-                .height(50.dp)
+                .size(45.dp)
                 .clip(CircleShape) // Set the corner radius
                 .border(1.dp, Color.Gray, CircleShape)
 
@@ -464,13 +498,18 @@ private fun ReviewItem(review: TmdbReview) {
             verticalArrangement = Arrangement.spacedBy(5.dp),
 
             ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier.padding(end = 15.dp)
             ) {
-                Text(review.author)
-                review.authorDetails?.rating?.toString()?.let { Text(it) }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(review.author)
+                    review.authorDetails?.rating?.toString()?.let { Text(it) }
+                }
+                Text(review.content, maxLines = 5, overflow = TextOverflow.Ellipsis)
             }
-            Text(review.content, maxLines = 5, overflow = TextOverflow.Ellipsis)
             HorizontalDivider()
         }
     }
@@ -487,5 +526,13 @@ fun String.formatDate(format: String): String {
         if (date != null) outputFormat.format(date) else this
     } catch (_: Exception) {
         this
+    }
+}
+
+fun Modifier.relativeMove(y: Dp) = this.layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    layout(placeable.width, placeable.height + y.roundToPx()) {
+        // Placing it at the negative Y offset
+        placeable.placeRelative(0, y.roundToPx())
     }
 }
