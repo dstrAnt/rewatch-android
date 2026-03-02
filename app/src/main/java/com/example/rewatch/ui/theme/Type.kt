@@ -21,7 +21,7 @@ val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = GoogleSans,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
+        fontSize = 15.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp
     ),
@@ -29,21 +29,27 @@ val Typography = Typography(
         fontFamily = GoogleSans,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp
-    )
-    /* Other default text styles to override
+    ),
+    // Other default text styles to override
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
+        fontFamily = GoogleSans,
+        fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),
+    labelLarge = TextStyle(
+        fontFamily = GoogleSans,
+        fontWeight = FontWeight.Medium,
+        fontSize = 15.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.sp
+    ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = GoogleSans,
         fontWeight = FontWeight.Medium,
         fontSize = 11.sp,
         lineHeight = 16.sp,
         letterSpacing = 0.5.sp
     )
-    */
 )
