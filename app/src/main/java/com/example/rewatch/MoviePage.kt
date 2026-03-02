@@ -2,176 +2,384 @@ package com.example.rewatch
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.moviebase.tmdb.image.TmdbImage
+import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import app.moviebase.tmdb.model.TmdbCast
 import app.moviebase.tmdb.model.TmdbReview
 import coil3.compose.AsyncImage
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 fun MoviePage(data: MovieData) {
-
     val movie = data.movie
 
     var state by remember { mutableIntStateOf(0) }
-    val titles = listOf("Tab 1", "Tab 2", "Tab 3")
+    val titles = listOf("Cast", "Crew", "Details", "Watch")
 
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(15.dp),
-    ) {
-        item {
+    val scrollState = rememberLazyListState()
+    val pad = 16.dp
 
-            AsyncImage(
-                model = TmdbImageUrlBuilder.build(movie.backdropImage!!, width = 400, height = 200),
-                contentDescription = "Translated description of what the image contains",
-                modifier = Modifier.fillParentMaxWidth(),
-                contentScale = ContentScale.Crop
-            )
 
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()
+    Box {
+        LazyColumn(
+            state = scrollState,
+//            verticalArrangement = Arrangement.spacedBy(pad),
+        ) {
+            item {
 
-            ) {
-                Column {
-                    Text(movie.title!!)
-                    Row {
-                        Text(movie.releaseDate.toString())
-                        Text(movie.runtime.toString())
 
-                    }
-                    Text(movie.credits?.crew?.find { it.job == "Director" }?.name!!)
-                }
-                PosterImage {
+                Box {
                     AsyncImage(
-                        model = movie.posterImage?.let {
+                        model = movie.backdropImage?.let {
                             TmdbImageUrlBuilder.build(
-                                it, width = 300, height = 50
+                                it, width = 400, height = 200
                             )
-                        }, movie.title!!, Modifier.height(150.dp)
+                        },
+                        contentDescription = "Translated description of what the image contains",
+                        modifier = Modifier.fillParentMaxWidth(),
+                        contentScale = ContentScale.Crop
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    0.6f to Color.Transparent, // Stay transparent until 50% height
+                                    1.0f to Color.Black        // Fully black at the bottom
+                                )
+                            )
                     )
                 }
-            }
-        }
-        item {
-            Text(movie.tagline!!)
-        }
-        item {
-            Text(movie.overview!!)
-        }
-        item {
-            Text(movie.voteAverage.toString())
-        }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            pad
+                        )
+                ) {
+                    Column {
+                        Text(
+                            movie.title!!,
+                            style = MaterialTheme.typography.titleLarge,  // Use the Large Title style here
+                        )
+                        Spacer(Modifier.height(pad))
+                        Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            PosterImage {
+                                Text(
+                                    movie.releaseDates?.results?.firstOrNull { it.iso3166 == "US" }?.releaseDates?.firstOrNull { it.certification != "" }?.certification
+                                        ?: "?",
+                                    modifier = Modifier.padding(horizontal = 5.dp),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Text(movie.releaseDate.toString().formatDate("MMM yyyy"))
+                            Text("•")
+                            Text(movie.runtime.toString() + " mins")
 
-        item {
-
-            PrimaryTabRow(selectedTabIndex = state) {
-                titles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = state == index,
-                        onClick = { state = index },
-                        text = { Text(text = title) })
-                }
-            }
-        }
-
-        when (state) {
-            1 -> item {
-                Text(
-                    text = "Content for ${titles[state]}", modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            0 -> items(10) {
-                val actor = movie.credits?.cast[it]!!
-
-                CastItem(actor)
-            }
-        }
-        item {
-            Text("Reviews")
-        }
-
-        items(5) {
-            val review = movie.reviews?.results[it]!!
-            ReviewItem(review)
-        }
-
-        item {
-            HorizontalDivider()
-
-            Text("Similar")
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-
-
-            ) {
-//                item { Spacer(Modifier.width(5.dp)) }
-                for (movie in data.similar) item {
+                        }
+                        Text("Directed by " + movie.credits?.crew?.find { it.job == "Director" }?.name!!)
+                    }
                     PosterImage {
                         AsyncImage(
-                            model = TmdbImageUrlBuilder.build(
-                                movie.posterImage!!, width = 400, height = 200
-                            ),
-                            contentDescription = "Translated description of what the image contains",
-                            modifier = Modifier.width(100.dp)
-//                            contentScale = ContentScale.Crop
+                            model = movie.posterImage?.let {
+                                TmdbImageUrlBuilder.build(
+                                    it, width = 300, height = 50
+                                )
+                            }, movie.title!!, Modifier.height(150.dp)
                         )
                     }
                 }
 
+                Column(
+                    modifier = Modifier.padding(horizontal = pad),
+                    verticalArrangement = Arrangement.spacedBy(pad)
+                ) {
+                    Text(text = movie.tagline!!)
+                    Text(movie.overview!!)
+                    Text(movie.voteAverage.toString())
+
+                }
             }
+
+            item {
+
+                PrimaryTabRow(selectedTabIndex = state) {
+                    titles.forEachIndexed { index, title ->
+                        Tab(selected = state == index, onClick = { state = index }, text = {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.labelLarge // Explicitly setting it here
+//                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
+                            )
+                        })
+                    }
+                }
+            }
+
+            when (state) {
+                // cast
+                0 -> items(10) {
+                    val actor = movie.credits?.cast[it]!!
+
+                    CastItem(actor)
+
+                }
+
+                // crew
+                1 -> item {
+                    Text(
+                        text = "Content for ${titles[state]}", modifier = Modifier.padding(pad)
+                    )
+                }
+
+                // details
+                2 -> item {
+                    Column(verticalArrangement = Arrangement.spacedBy(pad)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Spacer(Modifier.width(10.dp))
+                            Text("Genres:")
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                for (genre in movie.genres) item {
+                                    PosterImage {
+                                        Text(
+                                            genre.name, modifier = Modifier.padding(5.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Spacer(Modifier.width(10.dp))
+                            Text("Budget: $" + movie.budget.toDouble() / 1000000 + " million")
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Spacer(Modifier.width(10.dp))
+                            Text("Countries: " + movie.productionCountries?.joinToString(separator = ", ") { it.name })
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Release: " + movie.releaseDate.toString()
+                                    .formatDate("d MMMM yyyy")
+                            )
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Spacer(Modifier.width(10.dp))
+                            Text("Production:")
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                for (company in movie.productionCompanies!!) item {
+                                    PosterImage {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(15.dp),
+                                            modifier = Modifier.padding(5.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            AsyncImage(
+                                                model = company.logoPath?.let {
+
+                                                    TmdbImage.build(
+                                                        it, TmdbImageType.PROFILE
+                                                    )?.let { image ->
+
+                                                        TmdbImageUrlBuilder.build(
+                                                            image, width = 400, height = 200
+
+                                                        )
+                                                    }
+                                                },
+                                                company.name ?: "company",
+                                                Modifier
+                                                    .height(20.dp)
+                                                    .background(Color.White)
+                                                    .padding(2.dp)
+                                            )
+                                            Column {
+                                                Text(company.name ?: "company")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // watch
+                3 -> item {
+
+                }
+            }
+
+            item {
+                HorizontalDivider()
+                Text("Reviews")
+            }
+
+            items(5) {
+                val review = movie.reviews?.results[it]!!
+                ReviewItem(review)
+            }
+
+            item {
+                HorizontalDivider()
+
+                Text("Similar", modifier = Modifier.padding(pad))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.height(150.dp)
+
+
+                ) {
+//                item { Spacer(Modifier.width(5.dp)) }
+                    item { Spacer(Modifier.width(pad)) }
+                    for (movie in data.similar) item {
+                        PosterImage {
+                            if (movie.posterImage != null) AsyncImage(
+                                model = movie.posterImage?.let {
+                                    TmdbImageUrlBuilder.build(
+                                        it, width = 400, height = 200
+                                    )
+                                },
+                                contentDescription = "Translated description of what the image contains",
+                                modifier = Modifier.width(100.dp)
+//                            contentScale = ContentScale.Crop
+                            ) else Box(
+                                modifier = Modifier
+                                    .width(100.dp)
+                                    .fillMaxHeight()
+                                    .padding(pad),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    movie.title ?: "no title",
+                                    color = Color.Gray,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+
+                }
+                Spacer(Modifier.height(pad))
+            }
+
+
         }
 
+        MovieTopBar(scrollState, movie.title!!)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CastItem(actor: TmdbCast) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
-
-    ) {
-        AsyncImage(
-            model = actor.profileImage?.let {
-                TmdbImageUrlBuilder.build(
-                    it, width = 300, height = 50
-                )
-            }, actor.name!!, Modifier.height(80.dp)
-        )
-        Column {
-
-            Text(actor.name!!)
-            Text(actor.character!!)
+private fun MovieTopBar(scrollState: LazyListState, title: String) {
+    val toolbarAlpha by remember {
+        derivedStateOf {
+            val scrollOffset = scrollState.firstVisibleItemScrollOffset.toFloat()
+            val firstIndex = scrollState.firstVisibleItemIndex
+//            println(scrollOffset)
+            if (firstIndex > 0f) 1f else ((scrollOffset - 450f) / 250f).coerceIn(0f, 1f)
         }
     }
+    TopAppBar(
+        title = {
+            Text(
+                title, modifier = Modifier.alpha(toolbarAlpha)
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = {}) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = null,
+                    tint = Color.White
+                )
+            }
+        },
+        // Apply background color with alpha
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Black.copy(alpha = toolbarAlpha),
+            scrolledContainerColor = Color.Black.copy(alpha = toolbarAlpha)
+        ),
+        // Crucial: Add status bar insets so the buttons don't hit the clock/battery
+//        windowInsets = WindowInsets.statusBars
+    )
 }
+
 
 @Composable
 private fun PosterImage(content: @Composable (() -> Unit)) {
@@ -189,17 +397,68 @@ private fun PosterImage(content: @Composable (() -> Unit)) {
     }
 }
 
+
+@Composable
+private fun CastItem(actor: TmdbCast) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(15.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() }, indication = ripple(
+                    bounded = true, // Set to false for a circular "icon button" style ripple
+                ), // Removes the ripple effect
+                onClick = { /* Action */ })
+            .padding(top = 15.dp, start = 15.dp, end = 15.dp)
+
+
+    ) {
+        AsyncImage(
+            model = actor.profileImage?.let {
+                TmdbImageUrlBuilder.build(
+                    it, width = 300, height = 50
+                )
+            },
+            actor.name!!,
+            contentScale = ContentScale.Crop,
+            alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
+            modifier = Modifier
+                .width(60.dp)
+                .height(70.dp)
+                .clip(RoundedCornerShape(5.dp)) // Set the corner radius
+
+        )
+        Column {
+
+            Text(actor.name!!)
+            Text(actor.character!!)
+        }
+    }
+}
+
+
 @Composable
 private fun ReviewItem(review: TmdbReview) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
+        horizontalArrangement = Arrangement.spacedBy(15.dp), modifier = Modifier.padding(16.dp)
     ) {
         AsyncImage(
-            model = review.authorDetails?.avatarPath?.let { imagePath ->
-                TmdbImageUrlBuilder.build(
-                    imagePath, "w154"
-                )
-            }, "", Modifier.width(80.dp)
+            model = review.authorDetails?.avatarPath?.let {
+                TmdbImage.build(it, TmdbImageType.PROFILE)?.let { image ->
+                    TmdbImageUrlBuilder.build(
+                        image, width = 200, height = 200
+
+                    )
+                }
+            },
+            "",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .width(50.dp)
+                .height(50.dp)
+                .clip(CircleShape) // Set the corner radius
+                .border(1.dp, Color.Gray, CircleShape)
+
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(5.dp),
@@ -211,9 +470,22 @@ private fun ReviewItem(review: TmdbReview) {
                 Text(review.author)
                 review.authorDetails?.rating?.toString()?.let { Text(it) }
             }
-            Text(review.content, maxLines = 10)
+            Text(review.content, maxLines = 5, overflow = TextOverflow.Ellipsis)
             HorizontalDivider()
         }
     }
 }
 
+fun String.formatDate(format: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+
+        val date = inputFormat.parse(this)
+
+        val outputFormat = SimpleDateFormat(format, Locale.US)
+
+        if (date != null) outputFormat.format(date) else this
+    } catch (_: Exception) {
+        this
+    }
+}
