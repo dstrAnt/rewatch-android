@@ -60,6 +60,7 @@ import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import app.moviebase.tmdb.model.TmdbCast
+import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbReview
 import coil3.compose.AsyncImage
 import java.text.SimpleDateFormat
@@ -123,6 +124,7 @@ fun MoviePage(data: MovieData) {
                         Text(
                             movie.title!!,
                             style = MaterialTheme.typography.titleLarge,  // Use the Large Title style here
+                            fontWeight = FontWeight.Bold
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                             PosterImage {
@@ -138,6 +140,7 @@ fun MoviePage(data: MovieData) {
                             Text(movie.runtime.toString() + " mins")
 
                         }
+                        Spacer(Modifier.height(3.dp))
                         Text("Directed by " + movie.credits?.crew?.find { it.job == "Director" }?.name!!)
                     }
                     PosterImage {
@@ -156,7 +159,7 @@ fun MoviePage(data: MovieData) {
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(text = movie.tagline!!)
-                    Text(movie.overview!!)
+                    Text(movie.overview!!, maxLines = 5, overflow = TextOverflow.Ellipsis)
                     Text(movie.voteAverage.toString())
 
                 }
@@ -180,7 +183,7 @@ fun MoviePage(data: MovieData) {
 
             when (state) {
                 // cast
-                0 -> items(10) {
+                0 -> items(7) {
                     val actor = movie.credits?.cast[it]!!
 
                     CastItem(actor)
@@ -196,7 +199,7 @@ fun MoviePage(data: MovieData) {
 
                 // details
                 2 -> item {
-                    Column(verticalArrangement = Arrangement.spacedBy(pad)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(pad), modifier = Modifier.padding(vertical = 15.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -286,7 +289,26 @@ fun MoviePage(data: MovieData) {
 
                 // watch
                 3 -> item {
+                    Column(verticalArrangement = Arrangement.spacedBy(pad), modifier = Modifier.padding(vertical = 15.dp)) {
+                        val usProviders = movie.watchProviders?.results["US"]
 
+                        if (usProviders != null) {
+
+                            if (usProviders.flatrate.isNotEmpty()) {
+                                ProviderCategorySection("Streaming", usProviders.flatrate)
+                            }
+
+//                            if (!usProviders.rent.isNullOrEmpty()) {
+//                                ProviderCategorySection("Rent", usProviders.rent)
+//                            }
+
+                            if (usProviders.buy.isNotEmpty()) {
+                                ProviderCategorySection("Buy", usProviders.buy)
+                            }
+                        } else {
+                            Text("No providers available", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
             }
 
@@ -526,6 +548,53 @@ fun String.formatDate(format: String): String {
         if (date != null) outputFormat.format(date) else this
     } catch (_: Exception) {
         this
+    }
+}
+
+@Composable
+fun ProviderCategorySection(title: String, providers: List<TmdbProvider>) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(start = 5.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            for (provider in providers) item {
+                PosterImage {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(15.dp),
+                        modifier = Modifier.padding(5.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = provider.logoPath?.let {
+
+                                TmdbImage.build(
+                                    it, TmdbImageType.PROFILE
+                                )?.let { image ->
+
+                                    TmdbImageUrlBuilder.build(
+                                        image, width = 400, height = 200
+
+                                    )
+                                }
+                            },
+                            provider.providerName ?: "company",
+                            Modifier
+                                .height(20.dp)
+                                .background(Color.White)
+                                .padding(2.dp)
+                        )
+                        Column {
+                            Text(provider.providerName ?: "company")
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

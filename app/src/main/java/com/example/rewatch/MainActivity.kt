@@ -7,6 +7,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -16,9 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -75,7 +74,7 @@ fun RewatchApp() {
                             )
                         }
                     },
-                    label = { Text(it.label) },
+                    label = null,
                     selected = it == currentDestination,
                     onClick = { currentDestination = it }
                 )
@@ -112,7 +111,7 @@ class MovieViewModel : ViewModel() {
     private fun fetchMovies() {
         viewModelScope.launch {
             try {
-                val movieId = 1317288//83533
+                val movieId = 550//1317288//83533
                 uiState = MovieUiState.Success(
                     MovieData(
                         tmdb.movies.getDetails(
@@ -121,7 +120,8 @@ class MovieViewModel : ViewModel() {
                             appendResponses = listOf(
                                 AppendResponse.CREDITS,
                                 AppendResponse.REVIEWS,
-                                AppendResponse.RELEASES_DATES
+                                AppendResponse.RELEASES_DATES,
+                                AppendResponse.WATCH_PROVIDERS,
                             )
                         ),
                         tmdb.movies.getSimilar(
