@@ -1,43 +1,46 @@
 package com.example.rewatch
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import coil3.compose.AsyncImage
-import com.example.rewatch.ui.theme.RewatchTheme
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.model.AppendResponse
+import app.moviebase.tmdb.model.TmdbMovie
+import app.moviebase.tmdb.model.TmdbMovieDetail
+import com.example.rewatch.ui.theme.RewatchTheme
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(
+                scrim = Color.TRANSPARENT,
+            )
+        )
         setContent {
             RewatchTheme {
                 RewatchApp()
@@ -76,21 +79,68 @@ fun RewatchApp() {
             }
         }
     ) {
-        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-            Column {
-                AsyncImage(
-                    model = "https://image.tmdb.org/t/p/original/b3nOTa2GUnEzzWPtIKMq0MmE6VM.jpg",
-                    contentDescription = "Translated description of what the image contains",
-                    modifier = Modifier.fillMaxWidth()
+        Surface(modifier = Modifier.fillMaxSize()) {
+            MoviePageState()
+        }
+    }
+}
+
+data class MovieData(
+    var movie: TmdbMovieDetail,
+    var similar: List<TmdbMovie>
+)
+
+sealed class MovieUiState {
+    object Loading : MovieUiState()
+    data class Success(val movie: MovieData) : MovieUiState()
+    data class Error(val msg: String) : MovieUiState()
+}
+
+class MovieViewModel : ViewModel() {
+    private val tmdb = Tmdb3(BuildConfig.TMDB_API_KEY)
+
+    var uiState by mutableStateOf<MovieUiState>(MovieUiState.Loading)
+        private set
+
+    init {
+        fetchMovies()
+    }
+
+    private fun fetchMovies() {
+        viewModelScope.launch {
+            try {
+                val movieId = 83533
+                uiState = MovieUiState.Success(
+                    MovieData(
+                        tmdb.movies.getDetails(
+                            movieId = movieId,
+//                            language = "IT",
+                            appendResponses = listOf(
+                                AppendResponse.CREDITS,
+                                AppendResponse.REVIEWS
+                            )
+                        ),
+                        tmdb.movies.getSimilar(
+                            movieId = movieId,
+                        ).results
+                    )
                 )
-                Greeting(
-                    name = "Android",
-                    modifier = Modifier.padding(innerPadding)
-                )
+
+            } catch (e: Exception) {
+                uiState = MovieUiState.Error(e.localizedMessage ?: "Network Error")
             }
         }
     }
 }
+
+@Composable
+private fun MoviePageState(vm: MovieViewModel = MovieViewModel()) {
+    when (val state = vm.uiState) {
+        is MovieUiState.Success -> MoviePage(state.movie)
+        else -> {}
+    }
+}
+
 
 enum class AppDestinations(
     val label: String,
@@ -104,18 +154,3 @@ enum class AppDestinations(
     PROFILE("Profile", Icons.Default.AccountBox),
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RewatchTheme {
-        Greeting("Android")
-    }
-}
