@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -102,15 +103,16 @@ fun RewatchApp() {
                         })
                 }
             }
-        }) {
+        }) { innerPadding ->
 
         Surface(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             when (currentDestination) {
                 AppDestinations.MOVIE -> MoviePageState()
-                AppDestinations.SEARCH -> SearchPage()
+//                AppDestinations.SEARCH -> SearchPage()
                 else -> {}
             }
         }
