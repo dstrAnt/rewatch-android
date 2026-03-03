@@ -211,7 +211,9 @@ fun MoviePage(data: MovieData) {
 @Composable
 private fun SimilarSection(data: MovieData, pad: Dp) {
     LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.height(150.dp)
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.height(150.dp)
     ) {
 //                item { Spacer(Modifier.width(5.dp)) }
         item {
@@ -511,6 +513,10 @@ private fun PosterImage(content: @Composable (() -> Unit)) {
             .border(
                 BorderStroke(1.dp, Color.Gray), shape
             ) // Add border with rounded corners
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = ripple(bounded = true),
+                onClick = { /* Action */ })
     ) {
         content()
     }
