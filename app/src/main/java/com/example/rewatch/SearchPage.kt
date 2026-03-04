@@ -70,8 +70,7 @@ class SearchViewModel : ViewModel() {
                     }
                 }
             }.stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Lazily, // 🟢 CHANGE THIS LINE
+                scope = viewModelScope, started = SharingStarted.Lazily, // 🟢 CHANGE THIS LINE
                 initialValue = emptyList()
             )
 
@@ -136,12 +135,15 @@ fun MovieResultsList(
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(movies) { movie ->
             ListItem(headlineContent = { movie.title?.let { Text(it) } }, leadingContent = {
-                AsyncImage(
-                    model = "https://image.tmdb.org/t/p/w200${movie.posterPath}",
-                    contentDescription = "${movie.title} poster",
-                    modifier = Modifier.size(60.dp, 90.dp),
-                    contentScale = ContentScale.Crop
-                )
+
+                PosterImage {
+                    AsyncImage(
+                        model = "https://image.tmdb.org/t/p/w200${movie.posterPath}",
+                        contentDescription = "${movie.title} poster",
+                        modifier = Modifier.size(60.dp, 90.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }, modifier = Modifier.clickable {
                 // 2. Trigger callback with the movie ID
                 onMovieClick(movie.id)

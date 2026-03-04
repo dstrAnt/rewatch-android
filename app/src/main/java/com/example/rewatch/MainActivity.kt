@@ -7,11 +7,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,11 +41,7 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.AppendResponse
 import app.moviebase.tmdb.model.TmdbMovie
@@ -95,21 +92,16 @@ fun RewatchApp() {
                 tonalElevation = 0.dp // Opzionale: rimuove l'ombra se vuoi un look più flat
             ) {
                 AppDestinations.entries.forEach { destination ->
-                    val isSelected =
-                        destination == currentDestination
+                    val isSelected = destination == currentDestination
 
                     NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
+                        selected = isSelected, onClick = {
                             currentDestination = destination
-                        },
-                        label = null, // Rimuoviamo il testo
-                        alwaysShowLabel = false,
-                        icon = {
-                            val iconModifier =
-                                if (destination.imgVec == null) Modifier.size(
-                                    20.dp
-                                ) else Modifier
+                        }, label = null, // Rimuoviamo il testo
+                        alwaysShowLabel = false, icon = {
+                            val iconModifier = if (destination.imgVec == null) Modifier.size(
+                                20.dp
+                            ) else Modifier
                             if (destination.imgVec != null) {
                                 Icon(
                                     imageVector = destination.imgVec,
@@ -128,91 +120,60 @@ fun RewatchApp() {
                 }
             }
         }) { innerPadding ->
-        val context =
-            LocalContext.current // Get the Activity context
 
-        NavHost(
-            navController = navController,
-            startDestination = AppDestinations.SEARCH.label,
-// 1. Moving forward (Screen slides in from the right)
-            enterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                )
-            },
-            // 2. Moving forward (Old screen slides out to the left)
-            exitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(300)
-                )
-            },
-            // 3. Pressing back (Old screen slides back in from the left)
-            popEnterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(300)
-                )
-            }
+        val context = LocalContext.current // Get the Activity context
 
-//            modifier = Modifier.padding(innerPadding) // Crucial: prevents bottom bar from overlapping content
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
-            composable(AppDestinations.HOME.label) {
-                // Your Home Page Composable
-                Text("Home Page")
-            }
-            composable(AppDestinations.SEARCH.label) {
-                SearchPage(
-                    onNavigateBack = { navController.popBackStack() },
-                    onMovieClick = { movieId ->
-                        // Create an Intent to start MovieActivity
-                        val intent = Intent(
-                            context,
-                            MovieActivity::class.java
-                        ).apply {
-                            // Bundle the movieId into the Intent extras
-                            putExtra(
-                                "EXTRA_MOVIE_ID",
-                                movieId
-                            )
-                        }
+            when (currentDestination) {
+                AppDestinations.MOVIE -> MoviePageState(
+                    1317288,
+                    padding = innerPadding,
+                    onNavigateBack = {},
+                )
+//            AppDestinations.TV -> MoviePageState(1) {}
 
-                        // Launch the activity! (This triggers the native OS transition)
-                        context.startActivity(intent)
-                    })
+
+                AppDestinations.HOME -> {
+                    // Your Home Page Composable
+                    Text("Home Page")
+                }
+
+                AppDestinations.SEARCH -> {
+                    SearchPage(
+                        onNavigateBack = { navController.popBackStack() },
+                        onMovieClick = { movieId ->
+                            // Create an Intent to start MovieActivity
+                            val intent = Intent(
+                                context, MovieActivity::class.java
+                            ).apply {
+                                // Bundle the movieId into the Intent extras
+                                putExtra(
+                                    "EXTRA_MOVIE_ID", movieId
+                                )
+                            }
+
+                            // Launch the activity! (This triggers the native OS transition)
+                            context.startActivity(intent)
+                        })
 //                    onMovieClick = { movieId: Int ->
 //                        // Navigate to detail page, hiding bottom bar if desired
 //                        navController.navigate("movie_page/$movieId")
 //                    })
-            }
+                }
 
-            // Movie Details Screen
-            composable(
-                route = "movie_page/{movieId}",
-                arguments = listOf(navArgument("movieId") {
-                    type = NavType.IntType
-                })
-            ) { backStackEntry ->
-                // Extract the movieId from the route arguments
-                val movieId =
-                    backStackEntry.arguments?.getInt("movieId")
-                        ?: return@composable
+                else -> {}
 
-                MoviePageState(
-                    movieId = movieId,
-                    onNavigateBack = { navController.popBackStack() })
+
+                // Add your movie details route here just like before
+                // composable("movie_page/{movieId}") { ... }
             }
-            // Add your movie details route here just like before
-            // composable("movie_page/{movieId}") { ... }
         }
     }
+}
 //        Surface(
 //            modifier = Modifier
 //                .fillMaxSize()
@@ -229,22 +190,18 @@ fun RewatchApp() {
 //}
 
 
-}
-
 data class MovieData(
     var movie: TmdbMovieDetail, var similar: List<TmdbMovie>
 )
 
 sealed class MovieUiState {
     object Loading : MovieUiState()
-    data class Success(val movie: MovieData) :
-        MovieUiState()
+    data class Success(val movie: MovieData) : MovieUiState()
 
     data class Error(val msg: String) : MovieUiState()
 }
 
-class MovieViewModel(private val movieId: Int) :
-    ViewModel() {
+class MovieViewModel(private val movieId: Int) : ViewModel() {
     private val tmdb = Tmdb3(BuildConfig.TMDB_API_KEY)
 
     var uiState by mutableStateOf<MovieUiState>(MovieUiState.Loading)
@@ -288,31 +245,29 @@ class MovieViewModel(private val movieId: Int) :
 }
 
 @OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
 fun MoviePageState(
     movieId: Int,
     vm: MovieViewModel = MovieViewModel(movieId),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    padding: PaddingValues
 ) {
     when (val state = vm.uiState) {
-        is MovieUiState.Success -> MoviePage(
-            state.movie,
-            onNavigateBack
-        )
-
         is MovieUiState.Loading -> MoviePage(
             MovieData(
-                TmdbMovieDetail(),
-                listOf()
-            ), onNavigateBack
+                TmdbMovieDetail(), listOf()
+            ), onNavigateBack, padding
         )
 
+        is MovieUiState.Success -> MoviePage(
+            state.movie, onNavigateBack, padding
+        )
+
+
         else -> Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             // This is the official M3 "Expressive" component
             CircularWavyProgressIndicator(
@@ -332,15 +287,13 @@ enum class AppDestinations(
     val intIcon: Int? = null,
 ) {
     HOME("Home", Icons.Default.Home), SEARCH(
-        "Search",
-        Icons.Default.Search
+        "Search", Icons.Default.Search
     ),
     MOVIE(
         "Movies", intIcon = R.drawable.movie_svgrepo_com
     ),
     TV(
-        "Tv Shows",
-        intIcon = R.drawable.tv_svgrepo_com
+        "Tv Shows", intIcon = R.drawable.tv_svgrepo_com
     ),
     PROFILE(
         "Profile", Icons.Default.AccountBox
