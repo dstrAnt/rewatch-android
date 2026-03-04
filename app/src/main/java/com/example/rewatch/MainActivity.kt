@@ -1,5 +1,6 @@
 package com.example.rewatch
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
@@ -73,7 +75,11 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun RewatchApp() {
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var currentDestination by rememberSaveable {
+        mutableStateOf(
+            AppDestinations.HOME
+        )
+    }
 
     val navController = rememberNavController()
 
@@ -89,16 +95,21 @@ fun RewatchApp() {
                 tonalElevation = 0.dp // Opzionale: rimuove l'ombra se vuoi un look più flat
             ) {
                 AppDestinations.entries.forEach { destination ->
-                    val isSelected = destination == currentDestination
+                    val isSelected =
+                        destination == currentDestination
 
                     NavigationBarItem(
                         selected = isSelected,
-                        onClick = { currentDestination = destination },
+                        onClick = {
+                            currentDestination = destination
+                        },
                         label = null, // Rimuoviamo il testo
                         alwaysShowLabel = false,
                         icon = {
                             val iconModifier =
-                                if (destination.imgVec == null) Modifier.size(20.dp) else Modifier
+                                if (destination.imgVec == null) Modifier.size(
+                                    20.dp
+                                ) else Modifier
                             if (destination.imgVec != null) {
                                 Icon(
                                     imageVector = destination.imgVec,
@@ -106,7 +117,9 @@ fun RewatchApp() {
                                 )
                             } else {
                                 Icon(
-                                    painter = painterResource(id = destination.intIcon!!),
+                                    painter = painterResource(
+                                        id = destination.intIcon!!
+                                    ),
                                     contentDescription = destination.label,
                                     modifier = iconModifier
                                 )
@@ -115,6 +128,8 @@ fun RewatchApp() {
                 }
             }
         }) { innerPadding ->
+        val context =
+            LocalContext.current // Get the Activity context
 
         NavHost(
             navController = navController,
@@ -140,14 +155,12 @@ fun RewatchApp() {
                     animationSpec = tween(300)
                 )
             },
-            // 4. Pressing back (Current screen slides out to the right)
             popExitTransition = {
                 slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Right,
                     animationSpec = tween(300)
                 )
             }
-            // 2. Set the default back-button transition for ALL screens
 
 //            modifier = Modifier.padding(innerPadding) // Crucial: prevents bottom bar from overlapping content
         ) {
@@ -158,25 +171,43 @@ fun RewatchApp() {
             composable(AppDestinations.SEARCH.label) {
                 SearchPage(
                     onNavigateBack = { navController.popBackStack() },
-                    onMovieClick = { movieId: Int ->
-                        // Navigate to detail page, hiding bottom bar if desired
-                        navController.navigate("movie_page/$movieId")
-                    }
-                )
+                    onMovieClick = { movieId ->
+                        // Create an Intent to start MovieActivity
+                        val intent = Intent(
+                            context,
+                            MovieActivity::class.java
+                        ).apply {
+                            // Bundle the movieId into the Intent extras
+                            putExtra(
+                                "EXTRA_MOVIE_ID",
+                                movieId
+                            )
+                        }
+
+                        // Launch the activity! (This triggers the native OS transition)
+                        context.startActivity(intent)
+                    })
+//                    onMovieClick = { movieId: Int ->
+//                        // Navigate to detail page, hiding bottom bar if desired
+//                        navController.navigate("movie_page/$movieId")
+//                    })
             }
 
             // Movie Details Screen
             composable(
                 route = "movie_page/{movieId}",
-                arguments = listOf(navArgument("movieId") { type = NavType.IntType })
+                arguments = listOf(navArgument("movieId") {
+                    type = NavType.IntType
+                })
             ) { backStackEntry ->
                 // Extract the movieId from the route arguments
-                val movieId = backStackEntry.arguments?.getInt("movieId") ?: return@composable
+                val movieId =
+                    backStackEntry.arguments?.getInt("movieId")
+                        ?: return@composable
 
                 MoviePageState(
                     movieId = movieId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+                    onNavigateBack = { navController.popBackStack() })
             }
             // Add your movie details route here just like before
             // composable("movie_page/{movieId}") { ... }
@@ -206,11 +237,14 @@ data class MovieData(
 
 sealed class MovieUiState {
     object Loading : MovieUiState()
-    data class Success(val movie: MovieData) : MovieUiState()
+    data class Success(val movie: MovieData) :
+        MovieUiState()
+
     data class Error(val msg: String) : MovieUiState()
 }
 
-class MovieViewModel(private val movieId: Int) : ViewModel() {
+class MovieViewModel(private val movieId: Int) :
+    ViewModel() {
     private val tmdb = Tmdb3(BuildConfig.TMDB_API_KEY)
 
     var uiState by mutableStateOf<MovieUiState>(MovieUiState.Loading)
@@ -245,27 +279,40 @@ class MovieViewModel(private val movieId: Int) : ViewModel() {
                 }
 
             } catch (e: Exception) {
-                uiState = MovieUiState.Error(e.localizedMessage ?: "Network Error")
+                uiState = MovieUiState.Error(
+                    e.localizedMessage ?: "Network Error"
+                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3ExpressiveApi::class
+)
 @Composable
-private fun MoviePageState(
+fun MoviePageState(
     movieId: Int,
     vm: MovieViewModel = MovieViewModel(movieId),
     onNavigateBack: () -> Unit
 ) {
     when (val state = vm.uiState) {
-        is MovieUiState.Success ->
-            MoviePage(state.movie, onNavigateBack)
+        is MovieUiState.Success -> MoviePage(
+            state.movie,
+            onNavigateBack
+        )
 
-        is MovieUiState.Loading ->
-            MoviePage(MovieData(TmdbMovieDetail(), listOf()), onNavigateBack)
+        is MovieUiState.Loading -> MoviePage(
+            MovieData(
+                TmdbMovieDetail(),
+                listOf()
+            ), onNavigateBack
+        )
+
         else -> Box(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
         ) {
             // This is the official M3 "Expressive" component
             CircularWavyProgressIndicator(
@@ -284,10 +331,18 @@ enum class AppDestinations(
     val imgVec: ImageVector? = null,
     val intIcon: Int? = null,
 ) {
-    HOME("Home", Icons.Default.Home), SEARCH("Search", Icons.Default.Search), MOVIE(
+    HOME("Home", Icons.Default.Home), SEARCH(
+        "Search",
+        Icons.Default.Search
+    ),
+    MOVIE(
         "Movies", intIcon = R.drawable.movie_svgrepo_com
     ),
-    TV("Tv Shows", intIcon = R.drawable.tv_svgrepo_com), PROFILE(
+    TV(
+        "Tv Shows",
+        intIcon = R.drawable.tv_svgrepo_com
+    ),
+    PROFILE(
         "Profile", Icons.Default.AccountBox
     ),
 }

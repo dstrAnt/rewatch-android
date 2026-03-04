@@ -78,7 +78,10 @@ import java.util.Locale
 
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class
+)
 fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
     val movie = data.movie
 
@@ -100,11 +103,19 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
                 TitleAndInfoSection(pad, movie)
 
                 Column(
-                    modifier = Modifier.padding(start = pad, end = pad, bottom = pad),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    modifier = Modifier.padding(
+                        start = pad, end = pad, bottom = pad
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(
+                        10.dp
+                    )
                 ) {
                     Text(text = movie.tagline.orEmpty())
-                    Text(movie.overview.orEmpty(), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        movie.overview.orEmpty(),
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 HorizontalDivider()
                 Column(
@@ -121,23 +132,35 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
             item {
                 HorizontalDivider()
 
-                PrimaryTabRow(selectedTabIndex = MovieTab.entries.indexOf(state)) {
+                PrimaryTabRow(
+                    selectedTabIndex = MovieTab.entries.indexOf(
+                        state
+                    )
+                ) {
                     MovieTab.entries.forEach {
-                        Tab(selected = it == state, onClick = { state = it }, text = {
-                            Text(
-                                text = it.title,
-                                style = MaterialTheme.typography.labelLarge // Explicitly setting it here
+                        Tab(
+                            selected = it == state,
+                            onClick = { state = it },
+                            text = {
+                                Text(
+                                    text = it.title,
+                                    style = MaterialTheme.typography.labelLarge // Explicitly setting it here
 //                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
-                            )
-                        })
+                                )
+                            })
                     }
                 }
+                Spacer(Modifier.height(7.dp))
             }
 
             when (state) {
                 // cast
                 MovieTab.CAST -> {
-                    items(movie.credits?.cast?.size?.coerceAtMost(7) ?: 7) {
+                    items(
+                        movie.credits?.cast?.size?.coerceAtMost(
+                            7
+                        ) ?: 7
+                    ) {
                         val actor = movie.credits?.cast[it]
 
                         CastItem(actor)
@@ -149,11 +172,17 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
 
                 // crew
                 MovieTab.CREW -> {
-                    val crew = movie.credits?.crew ?: emptyList()
+                    val crew =
+                        movie.credits?.crew ?: emptyList()
 
                     // director first
-                    val sortedCrew = crew.sortedByDescending { it.job == "Director" }
-                    items(movie.credits?.crew?.size?.coerceAtMost(7) ?: 7) {
+                    val sortedCrew =
+                        crew.sortedByDescending { it.job == "Director" }
+                    items(
+                        movie.credits?.crew?.size?.coerceAtMost(
+                            7
+                        ) ?: 7
+                    ) {
 
                         CrewItem(sortedCrew[it])
 
@@ -178,11 +207,18 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
 
             item {
                 HorizontalDivider()
-                Text("Reviews", modifier = Modifier.padding(pad))
+                Text(
+                    "Reviews",
+                    modifier = Modifier.padding(pad)
+                )
 
             }
 
-            items(movie.reviews?.results?.size?.coerceAtMost(3) ?: 3) {
+            items(
+                movie.reviews?.results?.size?.coerceAtMost(
+                    3
+                ) ?: 3
+            ) {
                 val review = movie.reviews?.results[it]
                 ReviewItem(review)
             }
@@ -194,7 +230,10 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
             item {
                 HorizontalDivider()
 
-                Text("Similar", modifier = Modifier.padding(pad))
+                Text(
+                    "Similar",
+                    modifier = Modifier.padding(pad)
+                )
 
                 SimilarSection(data, pad)
 
@@ -204,7 +243,9 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
 
         }
 
-        MovieTopBar(scrollState, movie.title, onNavigateBack)
+        MovieTopBar(
+            scrollState, movie.title, onNavigateBack
+        )
     }
 }
 
@@ -238,7 +279,9 @@ private fun SimilarSection(data: MovieData, pad: Dp) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        movie.title ?: "no title", color = Color.Gray, textAlign = TextAlign.Center
+                        movie.title ?: "no title",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -257,12 +300,15 @@ private fun MovieWatchTab(
         verticalArrangement = Arrangement.spacedBy(pad),
         modifier = Modifier.padding(vertical = 15.dp)
     ) {
-        val usProviders = movie.watchProviders?.results["US"]
+        val usProviders =
+            movie.watchProviders?.results["US"]
 
         if (usProviders != null) {
 
             if (usProviders.flatrate.isNotEmpty()) {
-                ProviderCategorySection("Streaming", usProviders.flatrate)
+                ProviderCategorySection(
+                    "Streaming", usProviders.flatrate
+                )
             }
 
 //                            if (!usProviders.rent.isNullOrEmpty()) {
@@ -270,10 +316,15 @@ private fun MovieWatchTab(
 //                            }
 
             if (usProviders.buy.isNotEmpty()) {
-                ProviderCategorySection("Buy", usProviders.buy)
+                ProviderCategorySection(
+                    "Buy", usProviders.buy
+                )
             }
         } else {
-            Text("No providers available", style = MaterialTheme.typography.bodySmall)
+            Text(
+                "No providers available",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -293,12 +344,15 @@ private fun MovieDetailsTab(
             Spacer(Modifier.width(10.dp))
             Text("Genres:")
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(
+                    10.dp
+                )
             ) {
                 for (genre in movie.genres) item {
                     PosterImage {
                         Text(
-                            genre.name, modifier = Modifier.padding(5.dp)
+                            genre.name,
+                            modifier = Modifier.padding(5.dp)
                         )
                     }
                 }
@@ -316,7 +370,10 @@ private fun MovieDetailsTab(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Spacer(Modifier.width(10.dp))
-            Text("Countries: " + movie.productionCountries?.joinToString(separator = ", ") { it.name })
+            Text(
+                "Countries: " + movie.productionCountries?.joinToString(
+                    separator = ", "
+                ) { it.name })
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -324,7 +381,8 @@ private fun MovieDetailsTab(
         ) {
             Spacer(Modifier.width(10.dp))
             Text(
-                "Release: " + movie.releaseDate?.toString()?.formatDate("d MMMM yyyy")
+                "Release: " + movie.releaseDate?.toString()
+                    ?.formatDate("d MMMM yyyy")
             )
         }
         Row(
@@ -334,12 +392,16 @@ private fun MovieDetailsTab(
             Spacer(Modifier.width(10.dp))
             Text("Production:")
             LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(
+                    10.dp
+                )
             ) {
                 for (company in movie.productionCompanies.orEmpty()) item {
                     PosterImage {
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(15.dp),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                15.dp
+                            ),
                             modifier = Modifier.padding(5.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -347,11 +409,14 @@ private fun MovieDetailsTab(
                                 model = company.logoPath?.let {
 
                                     TmdbImage.build(
-                                        it, TmdbImageType.PROFILE
+                                        it,
+                                        TmdbImageType.PROFILE
                                     )?.let { image ->
 
                                         TmdbImageUrlBuilder.build(
-                                            image, width = 400, height = 200
+                                            image,
+                                            width = 400,
+                                            height = 200
 
                                         )
                                     }
@@ -363,7 +428,10 @@ private fun MovieDetailsTab(
                                     .padding(2.dp)
                             )
                             Column {
-                                Text(company.name ?: "company")
+                                Text(
+                                    company.name
+                                        ?: "company"
+                                )
                             }
                         }
                     }
@@ -396,16 +464,25 @@ private fun TitleAndInfoSection(
                 style = MaterialTheme.typography.titleLarge,  // Use the Large Title style here
                 fontWeight = FontWeight.Bold
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(
+                    5.dp
+                )
+            ) {
                 PosterImage {
                     Text(
                         movie.releaseDates?.results?.firstOrNull { it.iso3166 == "US" }?.releaseDates?.firstOrNull { it.certification != "" }?.certification
                             ?: "?",
-                        modifier = Modifier.padding(horizontal = 5.dp),
+                        modifier = Modifier.padding(
+                            horizontal = 5.dp
+                        ),
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Text(movie.releaseDate.toString().formatDate("MMM yyyy"))
+                Text(
+                    movie.releaseDate.toString()
+                        .formatDate("MMM yyyy")
+                )
                 Text("•")
                 Text(movie.runtime.toString() + " mins")
 
@@ -419,7 +496,9 @@ private fun TitleAndInfoSection(
                     TmdbImageUrlBuilder.build(
                         it, width = 300, height = 50
                     )
-                }, movie.title.orEmpty(), Modifier.height(150.dp)
+                },
+                movie.title.orEmpty(),
+                Modifier.height(150.dp)
             )
         }
     }
@@ -454,7 +533,9 @@ private fun PosterImage(image: TmdbImage?) {
 }
 
 @Composable
-private fun ExpandBtn(string: String, function: () -> Unit) {
+private fun ExpandBtn(
+    string: String, function: () -> Unit
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -469,20 +550,29 @@ private fun ExpandBtn(string: String, function: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MovieTopBar(scrollState: LazyListState, title: String?, onNavigateBack: () -> Unit) {
+private fun MovieTopBar(
+    scrollState: LazyListState,
+    title: String?,
+    onNavigateBack: () -> Unit
+) {
     val toolbarAlpha by remember {
         derivedStateOf {
-            val scrollOffset = scrollState.firstVisibleItemScrollOffset.toFloat()
-            val firstIndex = scrollState.firstVisibleItemIndex
+            val scrollOffset =
+                scrollState.firstVisibleItemScrollOffset.toFloat()
+            val firstIndex =
+                scrollState.firstVisibleItemIndex
 //            println(scrollOffset)
-            if (firstIndex > 0f) 1f else ((scrollOffset - 450f) / 250f).coerceIn(0f, 1f)
+            if (firstIndex > 0f) 1f else ((scrollOffset - 450f) / 250f).coerceIn(
+                0f, 1f
+            )
         }
     }
     TopAppBar(
         title = {
             if (title != null) {
                 Text(
-                    title, modifier = Modifier.alpha(toolbarAlpha)
+                    title,
+                    modifier = Modifier.alpha(toolbarAlpha)
                 )
             }
         },
@@ -542,11 +632,15 @@ private fun CastItem(actor: TmdbCast?) {
     ) {
         AsyncImage(
             model = actor?.profileImage?.let {
-                TmdbImageUrlBuilder.build(it, width = 70, height = 70)
+                TmdbImageUrlBuilder.build(
+                    it, width = 70, height = 70
+                )
             },
             contentDescription = actor?.name.orEmpty(),
             contentScale = ContentScale.Crop,
-            alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
+            alignment = BiasAlignment(
+                horizontalBias = 0f, verticalBias = -0.7f
+            ),
             modifier = Modifier
                 .size(55.dp, 60.dp)
                 .clip(RoundedCornerShape(7.dp))
@@ -584,12 +678,13 @@ private fun ReviewItem(review: TmdbReview?) {
     ) {
         AsyncImage(
             model = review?.authorDetails?.avatarPath?.let {
-                TmdbImage.build(it, TmdbImageType.PROFILE)?.let { image ->
-                    TmdbImageUrlBuilder.build(
-                        image, width = 70, height = 70
+                TmdbImage.build(it, TmdbImageType.PROFILE)
+                    ?.let { image ->
+                        TmdbImageUrlBuilder.build(
+                            image, width = 70, height = 70
 
-                    )
-                }
+                        )
+                    }
             },
             "",
             contentScale = ContentScale.Crop,
@@ -611,9 +706,14 @@ private fun ReviewItem(review: TmdbReview?) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(review?.author.orEmpty())
-                    review?.authorDetails?.rating?.toString()?.let { Text(it) }
+                    review?.authorDetails?.rating?.toString()
+                        ?.let { Text(it) }
                 }
-                Text(review?.content.orEmpty(), maxLines = 5, overflow = TextOverflow.Ellipsis)
+                Text(
+                    review?.content.orEmpty(),
+                    maxLines = 5,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             HorizontalDivider()
         }
@@ -622,11 +722,13 @@ private fun ReviewItem(review: TmdbReview?) {
 
 fun String.formatDate(format: String): String {
     return try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val inputFormat =
+            SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
         val date = inputFormat.parse(this)
 
-        val outputFormat = SimpleDateFormat(format, Locale.US)
+        val outputFormat =
+            SimpleDateFormat(format, Locale.US)
 
         if (date != null) outputFormat.format(date) else this
     } catch (_: Exception) {
@@ -635,12 +737,17 @@ fun String.formatDate(format: String): String {
 }
 
 @Composable
-fun ProviderCategorySection(title: String, providers: List<TmdbProvider>) {
+fun ProviderCategorySection(
+    title: String, providers: List<TmdbProvider>
+) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(start = 5.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier.padding(start = 5.dp)
     ) {
         Text(
-            text = title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -648,7 +755,9 @@ fun ProviderCategorySection(title: String, providers: List<TmdbProvider>) {
             for (provider in providers) item {
                 PosterImage {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(15.dp),
+                        horizontalArrangement = Arrangement.spacedBy(
+                            15.dp
+                        ),
                         modifier = Modifier.padding(5.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -656,23 +765,30 @@ fun ProviderCategorySection(title: String, providers: List<TmdbProvider>) {
                             model = provider.logoPath?.let {
 
                                 TmdbImage.build(
-                                    it, TmdbImageType.PROFILE
+                                    it,
+                                    TmdbImageType.PROFILE
                                 )?.let { image ->
 
                                     TmdbImageUrlBuilder.build(
-                                        image, width = 70, height = 70
+                                        image,
+                                        width = 70,
+                                        height = 70
 
                                     )
                                 }
                             },
-                            provider.providerName ?: "company",
+                            provider.providerName
+                                ?: "company",
                             Modifier
                                 .height(20.dp)
                                 .background(Color.White)
                                 .padding(2.dp)
                         )
                         Column {
-                            Text(provider.providerName ?: "company")
+                            Text(
+                                provider.providerName
+                                    ?: "company"
+                            )
                         }
                     }
                 }
@@ -681,13 +797,17 @@ fun ProviderCategorySection(title: String, providers: List<TmdbProvider>) {
     }
 }
 
-fun Modifier.relativeMove(y: Dp) = this.layout { measurable, constraints ->
-    val placeable = measurable.measure(constraints)
-    layout(placeable.width, placeable.height + y.roundToPx()) {
-        // Placing it at the negative Y offset
-        placeable.placeRelative(0, y.roundToPx())
+fun Modifier.relativeMove(y: Dp) =
+    this.layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+        layout(
+            placeable.width,
+            placeable.height + y.roundToPx()
+        ) {
+            // Placing it at the negative Y offset
+            placeable.placeRelative(0, y.roundToPx())
+        }
     }
-}
 
 @Composable
 fun StarRating(rating: Double, maxRating: Int = 5) {
@@ -696,32 +816,49 @@ fun StarRating(rating: Double, maxRating: Int = 5) {
 
     val fullStars = starRating.toInt()
     val partialStarFill = (starRating - fullStars).toFloat()
-    val emptyStars = maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
+    val emptyStars =
+        maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
 
     Row(verticalAlignment = Alignment.CenterVertically) {
         // 1. Stelle Piene
         repeat(fullStars) {
-            Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFC107))
+            Icon(
+                Icons.Filled.Star,
+                contentDescription = null,
+                tint = Color(0xFFFFC107)
+            )
         }
 
         // 2. Stella Parziale (il "pezzettino")
         if (partialStarFill > 0) {
             Box {
                 // Sfondo della stella (vuota)
-                Icon(Icons.Filled.Star, contentDescription = null, tint = Color.LightGray)
+                Icon(
+                    Icons.Filled.Star,
+                    contentDescription = null,
+                    tint = Color.LightGray
+                )
                 // Parte riempita (ritagliata)
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
                     tint = Color(0xFFFFC107),
-                    modifier = Modifier.clip(FractionalClip(partialStarFill))
+                    modifier = Modifier.clip(
+                        FractionalClip(
+                            partialStarFill
+                        )
+                    )
                 )
             }
         }
 
         // 3. Stelle Vuote
         repeat(emptyStars) {
-            Icon(Icons.Filled.Star, contentDescription = null, tint = Color.LightGray)
+            Icon(
+                Icons.Filled.Star,
+                contentDescription = null,
+                tint = Color.LightGray
+            )
         }
 
         Text(
@@ -734,9 +871,15 @@ fun StarRating(rating: Double, maxRating: Int = 5) {
 
 class FractionalClip(val fraction: Float) : Shape {
     override fun createOutline(
-        size: Size, layoutDirection: LayoutDirection, density: Density
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density
     ): Outline {
-        return Outline.Rectangle(Rect(0f, 0f, size.width * fraction, size.height))
+        return Outline.Rectangle(
+            Rect(
+                0f, 0f, size.width * fraction, size.height
+            )
+        )
     }
 }
 
@@ -761,11 +904,15 @@ private fun CrewItem(person: TmdbCrew) {
     ) {
         AsyncImage(
             model = person.profileImage?.let {
-                TmdbImageUrlBuilder.build(it, width = 70, height = 70)
+                TmdbImageUrlBuilder.build(
+                    it, width = 70, height = 70
+                )
             },
             contentDescription = person.name.orEmpty(),
             contentScale = ContentScale.Crop,
-            alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
+            alignment = BiasAlignment(
+                horizontalBias = 0f, verticalBias = -0.7f
+            ),
             modifier = Modifier
                 .size(55.dp, 60.dp)
                 .clip(RoundedCornerShape(7.dp))
