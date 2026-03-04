@@ -79,7 +79,7 @@ import java.util.Locale
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-fun MoviePage(data: MovieData) {
+fun MoviePage(data: MovieData, onNavigateBack: () -> Unit) {
     val movie = data.movie
 
     var state by remember { mutableStateOf(MovieTab.CAST) }
@@ -103,8 +103,8 @@ fun MoviePage(data: MovieData) {
                     modifier = Modifier.padding(start = pad, end = pad, bottom = pad),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text(text = movie.tagline!!)
-                    Text(movie.overview!!, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    Text(text = movie.tagline.orEmpty())
+                    Text(movie.overview.orEmpty(), maxLines = 3, overflow = TextOverflow.Ellipsis)
                 }
                 HorizontalDivider()
                 Column(
@@ -137,8 +137,8 @@ fun MoviePage(data: MovieData) {
             when (state) {
                 // cast
                 MovieTab.CAST -> {
-                    items(7) {
-                        val actor = movie.credits?.cast[it]!!
+                    items(movie.credits?.cast?.size?.coerceAtMost(7) ?: 7) {
+                        val actor = movie.credits?.cast[it]
 
                         CastItem(actor)
                     }
@@ -153,13 +153,13 @@ fun MoviePage(data: MovieData) {
 
                     // director first
                     val sortedCrew = crew.sortedByDescending { it.job == "Director" }
-                    items(7) {
+                    items(movie.credits?.crew?.size?.coerceAtMost(7) ?: 7) {
 
                         CrewItem(sortedCrew[it])
 
                     }
                     item {
-                        ExpandBtn("All Crew", {})
+                        ExpandBtn("All Crew") {}
                     }
                 }
 
@@ -182,13 +182,13 @@ fun MoviePage(data: MovieData) {
 
             }
 
-            items(3) {
-                val review = movie.reviews?.results[it]!!
+            items(movie.reviews?.results?.size?.coerceAtMost(3) ?: 3) {
+                val review = movie.reviews?.results[it]
                 ReviewItem(review)
             }
 
             item {
-                ExpandBtn("All reviews", {})
+                ExpandBtn("All reviews") {}
             }
 
             item {
@@ -204,7 +204,7 @@ fun MoviePage(data: MovieData) {
 
         }
 
-        MovieTopBar(scrollState, movie.title!!)
+        MovieTopBar(scrollState, movie.title, onNavigateBack)
     }
 }
 
@@ -324,7 +324,7 @@ private fun MovieDetailsTab(
         ) {
             Spacer(Modifier.width(10.dp))
             Text(
-                "Release: " + movie.releaseDate.toString().formatDate("d MMMM yyyy")
+                "Release: " + movie.releaseDate?.toString()?.formatDate("d MMMM yyyy")
             )
         }
         Row(
@@ -336,7 +336,7 @@ private fun MovieDetailsTab(
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                for (company in movie.productionCompanies!!) item {
+                for (company in movie.productionCompanies.orEmpty()) item {
                     PosterImage {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(15.dp),
@@ -392,7 +392,7 @@ private fun TitleAndInfoSection(
             Spacer(Modifier.height(10.dp))
 
             Text(
-                movie.title!!,
+                movie.title.orEmpty(),
                 style = MaterialTheme.typography.titleLarge,  // Use the Large Title style here
                 fontWeight = FontWeight.Bold
             )
@@ -411,7 +411,7 @@ private fun TitleAndInfoSection(
 
             }
 //            Spacer(Modifier.height(3.dp))
-            Text("Directed by " + movie.credits?.crew?.find { it.job == "Director" }?.name!!)
+            Text("Directed by " + movie.credits?.crew?.find { it.job == "Director" }?.name.orEmpty())
         }
         PosterImage {
             AsyncImage(
@@ -419,7 +419,7 @@ private fun TitleAndInfoSection(
                     TmdbImageUrlBuilder.build(
                         it, width = 300, height = 50
                     )
-                }, movie.title!!, Modifier.height(150.dp)
+                }, movie.title.orEmpty(), Modifier.height(150.dp)
             )
         }
     }
@@ -435,7 +435,9 @@ private fun PosterImage(image: TmdbImage?) {
                 )
             },
             contentDescription = "Translated description of what the image contains",
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
             contentScale = ContentScale.Crop
         )
         Box(
@@ -467,7 +469,7 @@ private fun ExpandBtn(string: String, function: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MovieTopBar(scrollState: LazyListState, title: String) {
+private fun MovieTopBar(scrollState: LazyListState, title: String?, onNavigateBack: () -> Unit) {
     val toolbarAlpha by remember {
         derivedStateOf {
             val scrollOffset = scrollState.firstVisibleItemScrollOffset.toFloat()
@@ -478,12 +480,14 @@ private fun MovieTopBar(scrollState: LazyListState, title: String) {
     }
     TopAppBar(
         title = {
-            Text(
-                title, modifier = Modifier.alpha(toolbarAlpha)
-            )
+            if (title != null) {
+                Text(
+                    title, modifier = Modifier.alpha(toolbarAlpha)
+                )
+            }
         },
         navigationIcon = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = onNavigateBack) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = null,
@@ -524,7 +528,7 @@ private fun PosterImage(content: @Composable (() -> Unit)) {
 
 
 @Composable
-private fun CastItem(actor: TmdbCast) {
+private fun CastItem(actor: TmdbCast?) {
     Row(
         verticalAlignment = Alignment.CenterVertically, // Allinea verticalmente gli elementi al centro
         horizontalArrangement = Arrangement.spacedBy(15.dp),
@@ -537,10 +541,10 @@ private fun CastItem(actor: TmdbCast) {
             .padding(vertical = 7.dp, horizontal = 15.dp)
     ) {
         AsyncImage(
-            model = actor.profileImage?.let {
+            model = actor?.profileImage?.let {
                 TmdbImageUrlBuilder.build(it, width = 70, height = 70)
             },
-            contentDescription = actor.name!!,
+            contentDescription = actor?.name.orEmpty(),
             contentScale = ContentScale.Crop,
             alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
             modifier = Modifier
@@ -550,12 +554,12 @@ private fun CastItem(actor: TmdbCast) {
 
         Column(modifier = Modifier.weight(1f)) { // Il weight(1f) spinge tutto il resto a destra
             Text(
-                text = actor.name!!,
+                text = actor?.name.orEmpty(),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = actor.character!!,
+                text = actor?.character.orEmpty(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray // Un tocco di stile per differenziare
             )
@@ -571,7 +575,7 @@ private fun CastItem(actor: TmdbCast) {
 }
 
 @Composable
-private fun ReviewItem(review: TmdbReview) {
+private fun ReviewItem(review: TmdbReview?) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         modifier = Modifier
@@ -579,7 +583,7 @@ private fun ReviewItem(review: TmdbReview) {
             .padding(top = 7.dp, start = 15.dp, end = 0.dp)
     ) {
         AsyncImage(
-            model = review.authorDetails?.avatarPath?.let {
+            model = review?.authorDetails?.avatarPath?.let {
                 TmdbImage.build(it, TmdbImageType.PROFILE)?.let { image ->
                     TmdbImageUrlBuilder.build(
                         image, width = 70, height = 70
@@ -606,10 +610,10 @@ private fun ReviewItem(review: TmdbReview) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(review.author)
-                    review.authorDetails?.rating?.toString()?.let { Text(it) }
+                    Text(review?.author.orEmpty())
+                    review?.authorDetails?.rating?.toString()?.let { Text(it) }
                 }
-                Text(review.content, maxLines = 5, overflow = TextOverflow.Ellipsis)
+                Text(review?.content.orEmpty(), maxLines = 5, overflow = TextOverflow.Ellipsis)
             }
             HorizontalDivider()
         }
@@ -759,7 +763,7 @@ private fun CrewItem(person: TmdbCrew) {
             model = person.profileImage?.let {
                 TmdbImageUrlBuilder.build(it, width = 70, height = 70)
             },
-            contentDescription = person.name!!,
+            contentDescription = person.name.orEmpty(),
             contentScale = ContentScale.Crop,
             alignment = BiasAlignment(horizontalBias = 0f, verticalBias = -0.7f),
             modifier = Modifier
@@ -769,12 +773,12 @@ private fun CrewItem(person: TmdbCrew) {
 
         Column(modifier = Modifier.weight(1f)) { // Il weight(1f) spinge tutto il resto a destra
             Text(
-                text = person.name!!,
+                text = person.name.orEmpty(),
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = person.job!!,
+                text = person.job.orEmpty(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray // Un tocco di stile per differenziare
             )
