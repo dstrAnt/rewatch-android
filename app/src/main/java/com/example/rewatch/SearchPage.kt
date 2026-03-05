@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -85,7 +86,6 @@ class SearchViewModel : ViewModel() {
 fun SearchPage(
     viewModel: SearchViewModel = viewModel(),
     onNavigateBack: () -> Unit, // Pass your NavController pop action here
-    onMovieClick: (Int) -> Unit
 ) {
     val query by viewModel.query.collectAsState()
     val movies by viewModel.movies.collectAsState()
@@ -122,7 +122,7 @@ fun SearchPage(
                 onNavigateBack()
             }
             MovieResultsList(
-                movies, onMovieClick = onMovieClick
+                movies
             )
         }
     }
@@ -130,13 +130,14 @@ fun SearchPage(
 
 @Composable
 fun MovieResultsList(
-    movies: List<TmdbMovie>, onMovieClick: (Int) -> Unit // 1. Add navigation callback
+    movies: List<TmdbMovie>
 ) {
+    val context = LocalContext.current
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(movies) { movie ->
             ListItem(headlineContent = { movie.title?.let { Text(it) } }, leadingContent = {
 
-                PosterImage {
+                PosterImage({ onMovieClick(movie.id, context) }) {
                     AsyncImage(
                         model = "https://image.tmdb.org/t/p/w200${movie.posterPath}",
                         contentDescription = "${movie.title} poster",
@@ -146,7 +147,7 @@ fun MovieResultsList(
                 }
             }, modifier = Modifier.clickable {
                 // 2. Trigger callback with the movie ID
-                onMovieClick(movie.id)
+                onMovieClick(movie.id, context)
             })
         }
     }
