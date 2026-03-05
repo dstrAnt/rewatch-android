@@ -1,5 +1,7 @@
 package com.example.rewatch
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -154,7 +156,9 @@ fun ExpandBtn(
 
 
 @Composable
-fun PosterImage(content: @Composable (() -> Unit)) {
+fun PosterImage(
+    onClick: () -> Unit = {},
+                content: @Composable (() -> Unit)) {
 
     val shape = RoundedCornerShape(5.dp)
 
@@ -167,8 +171,33 @@ fun PosterImage(content: @Composable (() -> Unit)) {
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = true),
-                onClick = { /* Action */ })
+                onClick = onClick)
     ) {
         content()
     }
+}
+
+fun onMovieClick(movieId: Int, context: Context) {
+    // Create an Intent to start MovieActivity
+    val intent = Intent(
+        context, MovieActivity::class.java
+    ).apply {
+        // Bundle the movieId into the Intent extras
+        putExtra(
+            "EXTRA_MOVIE_ID", movieId
+        )
+    }
+
+    // Launch the activity! (This triggers the native OS transition)
+    context.startActivity(intent)
+}
+
+fun Double.getShortNotation(): String {
+    return when {
+        this >= 1_000_000_000 -> String.format(Locale.US, "%.1f billion", this / 1_000_000_000)
+        this >= 1_000_000 -> String.format(Locale.US, "%.1f million", this / 1_000_000)
+        this >= 1_000 -> String.format(Locale.US, "%.1f k", this / 1_000)
+        this > 0 -> this.toInt().toString()
+        else -> "N/A" // TMDB spesso restituisce 0 se il budget è sconosciuto
+    }.replace(".0", "") // Toglie il decimale se è zero (es: 50.0 -> 50)
 }
