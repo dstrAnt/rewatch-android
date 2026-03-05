@@ -1,25 +1,20 @@
 package com.example.rewatch
 
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -32,24 +27,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.compose.rememberNavController
-import app.moviebase.tmdb.Tmdb3
-import app.moviebase.tmdb.model.AppendResponse
-import app.moviebase.tmdb.model.TmdbMovie
-import app.moviebase.tmdb.model.TmdbMovieDetail
-import com.example.rewatch.ui.theme.RewatchTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.example.rewatch.movie.MoviePageState
+import com.example.rewatch.theme.RewatchTheme
 
 
 class MainActivity : ComponentActivity() {
@@ -87,9 +73,10 @@ fun RewatchApp() {
         bottomBar = {
             // Usiamo direttamente NavigationBar per avere il controllo totale
             NavigationBar(
-                modifier = Modifier.height(60.dp), // Ecco i tuoi 60dp
+                modifier = Modifier.fillMaxHeight(0.09f), // Ecco i tuoi 60dp
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp // Opzionale: rimuove l'ombra se vuoi un look più flat
+                tonalElevation = 0.dp // Opzionale: rimuove l'ombra se vuoi un look più flat,
+
             ) {
                 AppDestinations.entries.forEach { destination ->
                     val isSelected = destination == currentDestination
@@ -121,7 +108,7 @@ fun RewatchApp() {
             }
         }) { innerPadding ->
 
-        val context = LocalContext.current // Get the Activity context
+        LocalContext.current // Get the Activity context
 
         Surface(
             modifier = Modifier
@@ -145,138 +132,17 @@ fun RewatchApp() {
                 AppDestinations.SEARCH -> {
                     SearchPage(
                         onNavigateBack = { navController.popBackStack() },
-                        onMovieClick = { movieId ->
-                            // Create an Intent to start MovieActivity
-                            val intent = Intent(
-                                context, MovieActivity::class.java
-                            ).apply {
-                                // Bundle the movieId into the Intent extras
-                                putExtra(
-                                    "EXTRA_MOVIE_ID", movieId
-                                )
-                            }
-
-                            // Launch the activity! (This triggers the native OS transition)
-                            context.startActivity(intent)
-                        })
 //                    onMovieClick = { movieId: Int ->
 //                        // Navigate to detail page, hiding bottom bar if desired
 //                        navController.navigate("movie_page/$movieId")
 //                    })
-                }
-
-                else -> {}
-
-
-                // Add your movie details route here just like before
-                // composable("movie_page/{movieId}") { ... }
-            }
-        }
-    }
-}
-//        Surface(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(bottom = innerPadding.calculateBottomPadding())
-//        ) {
-//            when (currentDestination) {
-//                AppDestinations.MOVIE -> MoviePageState()
-//                AppDestinations.SEARCH -> SearchPage(
-//                    onNavigateBack = { {} },
-//                )
-//                else -> {}
-//            }
-//        }
-//}
-
-
-data class MovieData(
-    var movie: TmdbMovieDetail, var similar: List<TmdbMovie>
-)
-
-sealed class MovieUiState {
-    object Loading : MovieUiState()
-    data class Success(val movie: MovieData) : MovieUiState()
-
-    data class Error(val msg: String) : MovieUiState()
-}
-
-class MovieViewModel(private val movieId: Int) : ViewModel() {
-    private val tmdb = Tmdb3(BuildConfig.TMDB_API_KEY)
-
-    var uiState by mutableStateOf<MovieUiState>(MovieUiState.Loading)
-        private set
-
-    init {
-        fetchMovies()
-    }
-
-    private fun fetchMovies() {
-        viewModelScope.launch {
-            try {
-
-                uiState = withContext(Dispatchers.IO) {
-
-                    MovieUiState.Success(
-                        MovieData(
-                            tmdb.movies.getDetails(
-                                movieId = movieId,
-//                            language = "IT",
-                                appendResponses = listOf(
-                                    AppendResponse.CREDITS,
-                                    AppendResponse.REVIEWS,
-                                    AppendResponse.RELEASES_DATES,
-                                    AppendResponse.WATCH_PROVIDERS,
-                                )
-                            ), tmdb.movies.getSimilar(
-                                movieId = movieId,
-                            ).results
-                        )
                     )
                 }
 
-            } catch (e: Exception) {
-                uiState = MovieUiState.Error(
-                    e.localizedMessage ?: "Network Error"
-                )
+
+                else -> {}
             }
         }
-    }
-}
-
-@OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class
-)
-@Composable
-fun MoviePageState(
-    movieId: Int,
-    vm: MovieViewModel = MovieViewModel(movieId),
-    onNavigateBack: () -> Unit,
-    padding: PaddingValues
-) {
-    when (val state = vm.uiState) {
-        is MovieUiState.Loading -> MoviePage(
-            MovieData(
-                TmdbMovieDetail(), listOf()
-            ), onNavigateBack, padding
-        )
-
-        is MovieUiState.Success -> MoviePage(
-            state.movie, onNavigateBack, padding
-        )
-
-
-        else -> Box(
-            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-        ) {
-            // This is the official M3 "Expressive" component
-            CircularWavyProgressIndicator(
-                modifier = Modifier.size(48.dp),
-//                color = MaterialTheme.colorScheme.primary,
-                // You can also adjust the amplitude of the waves if needed
-            )
-        }
-
     }
 }
 

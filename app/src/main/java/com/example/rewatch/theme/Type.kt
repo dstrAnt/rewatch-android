@@ -1,4 +1,4 @@
-package com.example.rewatch.ui.theme
+package com.example.rewatch.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

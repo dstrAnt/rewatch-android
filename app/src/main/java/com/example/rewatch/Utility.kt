@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.example.rewatch.movie.MovieActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -171,7 +172,8 @@ fun PosterImage(
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = true),
-                onClick = onClick)
+                onClick = onClick
+            )
     ) {
         content()
     }

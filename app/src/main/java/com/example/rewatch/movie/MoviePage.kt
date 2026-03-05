@@ -1,7 +1,8 @@
-package com.example.rewatch
+package com.example.rewatch.movie
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,6 +53,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -69,6 +72,13 @@ import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbReview
 import coil3.compose.AsyncImage
+import com.example.rewatch.ExpandBtn
+import com.example.rewatch.PosterImage
+import com.example.rewatch.R
+import com.example.rewatch.formatDate
+import com.example.rewatch.getShortNotation
+import com.example.rewatch.onMovieClick
+import com.example.rewatch.relativeMove
 
 
 @Composable
@@ -99,11 +109,12 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit, padding: PaddingValue
     Box {
         LazyColumn(
             state = scrollState,
+//            modifier = Modifier.padding(bottom = padding.calculateBottomPadding())
 //            verticalArrangement = Arrangement.spacedBy(pad),
         ) {
             item {
                 movie.backdropImage?.let { BackdropImage(it) }
-                    ?: Spacer(Modifier.padding(top = padding.calculateTopPadding()))
+                    ?: Spacer(Modifier.height(padding.calculateTopPadding() + 60.dp))
 
                 TitleAndInfoSection(pad, movie)
                 Column(
@@ -113,23 +124,39 @@ fun MoviePage(data: MovieData, onNavigateBack: () -> Unit, padding: PaddingValue
                         10.dp
                     )
                 ) {
+                    Spacer(modifier = Modifier.height(5.dp))
                     Text(
                         text = movie.tagline.orEmpty(),
                         modifier = Modifier.padding(horizontal = pad)
                     )
-                    ExpandableText(
-                        movie.overview.orEmpty(), modifier = Modifier.padding(horizontal = pad)
-                    )
+                    if (movie.overview != null && movie.overview != "") {
+                        ExpandableText(
+                            movie.overview.orEmpty(), modifier = Modifier.padding(horizontal = pad)
+                        )
+                    }
                 }
                 HorizontalDivider()
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = pad),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    StarRating(movie.voteAverage.toDouble())
-                    Text("out of " + movie.voteCount.toString() + " ratings")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        //                    StarRating(movie.voteAverage.toDouble())
+                        //                    Text("out of " + movie.voteCount.toString() + " ratings")
+                        Image(
+                            painter = painterResource(id = R.drawable.tmdb_logo),
+                            contentDescription = "TMDB logo",
+                            modifier = Modifier.size(100.dp)
+                        )
+                        Text(
+                            "%.1f".format(java.util.Locale.US, movie.voteAverage),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(movie.voteCount.toDouble().getShortNotation() + " ratings")
+                    }
                 }
             }
 
@@ -323,11 +350,9 @@ private fun AppearingTopBar(
 private fun BackdropImage(image: TmdbImage) {
     Box {
         AsyncImage(
-            model = image?.let {
-                build(
-                    it, width = 400, height = 200
-                )
-            },
+            model = build(
+                image, width = 400, height = 200
+            ),
             contentDescription = "Translated description of what the image contains",
             modifier = Modifier
                 .fillMaxWidth()
@@ -363,6 +388,7 @@ private fun TitleAndInfoSection(
                 ?: 0.dp) // Pulls the item UP by 20dp
     ) {
         Column(
+            modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Spacer(Modifier.height(10.dp))
@@ -390,9 +416,11 @@ private fun TitleAndInfoSection(
                 Text(
                     movie.releaseDate.toString().formatDate("MMM yyyy")
                 )
-                Text("•")
-                Text(movie.runtime.toString() + " mins")
+                if (movie.runtime != null && movie.runtime != 0) {
 
+                    Text("•")
+                    Text("${movie.runtime} mins")
+                }
             }
 //            Spacer(Modifier.height(3.dp))
             Text("Directed by " + movie.credits?.crew?.find { it.job == "Director" }?.name.orEmpty())
@@ -473,12 +501,16 @@ private fun DetailsTab(
                 }
             }
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Spacer(Modifier.width(10.dp))
-            Text("Budget: $" + movie.budget.toDouble() / 1000000 + " million")
+
+        val budget = movie.budget.toDouble()
+        if (budget > 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Spacer(Modifier.width(10.dp))
+                Text("Budget: $ " + budget.getShortNotation())
+            }
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -557,6 +589,7 @@ private fun CompanyItem(company: TmdbCompany) {
 
 @Composable
 private fun SimilarSection(similar: List<TmdbMovie>, pad: Dp) {
+    val context = LocalContext.current
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -567,7 +600,7 @@ private fun SimilarSection(similar: List<TmdbMovie>, pad: Dp) {
             Spacer(Modifier.width(5.dp))
         }
         for (movie in similar) item {
-            PosterImage {
+            PosterImage(onClick = { onMovieClick(movie.id, context) }) {
                 if (movie.posterImage != null) AsyncImage(
                     model = movie.posterImage?.let {
                         build(
@@ -595,7 +628,6 @@ private fun SimilarSection(similar: List<TmdbMovie>, pad: Dp) {
         }
     }
 }
-
 
 @Composable
 private fun PersonItem(person: TmdbAnyPerson?) {
@@ -665,13 +697,11 @@ private fun ReviewItem(review: TmdbReview?) {
 
 
         AsyncImage(
-            model = review?.authorDetails?.avatarPath?.let {
-                TmdbImage.build(it, TmdbImageType.PROFILE)?.let { image ->
-                    build(
-                        image, width = 70, height = 70
+            model = review?.authorDetails?.avatarPath?.let { image ->
+                build(
+                    image, TmdbImageType.PROFILE, width = 70, height = 70
 
-                    )
-                }
+                )
             },
             "",
             contentScale = ContentScale.Crop,
@@ -682,11 +712,13 @@ private fun ReviewItem(review: TmdbReview?) {
 
         )
         Column(
-            verticalArrangement = Arrangement.spacedBy(5.dp),
+            verticalArrangement = Arrangement.spacedBy(7.dp),
 
             ) {
             Column(
-                modifier = Modifier.padding(end = 15.dp)
+                modifier = Modifier.padding(end = 15.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+
             ) {
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,

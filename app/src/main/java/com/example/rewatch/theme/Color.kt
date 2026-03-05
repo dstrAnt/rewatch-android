@@ -1,4 +1,4 @@
-package com.example.rewatch.ui.theme
+package com.example.rewatch.theme
 
 import androidx.compose.ui.graphics.Color
 
