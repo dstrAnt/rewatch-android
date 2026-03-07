@@ -1,6 +1,9 @@
 package com.example.rewatch.movie
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -96,32 +99,35 @@ fun MoviePage(
     padding: PaddingValues,
     onNavigateBack: () -> Unit,
 ) {
-    // Osserviamo lo stato del ViewModel
-    when (val state = viewModel.uiState) {
-        is MovieUiState.Loading -> {
-            MovieSkeleton()
-        }
+    Crossfade(
+        targetState = viewModel.uiState,
+        // 600ms è il "sweet spot" per un'apparizione lenta e naturale
+        animationSpec = tween(durationMillis = 600, easing = LinearOutSlowInEasing),
+        label = "fadeTransition"
+    ) { state ->
+        // Osserviamo lo stato del ViewModel
+        when (state) {
+            is MovieUiState.Loading -> {
+                MovieSkeleton()
+            }
 
-        is MovieUiState.Success -> {
-            // Chiamiamo la funzione che disegna effettivamente la UI passando i dati
-            MovieContent(
-                data = state.movie,
-                padding = padding,
-                onNavigateBack = onNavigateBack
-            )
-        }
+            is MovieUiState.Success -> {
+                // Chiamiamo la funzione che disegna effettivamente la UI passando i dati
+                MovieContent(
+                    data = state.movie,
+                    padding = padding,
+                    onNavigateBack = onNavigateBack
+                )
+            }
 
-        is MovieUiState.Error -> {
-            Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Error: ${state.msg}")
+            is MovieUiState.Error -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Error: ${state.msg}")
+                }
             }
         }
     }
 }
-
 
 @Composable
 @OptIn(
@@ -143,10 +149,10 @@ fun MovieContent(
 
     val availableTabs = MovieTabs.entries.filter { tab ->
         !when (tab) {
-            MovieTabs.CAST -> movie?.credits?.cast.isNullOrEmpty()
-            MovieTabs.CREW -> movie?.credits?.crew.isNullOrEmpty()
-            MovieTabs.DETAILS -> movie?.credits?.cast.isNullOrEmpty()
-            MovieTabs.WATCH -> movie?.watchProviders?.results?.get("US")
+            MovieTabs.CAST -> movie.credits?.cast.isNullOrEmpty()
+            MovieTabs.CREW -> movie.credits?.crew.isNullOrEmpty()
+            MovieTabs.DETAILS -> movie.credits?.cast.isNullOrEmpty()
+            MovieTabs.WATCH -> movie.watchProviders?.results?.get("US")
                 ?.run { buy.isEmpty() && flatrate.isEmpty() } ?: true
 
             //            CAST("Cast"), CREW("Crew"), DETAILS("Details"), WATCH        }
@@ -171,17 +177,11 @@ fun MovieContent(
 //            verticalArrangement = Arrangement.spacedBy(pad),
         ) {
             item {
-                if (movie != null) {
-
-                    movie?.backdropImage?.let { BackdropImage(it) } ?: Spacer(
-                        Modifier.height(
-                            padding.calculateTopPadding() + 60.dp
-                        )
+                movie.backdropImage?.let { BackdropImage(it) } ?: Spacer(
+                    Modifier.height(
+                        padding.calculateTopPadding() + 60.dp
                     )
-
-                } else {
-                    Spacer(Modifier.height(200.dp))
-                }
+                )
 
                 TitleAndInfoSection(pad, movie)
 
@@ -192,15 +192,15 @@ fun MovieContent(
                     )
                 ) {
                     Spacer(modifier = Modifier.height(5.dp))
-                    if (!movie?.tagline.isNullOrEmpty()) {
+                    if (!movie.tagline.isNullOrEmpty()) {
                         Text(
-                            text = movie?.tagline.orEmpty(),
+                            text = movie.tagline.orEmpty(),
                             modifier = Modifier.padding(horizontal = pad)
                         )
                     }
-                    if (movie?.overview != null && movie?.overview != "") {
+                    if (movie.overview != null && movie.overview != "") {
                         ExpandableText(
-                            movie?.overview.orEmpty(),
+                            movie.overview.orEmpty(),
                             modifier = Modifier.padding(horizontal = pad)
                         )
                     }
@@ -225,17 +225,17 @@ fun MovieContent(
                             contentDescription = "TMDB logo",
                             modifier = Modifier.width(100.dp)
                         )
-                        movie?.voteCount?.let {
+                        movie.voteCount.let {
                             if (it > 0) {
                                 Text(
                                     "%.1f".format(
                                         java.util.Locale.US,
-                                        movie?.voteAverage
+                                        movie.voteAverage
                                     ) + "/10",
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    movie?.voteCount?.toDouble()?.getShortNotation() + " votes"
+                                    movie.voteCount.toDouble().getShortNotation() + " votes"
                                 )
                             } else {
                                 Text(
@@ -265,7 +265,7 @@ fun MovieContent(
                 // cast
                 MovieTabs.CAST -> expandableSection(
                     title = "cast",
-                    itemsList = movie?.credits?.cast.orEmpty(),
+                    itemsList = movie.credits?.cast.orEmpty(),
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
                     initialVisibleCount = 7
@@ -275,7 +275,7 @@ fun MovieContent(
                 // crew
                 MovieTabs.CREW -> expandableSection(
                     title = "crew",
-                    itemsList = movie?.credits?.crew.orEmpty()
+                    itemsList = movie.credits?.crew.orEmpty()
                         .sortedByDescending { it.job == "Director" },
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
@@ -296,7 +296,7 @@ fun MovieContent(
 
 
 
-            if (!movie?.reviews?.results.isNullOrEmpty()) {
+            if (!movie.reviews?.results.isNullOrEmpty()) {
                 item {
                     HorizontalDivider()
                     Text(
@@ -306,7 +306,7 @@ fun MovieContent(
                 }
                 expandableSection(
                     title = "reviews",
-                    itemsList = movie?.reviews?.results.orEmpty(),
+                    itemsList = movie.reviews?.results.orEmpty(),
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
                     initialVisibleCount = 3
@@ -314,7 +314,7 @@ fun MovieContent(
 
             }
 
-            if (!data?.similar.isNullOrEmpty()) {
+            if (data.similar.isNotEmpty()) {
 
                 item {
                     HorizontalDivider()
@@ -337,7 +337,7 @@ fun MovieContent(
 
         AppearingTopBar(
             scrollState,
-            movie?.title,
+            movie.title,
             onNavigateBack
         )
     }
@@ -509,7 +509,8 @@ private fun TitleAndInfoSection(
             .padding(
                 horizontal = pad
             )
-            .relativeMove(movie?.backdropImage?.let { (-20).dp } ?: 0.dp) // Pulls the item UP by 20dp
+            .relativeMove(movie?.backdropImage?.let { (-20).dp }
+                ?: 0.dp) // Pulls the item UP by 20dp
     ) {
         Column(
             modifier = Modifier.weight(1f),
@@ -540,10 +541,10 @@ private fun TitleAndInfoSection(
                 Text(
                     movie?.releaseDate?.toString()?.formatDate("MMM yyyy") ?: ""
                 )
-                if (movie?.runtime != null && movie?.runtime != 0) {
+                if (movie?.runtime != null && movie.runtime != 0) {
 
                     Text("•")
-                    Text("${movie?.runtime} mins")
+                    Text("${movie.runtime} mins")
                 }
             }
 //            Spacer(Modifier.height(3.dp))
@@ -650,7 +651,7 @@ private fun DetailsTab(
             ) {
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Countries: " + movie?.productionCountries?.joinToString(
+                    "Countries: " + movie.productionCountries?.joinToString(
                         separator = ", "
                     ) { it.name })
             }
@@ -662,7 +663,7 @@ private fun DetailsTab(
             ) {
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    "Release: " + movie?.releaseDate?.toString()?.formatDate("d MMMM yyyy")
+                    "Release: " + movie.releaseDate?.toString()?.formatDate("d MMMM yyyy")
                 )
             }
         }
@@ -678,7 +679,7 @@ private fun DetailsTab(
                         10.dp
                     )
                 ) {
-                    for (company in movie?.productionCompanies.orEmpty()) item {
+                    for (company in movie.productionCompanies.orEmpty()) item {
                         CompanyItem(company)
                     }
                     item { Spacer(Modifier.width(10.dp)) }
@@ -759,7 +760,7 @@ private fun SimilarSection(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        movie?.title ?: "no title",
+                        movie.title ?: "no title",
                         color = Color.Gray,
                         textAlign = TextAlign.Center
                     )
