@@ -17,34 +17,26 @@ class MovieActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(
-                scrim = Color.TRANSPARENT,
-            )
-        )
-        // 1. Extract the movie ID passed from the SearchPage
-        // The -1 is a default fallback value if nothing was passed
         val movieId = intent.getIntExtra("EXTRA_MOVIE_ID", -1)
 
+        enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
+
         setContent {
-            // Make sure to wrap this in your app's specific Theme!
             RewatchTheme {
+
                 Scaffold { padding ->
-
-
                     Surface(
                         modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background
                     ) {
-                        // 2. Render your Composable
-                        MoviePageState(
+                        // Passiamo il ViewModel già pronto alla pagina
+                        MoviePage(
                             movieId = movieId,
                             padding = padding,
-                            // 3. To go back, we simply kill this Activity
-                            onNavigateBack = { finish() })
+                            onNavigateBack = { finish() },
+                        )
                     }
                 }
-
             }
         }
     }

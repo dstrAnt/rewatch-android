@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -54,7 +54,10 @@ fun String.formatDate(format: String): String {
 }
 
 @Composable
-fun StarRating(rating: Double, maxRating: Int = 5) {
+fun StarRating(
+    rating: Double,
+    maxRating: Int = 5
+) {
     // Convertiamo il voto da base 10 a base 5
     val starRating = (rating / 2).coerceIn(0.0, 5.0)
 
@@ -63,13 +66,15 @@ fun StarRating(rating: Double, maxRating: Int = 5) {
     val emptyStars =
         maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
 
+    val starSize = 16.dp
     Row(verticalAlignment = Alignment.CenterVertically) {
         // 1. Stelle Piene
         repeat(fullStars) {
             Icon(
                 Icons.Filled.Star,
                 contentDescription = null,
-                tint = Color(0xFFFFC107)
+                tint = Color(0xFFFFC107),
+                modifier = Modifier.size(starSize)
             )
         }
 
@@ -80,18 +85,17 @@ fun StarRating(rating: Double, maxRating: Int = 5) {
                 Icon(
                     Icons.Filled.Star,
                     contentDescription = null,
-                    tint = Color.LightGray
+                    tint = Color.LightGray,
+                    modifier = Modifier.size(starSize)
                 )
                 // Parte riempita (ritagliata)
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
                     tint = Color(0xFFFFC107),
-                    modifier = Modifier.clip(
-                        FractionalClip(
-                            partialStarFill
-                        )
-                    )
+                    modifier = Modifier
+                        .clip(FractionalClip(partialStarFill))
+                        .size(starSize)
                 )
             }
         }
@@ -101,15 +105,11 @@ fun StarRating(rating: Double, maxRating: Int = 5) {
             Icon(
                 Icons.Filled.Star,
                 contentDescription = null,
-                tint = Color.LightGray
+                tint = Color.LightGray,
+                modifier = Modifier.size(starSize)
             )
         }
 
-        Text(
-            text = " (${String.format("%.2f", rating)})",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 4.dp)
-        )
     }
 }
 
@@ -120,9 +120,7 @@ class FractionalClip(val fraction: Float) : Shape {
         density: Density
     ): Outline {
         return Outline.Rectangle(
-            Rect(
-                0f, 0f, size.width * fraction, size.height
-            )
+            Rect(0f, 0f, size.width * fraction, size.height)
         )
     }
 }
@@ -141,7 +139,8 @@ fun Modifier.relativeMove(y: Dp) =
 
 @Composable
 fun ExpandBtn(
-    string: String, function: () -> Unit
+    string: String,
+    function: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -159,7 +158,8 @@ fun ExpandBtn(
 @Composable
 fun PosterImage(
     onClick: () -> Unit = {},
-                content: @Composable (() -> Unit)) {
+    content: @Composable (() -> Unit)
+) {
 
     val shape = RoundedCornerShape(5.dp)
 
@@ -179,7 +179,10 @@ fun PosterImage(
     }
 }
 
-fun onMovieClick(movieId: Int, context: Context) {
+fun onMovieClick(
+    movieId: Int,
+    context: Context
+) {
     // Create an Intent to start MovieActivity
     val intent = Intent(
         context, MovieActivity::class.java
@@ -198,8 +201,8 @@ fun Double.getShortNotation(): String {
     return when {
         this >= 1_000_000_000 -> String.format(Locale.US, "%.1f billion", this / 1_000_000_000)
         this >= 1_000_000 -> String.format(Locale.US, "%.1f million", this / 1_000_000)
-        this >= 1_000 -> String.format(Locale.US, "%.1f k", this / 1_000)
+        this >= 1_000 -> String.format(Locale.US, "%.1fk", this / 1_000)
         this > 0 -> this.toInt().toString()
-        else -> "N/A" // TMDB spesso restituisce 0 se il budget è sconosciuto
+        else -> " - " // TMDB spesso restituisce 0 se il budget è sconosciuto
     }.replace(".0", "") // Toglie il decimale se è zero (es: 50.0 -> 50)
 }
