@@ -931,16 +931,17 @@ fun WatchProviders(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
-        modifier = Modifier.padding(start = 15.dp)
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 15.dp),
             fontWeight = FontWeight.Bold
         )
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            item { Spacer(Modifier.width(5.dp)) }
             for (provider in providers) item {
                 PosterImage {
                     Row(
