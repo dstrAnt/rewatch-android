@@ -11,7 +11,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,7 +64,10 @@ fun MovieSkeleton() {
                     // Titolo
                     Box(
                         Modifier
-                            .size(180.dp, 28.dp)
+                            .size(
+                                180.dp,
+                                28.dp
+                            )
                             .clip(RoundedCornerShape(4.dp))
                             .shimmerEffect()
                     )
@@ -74,13 +76,19 @@ fun MovieSkeleton() {
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         Box(
                             Modifier
-                                .size(40.dp, 18.dp)
+                                .size(
+                                    40.dp,
+                                    18.dp
+                                )
                                 .clip(RoundedCornerShape(4.dp))
                                 .shimmerEffect()
                         )
                         Box(
                             Modifier
-                                .size(80.dp, 18.dp)
+                                .size(
+                                    80.dp,
+                                    18.dp
+                                )
                                 .clip(RoundedCornerShape(4.dp))
                                 .shimmerEffect()
                         )
@@ -89,7 +97,10 @@ fun MovieSkeleton() {
                     // Director
                     Box(
                         Modifier
-                            .size(120.dp, 16.dp)
+                            .size(
+                                120.dp,
+                                16.dp
+                            )
                             .clip(RoundedCornerShape(4.dp))
                             .shimmerEffect()
                     )
@@ -97,7 +108,10 @@ fun MovieSkeleton() {
                 // Poster
                 Box(
                     Modifier
-                        .size(100.dp, 150.dp)
+                        .size(
+                            100.dp,
+                            150.dp
+                        )
                         .clip(RoundedCornerShape(8.dp))
                         .shimmerEffect()
                 )
@@ -115,7 +129,10 @@ fun MovieSkeleton() {
                 Box(
                     Modifier
                         .padding(horizontal = pad)
-                        .size(200.dp, 16.dp)
+                        .size(
+                            200.dp,
+                            16.dp
+                        )
                         .clip(RoundedCornerShape(4.dp))
                         .shimmerEffect()
                 )
@@ -166,7 +183,10 @@ fun MovieSkeleton() {
             ) {
                 Box(
                     Modifier
-                        .size(250.dp, 44.dp)
+                        .size(
+                            250.dp,
+                            44.dp
+                        )
                         .clip(RoundedCornerShape(20.dp))
                         .shimmerEffect()
                 )
@@ -187,7 +207,10 @@ fun MovieSkeleton() {
                 repeat(4) {
                     Box(
                         Modifier
-                            .size(60.dp, 20.dp)
+                            .size(
+                                60.dp,
+                                20.dp
+                            )
                             .clip(RoundedCornerShape(4.dp))
                             .shimmerEffect()
                     )
@@ -201,13 +224,19 @@ fun MovieSkeleton() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = pad, vertical = 8.dp),
+                    .padding(
+                        horizontal = pad,
+                        vertical = 8.dp
+                    ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Avatar
                 Box(
                     Modifier
-                        .size(55.dp, 60.dp)
+                        .size(
+                            55.dp,
+                            60.dp
+                        )
                         .clip(RoundedCornerShape(7.dp))
                         .shimmerEffect()
                 )
@@ -215,14 +244,20 @@ fun MovieSkeleton() {
                 Column {
                     Box(
                         Modifier
-                            .size(140.dp, 18.dp)
+                            .size(
+                                140.dp,
+                                18.dp
+                            )
                             .clip(RoundedCornerShape(4.dp))
                             .shimmerEffect()
                     )
                     Spacer(Modifier.height(6.dp))
                     Box(
                         Modifier
-                            .size(90.dp, 14.dp)
+                            .size(
+                                90.dp,
+                                14.dp
+                            )
                             .clip(RoundedCornerShape(4.dp))
                             .shimmerEffect()
                     )
@@ -246,7 +281,7 @@ fun Modifier.shimmerEffect(): Modifier = composed {
 
     val shimmerColors = listOf(
         Color.LightGray.copy(alpha = 0.6f),
-        Color.LightGray.copy(alpha = 0.2f),
+        Color.LightGray.copy(alpha = 0.5f),
         Color.LightGray.copy(alpha = 0.6f),
     )
 

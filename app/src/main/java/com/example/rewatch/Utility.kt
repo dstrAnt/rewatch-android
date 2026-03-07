@@ -140,13 +140,13 @@ fun Modifier.relativeMove(y: Dp) =
 @Composable
 fun ExpandBtn(
     string: String,
-    function: () -> Unit
+    onClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = function)
+            .clickable(onClick = onClick)
             .padding(15.dp)
     ) {
 
@@ -167,7 +167,11 @@ fun PosterImage(
         modifier = Modifier
             .clip(shape) // Set the corner radius
             .border(
-                BorderStroke(1.dp, Color.Gray), shape
+                BorderStroke(
+                    1.dp,
+                    Color.Gray
+                ),
+                shape
             ) // Add border with rounded corners
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

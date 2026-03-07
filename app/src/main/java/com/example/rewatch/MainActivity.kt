@@ -6,6 +6,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -32,9 +35,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
-import com.example.rewatch.movie.MoviePageState
+import com.example.rewatch.movie.MoviePage
 import com.example.rewatch.theme.RewatchTheme
 
 
@@ -116,9 +120,13 @@ fun RewatchApp() {
                 .padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             when (currentDestination) {
-                AppDestinations.MOVIE -> MoviePageState(
+                AppDestinations.MOVIE -> MoviePage(
                     1317288,
-                    padding = innerPadding,
+                    padding = PaddingValues(
+                        innerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                        innerPadding.calculateTopPadding(),
+                        innerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                    ),
                     onNavigateBack = {},
                 )
 //            AppDestinations.TV -> MoviePageState(1) {}
