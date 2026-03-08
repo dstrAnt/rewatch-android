@@ -4,14 +4,6 @@ package com.example.rewatch.movie
  * A reusable helper to avoid repeating Box + Clip + Shimmer
  */
 // ... imports stay mostly the same, add FastOutSlowInEasing
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,17 +18,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.rewatch.SkeletonPart
 import com.example.rewatch.relativeMove
 
 
@@ -135,57 +121,4 @@ fun MovieSkeleton() {
             }
         }
     }
-}
-
-@Composable
-fun SkeletonPart(
-    modifier: Modifier = Modifier,
-    width: Dp? = null,
-    height: Dp? = null,
-    shape: Shape = RoundedCornerShape(4.dp),
-) {
-    Box(
-        modifier = modifier
-            .then(if (width != null) Modifier.width(width) else Modifier)
-            .then(if (height != null) Modifier.height(height) else Modifier)
-            .clip(shape)
-            .pulseEffect(), // Updated here
-    )
-}
-
-fun Modifier.pulseEffect(): Modifier = composed {
-    val transition = rememberInfiniteTransition(label = "pulse")
-
-    // Animate alpha from 0.4 to 0.8 and back
-    val alpha by transition.animateFloat(
-        initialValue = 0.2f, targetValue = 0.25f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = EaseInOut),
-            repeatMode = RepeatMode.Reverse, // This creates the "breathing" pulse
-        ),
-        label = "pulseAlpha",
-    )
-
-    // Use a solid color with the animated alpha
-    background(Color.LightGray.copy(alpha = alpha))
-}
-
-fun Modifier.shimmerEffect(): Modifier = composed {
-    val transition = rememberInfiniteTransition(label = "")
-    val translateAnim by transition.animateFloat(
-        initialValue = 0f, targetValue = 1000f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing), repeatMode = RepeatMode.Restart,
-        ),
-        label = "",
-    )
-
-    val brush = Brush.linearGradient(
-        colors = listOf(
-            Color.LightGray.copy(0.3f), Color.LightGray.copy(0.25f), Color.LightGray.copy(0.3f),
-        ),
-        start = Offset(translateAnim - 200f, translateAnim),
-        end = Offset(translateAnim, translateAnim),
-    )
-    background(brush)
 }

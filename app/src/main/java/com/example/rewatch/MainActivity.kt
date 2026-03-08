@@ -17,11 +17,13 @@
 package com.example.rewatch
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -44,7 +46,6 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,11 +59,13 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
+import com.example.rewatch.home.HomePage
 import com.example.rewatch.movie.MoviePage
 import com.example.rewatch.search.SearchPage
 import com.example.rewatch.theme.RewatchTheme
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
@@ -78,13 +81,14 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @PreviewScreenSizes
 @Composable
 fun RewatchApp() {
     var currentDestination by rememberSaveable {
         mutableStateOf(
-            AppDestinations.SEARCH,
+            AppDestinations.HOME,
         )
     }
 
@@ -159,7 +163,7 @@ fun RewatchApp() {
                 //            AppDestinations.TV -> MoviePageState(1) {}
 
                 AppDestinations.HOME -> {
-                    Text("Home Page")
+                    HomePage()
                 }
 
                 AppDestinations.SEARCH -> {
