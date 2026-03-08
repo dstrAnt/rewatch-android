@@ -1,6 +1,10 @@
 package com.example.rewatch.movie
 
-
+/**
+ * A reusable helper to avoid repeating Box + Clip + Shimmer
+ */
+// ... imports stay mostly the same, add FastOutSlowInEasing
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -17,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.rewatch.relativeMove
 
@@ -39,163 +44,68 @@ import com.example.rewatch.relativeMove
 fun MovieSkeleton() {
     val pad = 16.dp
 
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        // 1. Backdrop Skeleton
+    LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false) {
+        // 1. Backdrop
         item {
-            Box(
-                modifier = Modifier
+            SkeletonPart(
+                Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
-                    .shimmerEffect()
+                    .height(210.dp),
+                shape = RoundedCornerShape(0.dp),
             )
         }
 
-        // 2. Title and Info Section Skeleton
+        // 2. Header Section (Title, Poster, Info)
         item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = pad)
-                    .relativeMove((-20).dp), // Mantengo la tua logica di posizionamento
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .relativeMove((-15).dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Spacer(Modifier.height(10.dp))
-                    // Titolo
-                    Box(
-                        Modifier
-                            .size(
-                                180.dp,
-                                28.dp
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
-                    Spacer(Modifier.height(10.dp))
-                    // Info Row (Certificazione, Data, Runtime)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Spacer(Modifier.height(0.dp))
+                    SkeletonPart(width = 180.dp, height = 28.dp) // Title
                     Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        Box(
-                            Modifier
-                                .size(
-                                    40.dp,
-                                    18.dp
-                                )
-                                .clip(RoundedCornerShape(4.dp))
-                                .shimmerEffect()
-                        )
-                        Box(
-                            Modifier
-                                .size(
-                                    80.dp,
-                                    18.dp
-                                )
-                                .clip(RoundedCornerShape(4.dp))
-                                .shimmerEffect()
-                        )
+                        SkeletonPart(width = 40.dp, height = 18.dp)
+                        SkeletonPart(width = 80.dp, height = 18.dp)
                     }
-                    Spacer(Modifier.height(10.dp))
-                    // Director
-                    Box(
-                        Modifier
-                            .size(
-                                120.dp,
-                                16.dp
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
+                    SkeletonPart(width = 120.dp, height = 16.dp) // Director
                 }
-                // Poster
-                Box(
-                    Modifier
-                        .size(
-                            100.dp,
-                            150.dp
-                        )
-                        .clip(RoundedCornerShape(8.dp))
-                        .shimmerEffect()
-                )
+                SkeletonPart(
+                    width = 100.dp, height = 150.dp, shape = RoundedCornerShape(8.dp),
+                ) // Poster
             }
         }
 
+        // 3. Overview Section
         item {
             Column(
-                modifier = Modifier.padding(bottom = pad),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                Modifier.padding(horizontal = pad, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Spacer(modifier = Modifier.height(5.dp))
-
-                // Tagline Skeleton (una riga singola più corta)
-                Box(
-                    Modifier
-                        .padding(horizontal = pad)
-                        .size(
-                            200.dp,
-                            16.dp
-                        )
-                        .clip(RoundedCornerShape(4.dp))
-                        .shimmerEffect()
-                )
-
-                // Overview Skeleton (3 righe di testo simulate)
-                Column(
-                    modifier = Modifier.padding(horizontal = pad),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(14.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(14.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
-                    Box(
-                        Modifier
-                            .fillMaxWidth(0.6f)
-                            .height(14.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    ) // Ultima riga più corta
+                SkeletonPart(width = 200.dp, height = 16.dp) // Tagline
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
+                    SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
+                    SkeletonPart(Modifier.fillMaxWidth(0.6f), height = 14.dp)
                 }
             }
-
-            // Divider quasi invisibile per mantenere le spaziature
-            HorizontalDivider(
-                modifier = Modifier.padding(top = 4.dp),
-                color = Color.Gray.copy(alpha = 0.1f)
-            )
+            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
         }
 
-        // 3. Stats Pill Skeleton
+        // 4. Stats Pill & Tabs
         item {
             Box(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
                     .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    Modifier
-                        .size(
-                            250.dp,
-                            44.dp
-                        )
-                        .clip(RoundedCornerShape(20.dp))
-                        .shimmerEffect()
-                )
+                SkeletonPart(width = 250.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
             }
-        }
-
-        // 4. Tabs Skeleton
-        item {
-            HorizontalDivider()
+            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -204,92 +114,78 @@ fun MovieSkeleton() {
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(4) {
-                    Box(
-                        Modifier
-                            .size(
-                                60.dp,
-                                20.dp
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
-                }
+                repeat(4) { SkeletonPart(width = 60.dp, height = 20.dp) }
             }
-            Spacer(Modifier.height(7.dp))
         }
 
-        // 5. List Items Skeleton (Simuliamo i PersonItem del Cast)
+        // 5. Cast List Items
         items(5) {
             Row(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
-                    .padding(
-                        horizontal = pad,
-                        vertical = 8.dp
-                    ),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = pad, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                // Avatar
-                Box(
-                    Modifier
-                        .size(
-                            55.dp,
-                            60.dp
-                        )
-                        .clip(RoundedCornerShape(7.dp))
-                        .shimmerEffect()
-                )
+                SkeletonPart(width = 55.dp, height = 60.dp, shape = RoundedCornerShape(7.dp))
                 Spacer(Modifier.width(12.dp))
-                Column {
-                    Box(
-                        Modifier
-                            .size(
-                                140.dp,
-                                18.dp
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
-                    Spacer(Modifier.height(6.dp))
-                    Box(
-                        Modifier
-                            .size(
-                                90.dp,
-                                14.dp
-                            )
-                            .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect()
-                    )
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SkeletonPart(width = 140.dp, height = 18.dp)
+                    SkeletonPart(width = 90.dp, height = 14.dp)
                 }
             }
         }
     }
 }
 
-fun Modifier.shimmerEffect(): Modifier = composed {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val translateAnim by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1000f,
+@Composable
+fun SkeletonPart(
+    modifier: Modifier = Modifier,
+    width: Dp? = null,
+    height: Dp? = null,
+    shape: Shape = RoundedCornerShape(4.dp),
+) {
+    Box(
+        modifier = modifier
+            .then(if (width != null) Modifier.width(width) else Modifier)
+            .then(if (height != null) Modifier.height(height) else Modifier)
+            .clip(shape)
+            .pulseEffect(), // Updated here
+    )
+}
+
+fun Modifier.pulseEffect(): Modifier = composed {
+    val transition = rememberInfiniteTransition(label = "pulse")
+
+    // Animate alpha from 0.4 to 0.8 and back
+    val alpha by transition.animateFloat(
+        initialValue = 0.2f, targetValue = 0.25f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
+            animation = tween(1000, easing = EaseInOut),
+            repeatMode = RepeatMode.Reverse, // This creates the "breathing" pulse
         ),
-        label = "shimmerTranslate"
+        label = "pulseAlpha",
     )
 
-    val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.6f),
-        Color.LightGray.copy(alpha = 0.5f),
-        Color.LightGray.copy(alpha = 0.6f),
+    // Use a solid color with the animated alpha
+    background(Color.LightGray.copy(alpha = alpha))
+}
+
+fun Modifier.shimmerEffect(): Modifier = composed {
+    val transition = rememberInfiniteTransition(label = "")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f, targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing), repeatMode = RepeatMode.Restart,
+        ),
+        label = "",
     )
 
     val brush = Brush.linearGradient(
-        colors = shimmerColors,
-        start = Offset(translateAnim - 500f, translateAnim - 500f),
-        end = Offset(translateAnim, translateAnim)
+        colors = listOf(
+            Color.LightGray.copy(0.3f), Color.LightGray.copy(0.25f), Color.LightGray.copy(0.3f),
+        ),
+        start = Offset(translateAnim - 200f, translateAnim),
+        end = Offset(translateAnim, translateAnim),
     )
-
     background(brush)
 }

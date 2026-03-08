@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -66,15 +67,15 @@ fun StarRating(
     val emptyStars =
         maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
 
-    val starSize = 16.dp
+    val starSize = 15.dp
     Row(verticalAlignment = Alignment.CenterVertically) {
         // 1. Stelle Piene
         repeat(fullStars) {
             Icon(
                 Icons.Filled.Star,
                 contentDescription = null,
-                tint = Color(0xFFFFC107),
-                modifier = Modifier.size(starSize)
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(starSize),
             )
         }
 
@@ -92,10 +93,10 @@ fun StarRating(
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
-                    tint = Color(0xFFFFC107),
+                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier
                         .clip(FractionalClip(partialStarFill))
-                        .size(starSize)
+                        .size(starSize),
                 )
             }
         }

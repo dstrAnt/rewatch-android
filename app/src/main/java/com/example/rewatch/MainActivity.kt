@@ -1,3 +1,19 @@
+/*
+ * Copyright 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.example.rewatch
 
 import android.graphics.Color
@@ -7,10 +23,13 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -21,6 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,8 +59,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import com.example.rewatch.movie.MoviePage
+import com.example.rewatch.search.SearchPage
 import com.example.rewatch.theme.RewatchTheme
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +68,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
                 scrim = Color.TRANSPARENT,
-            )
+            ),
         )
         setContent {
             RewatchTheme {
@@ -64,7 +84,7 @@ class MainActivity : ComponentActivity() {
 fun RewatchApp() {
     var currentDestination by rememberSaveable {
         mutableStateOf(
-            AppDestinations.HOME
+            AppDestinations.SEARCH,
         )
     }
 
@@ -72,52 +92,58 @@ fun RewatchApp() {
 
     // 2. Define the NavHost and your screens
 
-
     Scaffold(
         bottomBar = {
+            val systemBarHeight =
+                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
             // Usiamo direttamente NavigationBar per avere il controllo totale
             NavigationBar(
-                modifier = Modifier.fillMaxHeight(0.09f), // Ecco i tuoi 60dp
+                modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
                 containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp // Opzionale: rimuove l'ombra se vuoi un look più flat,
-
+                tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
+                windowInsets = NavigationBarDefaults.windowInsets,
             ) {
                 AppDestinations.entries.forEach { destination ->
                     val isSelected = destination == currentDestination
 
                     NavigationBarItem(
-                        selected = isSelected, onClick = {
+                        selected = isSelected,
+                        onClick = {
                             currentDestination = destination
-                        }, label = null, // Rimuoviamo il testo
-                        alwaysShowLabel = false, icon = {
+                        },
+                        label = null, // Rimuoviamo il testo
+                        alwaysShowLabel = false,
+                        icon = {
                             val iconModifier = if (destination.imgVec == null) Modifier.size(
-                                20.dp
+                                20.dp,
                             ) else Modifier
                             if (destination.imgVec != null) {
                                 Icon(
                                     imageVector = destination.imgVec,
-                                    contentDescription = destination.label
+                                    contentDescription = destination.label,
                                 )
                             } else {
                                 Icon(
                                     painter = painterResource(
-                                        id = destination.intIcon!!
+                                        id = destination.intIcon!!,
                                     ),
                                     contentDescription = destination.label,
-                                    modifier = iconModifier
+                                    modifier = iconModifier,
                                 )
                             }
-                        })
+                        },
+                    )
                 }
             }
-        }) { innerPadding ->
+        },
+    ) { innerPadding ->
 
         LocalContext.current // Get the Activity context
 
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding())
+                .padding(bottom = innerPadding.calculateBottomPadding()),
         ) {
             when (currentDestination) {
                 AppDestinations.MOVIE -> MoviePage(
@@ -129,11 +155,10 @@ fun RewatchApp() {
                     ),
                     onNavigateBack = {},
                 )
-//            AppDestinations.TV -> MoviePageState(1) {}
 
+                //            AppDestinations.TV -> MoviePageState(1) {}
 
                 AppDestinations.HOME -> {
-                    // Your Home Page Composable
                     Text("Home Page")
                 }
 
@@ -147,30 +172,28 @@ fun RewatchApp() {
                     )
                 }
 
-
                 else -> {}
             }
         }
     }
 }
 
-
 enum class AppDestinations(
     val label: String,
     val imgVec: ImageVector? = null,
     val intIcon: Int? = null,
 ) {
-    HOME("Home", Icons.Default.Home), SEARCH(
-        "Search", Icons.Default.Search
+    HOME("Home", Icons.Default.Home),
+    SEARCH(
+        "Search", Icons.Default.Search,
     ),
     MOVIE(
-        "Movies", intIcon = R.drawable.movie_svgrepo_com
+        "Movies", intIcon = R.drawable.movie_svgrepo_com,
     ),
     TV(
-        "Tv Shows", intIcon = R.drawable.tv_svgrepo_com
+        "Tv Shows", intIcon = R.drawable.tv_svgrepo_com,
     ),
     PROFILE(
-        "Profile", Icons.Default.AccountBox
+        "Profile", Icons.Default.AccountBox,
     ),
 }
-
