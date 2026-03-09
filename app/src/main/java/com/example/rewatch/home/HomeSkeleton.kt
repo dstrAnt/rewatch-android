@@ -50,7 +50,7 @@ fun SkeletonSection() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             repeat(2) { // 2 Righe
@@ -74,7 +74,7 @@ fun SkeletonSection() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp),
+                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
             contentAlignment = Alignment.Center,
         ) {
             SkeletonPart(

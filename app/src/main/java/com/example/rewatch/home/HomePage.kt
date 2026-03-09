@@ -3,6 +3,9 @@ package com.example.rewatch.home
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -117,14 +120,19 @@ fun MovieSection(
     movies: List<TmdbMovie>,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-
-    // Decidiamo quanti film mostrare
     val displayedMovies = if (isExpanded) movies else movies.take(8)
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
+            .padding(top = 24.dp)
+            // 1. APPLICA L'ANIMAZIONE QUI
+            .animateContentSize(
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioLowBouncy, // Un leggero effetto molla
+                    stiffness = Spring.StiffnessLow, // Movimento fluido e non troppo veloce
+                ),
+            ),
     ) {
         // --- Header ---
         Row(
@@ -147,10 +155,9 @@ fun MovieSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            // Dividiamo la lista (8 o 20) in righe da 4
             displayedMovies.chunked(4).forEach { rowMovies ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -161,8 +168,6 @@ fun MovieSection(
                             MovieItem(movie)
                         }
                     }
-                    // Se l'ultima riga ha meno di 4 elementi, aggiungiamo degli spazi vuoti
-                    // per mantenere le locandine della stessa dimensione
                     if (rowMovies.size < 4) {
                         repeat(4 - rowMovies.size) {
                             Spacer(modifier = Modifier.weight(1f))
@@ -172,16 +177,17 @@ fun MovieSection(
             }
         }
 
-        // --- Pulsante Dinamico (mostra solo se ci sono più di 8 film) ---
+        // --- Pulsante Dinamico ---
         if (movies.size > 8) {
             ExpandBtn(
-                if (isExpanded) "Show Less" else "Expand",
-                isExpanded,
+                string = if (isExpanded) "Show Less" else "Expand",
+                isExpanded = isExpanded,
                 onClick = { isExpanded = !isExpanded },
             )
         }
     }
 }
+
 @Composable
 fun MovieItem(
     movie: TmdbMovie,
