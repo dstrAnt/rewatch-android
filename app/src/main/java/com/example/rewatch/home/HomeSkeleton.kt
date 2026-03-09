@@ -1,13 +1,13 @@
 package com.example.rewatch.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,9 +22,8 @@ fun HomeSkeleton() {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 24.dp),
-        userScrollEnabled = false, // Disabilitiamo lo scroll durante il caricamento
+        userScrollEnabled = false,
     ) {
-        // Ripetiamo 3 volte per simulare Trending, Top Rated e Recent
         items(3) {
             SkeletonSection()
         }
@@ -33,43 +32,55 @@ fun HomeSkeleton() {
 
 @Composable
 fun SkeletonSection() {
-    Column(modifier = Modifier.padding(top = 24.dp)) {
-        // Simulazione del Titolo della sezione (es. "Trending")
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+    ) {
+        // --- Titolo Sezione ---
+        SkeletonPart(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            width = 120.dp, // Larghezza verosimile per un titolo
+            height = 30.dp,
+            shape = RoundedCornerShape(4.dp),
+        )
+
+        // --- Griglia 2x4 Adattiva ---
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            SkeletonPart(
-                modifier = Modifier.fillMaxWidth(),
-                height = 30.dp,
-                shape = RoundedCornerShape(4.dp),
-            )
-        }
-
-        // Simulazione della Griglia a 2 righe
-        // Usiamo una Row con scroll orizzontale disabilitato per mostrare i blocchi fissi
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .height(312.dp), // Stessa altezza della LazyHorizontalGrid reale
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            // Mostriamo 3 colonne di skeleton (6 poster totali per sezione)
-            repeat(3) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    repeat(2) {
+            repeat(2) { // 2 Righe
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    repeat(4) { // 4 Colonne
                         SkeletonPart(
-                            width = 100.dp,
-                            height = 150.dp,
-                            shape = RoundedCornerShape(5.dp), // Stesso shape del PosterImage
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(2f / 3f), // Fondamentale: deve coincidere con MovieItem
+                            shape = RoundedCornerShape(5.dp),
                         )
                     }
                 }
             }
         }
 
-        Spacer(Modifier.height(8.dp))
+        // --- Pulsante Expand ---
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            SkeletonPart(
+                modifier = Modifier.fillMaxWidth(),
+                height = 32.dp,
+            )
+        }
     }
 }
