@@ -13,7 +13,6 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -78,7 +77,7 @@ fun HomePage(
         AnimatedContent(
             targetState = uiState,
             transitionSpec = { fadeIn(animationSpec = tween(700)) togetherWith fadeOut() },
-            modifier = Modifier.padding(paddingValues),
+            modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
             label = "homeTransition",
         ) { state ->
             when (state) {
@@ -106,7 +105,7 @@ fun HomeContent(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 24.dp),
+//        contentPadding = PaddingValues(bottom = 24.dp),
     ) {
         item { MovieSection("Trending", data.trending) }
         item { MovieSection("Top Rated", data.popular) }

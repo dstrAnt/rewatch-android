@@ -21,8 +21,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +48,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import app.moviebase.tmdb.model.TmdbMovieDetail
 import com.example.rewatch.movie.MovieActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -85,7 +89,7 @@ fun StarRating(
             Icon(
                 Icons.Filled.Star,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline,
+                tint = Color.LightGray,
                 modifier = Modifier.size(starSize),
             )
         }
@@ -104,7 +108,7 @@ fun StarRating(
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline,
+                    tint = Color.LightGray,
                     modifier = Modifier
                         .clip(FractionalClip(partialStarFill))
                         .size(starSize),
@@ -117,14 +121,13 @@ fun StarRating(
             Icon(
                 Icons.Filled.Star,
                 contentDescription = null,
-                tint = Color.LightGray,
-                modifier = Modifier.size(starSize)
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(starSize),
             )
         }
 
     }
 }
-
 class FractionalClip(val fraction: Float) : Shape {
     override fun createOutline(
         size: Size,
@@ -152,7 +155,8 @@ fun Modifier.relativeMove(y: Dp) =
 @Composable
 fun ExpandBtn(
     string: String,
-    onClick: () -> Unit
+    isExpanded: Boolean,
+    onClick: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,8 +165,11 @@ fun ExpandBtn(
             .clickable(onClick = onClick)
             .padding(15.dp)
     ) {
-
-        Text(string)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(string, style = MaterialTheme.typography.labelLarge)
+            if (isExpanded) Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
+            else Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+        }
     }
 }
 
@@ -256,3 +263,16 @@ fun Modifier.pulseEffect(): Modifier = composed {
     // Use a solid color with the animated alpha
     background(Color.LightGray.copy(alpha = alpha))
 }
+fun TmdbMovieDetail.director(): String? = credits?.crew?.find { it.job == "Director" }?.name
+fun TmdbMovieDetail.certification(): String? =
+    releaseDates?.results?.find { it.iso3166 == "US" }?.releaseDates?.find { it.certification != "" }?.certification
+
+data class TabItem(
+    val title: String,
+    val isAvailable: () -> Boolean,
+    // We now pass the volatile state directly into the lambda when it executes
+    val content: LazyListScope.(
+        expandedIds: Set<String>,
+        onToggle: (String) -> Unit,
+    ) -> Unit,
+)

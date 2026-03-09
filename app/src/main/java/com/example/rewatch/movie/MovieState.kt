@@ -46,6 +46,7 @@ class MovieViewModel(private val movieId: Int) : ViewModel() {
     }
 
     private suspend fun getMovieDataFromApi(): MovieData = withContext(Dispatchers.IO) {
+//        tmdb.show.getDetails()
         val details = tmdb.movies.getDetails(
             movieId = movieId,
             appendResponses = listOf(

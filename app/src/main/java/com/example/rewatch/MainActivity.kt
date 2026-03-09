@@ -38,7 +38,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -53,12 +52,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import com.example.rewatch.home.HomePage
 import com.example.rewatch.movie.MoviePage
 import com.example.rewatch.search.SearchPage
@@ -82,98 +78,40 @@ class MainActivity : ComponentActivity() {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
-@PreviewScreenSizes
 @Composable
 fun RewatchApp() {
-    var currentDestination by rememberSaveable {
-        mutableStateOf(
-            AppDestinations.HOME,
-        )
-    }
-
-    val navController = rememberNavController()
-
-    // 2. Define the NavHost and your screens
+    var bottomBarState by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
     Scaffold(
         bottomBar = {
-            val systemBarHeight =
-                WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-            // Usiamo direttamente NavigationBar per avere il controllo totale
-            NavigationBar(
-                modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
-                containerColor = MaterialTheme.colorScheme.surface,
-                tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
-                windowInsets = NavigationBarDefaults.windowInsets,
-            ) {
-                AppDestinations.entries.forEach { destination ->
-                    val isSelected = destination == currentDestination
-
-                    NavigationBarItem(
-                        selected = isSelected,
-                        onClick = {
-                            currentDestination = destination
-                        },
-                        label = null, // Rimuoviamo il testo
-                        alwaysShowLabel = false,
-                        icon = {
-                            val iconModifier = if (destination.imgVec == null) Modifier.size(
-                                20.dp,
-                            ) else Modifier
-                            if (destination.imgVec != null) {
-                                Icon(
-                                    imageVector = destination.imgVec,
-                                    contentDescription = destination.label,
-                                )
-                            } else {
-                                Icon(
-                                    painter = painterResource(
-                                        id = destination.intIcon!!,
-                                    ),
-                                    contentDescription = destination.label,
-                                    modifier = iconModifier,
-                                )
-                            }
-                        },
-                    )
-                }
-            }
+            BottomBar(
+                bottomBarState,
+                { bottomBarState = it },
+            )
         },
-    ) { innerPadding ->
-
-        LocalContext.current // Get the Activity context
-
+    ) { outerPadding ->
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = innerPadding.calculateBottomPadding()),
+                .padding(bottom = outerPadding.calculateBottomPadding()),
         ) {
-            when (currentDestination) {
+            when (bottomBarState) {
                 AppDestinations.MOVIE -> MoviePage(
                     1317288,
                     padding = PaddingValues(
-                        innerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                        innerPadding.calculateTopPadding(),
-                        innerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                        outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                        outerPadding.calculateTopPadding(),
+                        outerPadding.calculateEndPadding(LayoutDirection.Ltr),
                     ),
                     onNavigateBack = {},
                 )
-
-                //            AppDestinations.TV -> MoviePageState(1) {}
 
                 AppDestinations.HOME -> {
                     HomePage()
                 }
 
                 AppDestinations.SEARCH -> {
-                    SearchPage(
-                        onNavigateBack = { navController.popBackStack() },
-//                    onMovieClick = { movieId: Int ->
-//                        // Navigate to detail page, hiding bottom bar if desired
-//                        navController.navigate("movie_page/$movieId")
-//                    })
-                    )
+                    SearchPage(onNavigateBack = { })
                 }
 
                 else -> {}
@@ -182,20 +120,53 @@ fun RewatchApp() {
     }
 }
 
-enum class AppDestinations(
-    val label: String,
-    val imgVec: ImageVector? = null,
-    val intIcon: Int? = null,
-) {
-    HOME("Home", Icons.Default.Home),
-    SEARCH(
+@Composable
+private fun BottomBar(currentDestination: AppDestinations, onClick: (AppDestinations) -> Unit) {
+    val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    // Usiamo direttamente NavigationBar per avere il controllo totale
+    NavigationBar(
+        modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
+        windowInsets = NavigationBarDefaults.windowInsets,
+    ) {
+        AppDestinations.entries.forEach { destination ->
+            val isSelected = destination == currentDestination
+
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = { onClick(destination) },
+                label = null, // Rimuoviamo il testo
+                alwaysShowLabel = false,
+                icon = {
+                    if (destination.imgVec != null) Icon(
+                        imageVector = destination.imgVec,
+                        contentDescription = destination.label,
+                    )
+                    else Icon(
+                        painter = painterResource(
+                            id = destination.intIcon!!,
+                        ),
+                        contentDescription = destination.label,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+            )
+        }
+    }
+}
+
+enum class AppDestinations(val label: String, val imgVec: ImageVector? = null, val intIcon: Int? = null) {
+    HOME("Home", Icons.Default.Home), SEARCH(
         "Search", Icons.Default.Search,
     ),
     MOVIE(
-        "Movies", intIcon = R.drawable.movie_svgrepo_com,
+        "Movies",
+        intIcon = R.drawable.movie_svgrepo_com,
     ),
     TV(
-        "Tv Shows", intIcon = R.drawable.tv_svgrepo_com,
+        "Tv Shows",
+        intIcon = R.drawable.tv_svgrepo_com,
     ),
     PROFILE(
         "Profile", Icons.Default.AccountBox,
