@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import com.example.rewatch.movie.MovieActivity
+import com.example.rewatch.person.PersonActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -217,6 +218,20 @@ fun onMovieClick(
     }
 
     // Launch the activity! (This triggers the native OS transition)
+    context.startActivity(intent)
+}
+fun onPersonClick(
+    personId: Int,
+    context: Context,
+) {
+    val intent = Intent(
+        context, PersonActivity::class.java,
+    ).apply {
+        putExtra(
+            "EXTRA_PERSON_ID", personId,
+        )
+    }
+
     context.startActivity(intent)
 }
 

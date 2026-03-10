@@ -82,9 +82,6 @@ fun HomePage(
         ) { state ->
             when (state) {
                 is HomeUiState.Loading -> {
-//                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//                        CircularWavyProgressIndicator(modifier = Modifier.size(48.dp))
-//                    }
                     HomeSkeleton()
                 }
 

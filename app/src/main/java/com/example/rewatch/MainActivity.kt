@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.example.rewatch.home.HomePage
 import com.example.rewatch.movie.MoviePage
+import com.example.rewatch.person.PersonPage
 import com.example.rewatch.search.SearchPage
 import com.example.rewatch.theme.RewatchTheme
 
@@ -108,6 +109,18 @@ fun RewatchApp() {
 
                 AppDestinations.HOME -> {
                     HomePage()
+                }
+
+                AppDestinations.PROFILE -> {
+                    PersonPage(
+                        31,
+                        padding = PaddingValues(
+                            outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                            outerPadding.calculateTopPadding(),
+                            outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                        ),
+                        onNavigateBack = {},
+                    )
                 }
 
                 AppDestinations.SEARCH -> {

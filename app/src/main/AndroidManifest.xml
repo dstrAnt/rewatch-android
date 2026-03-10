@@ -26,6 +26,9 @@
         <activity
             android:name=".movie.MovieActivity"
             android:exported="false" />
+        <activity
+            android:name=".person.PersonActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
