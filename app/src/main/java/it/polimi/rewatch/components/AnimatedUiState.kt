@@ -1,0 +1,48 @@
+package it.polimi.rewatch.components
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import it.polimi.rewatch.common.UiState
+
+@Composable
+fun <T> AnimatedUiState(
+    state: UiState<T>,
+    modifier: Modifier = Modifier,
+    animationDurationMillis: Int = 700,
+    loadingContent: @Composable () -> Unit,
+    errorContent: @Composable (String) -> Unit = ::ErrorContent,
+    successContent: @Composable (T) -> Unit,
+) {
+    AnimatedContent(
+        targetState = state,
+        transitionSpec = {
+            fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
+        },
+        modifier = modifier.fillMaxSize(),
+        label = "uiStateTransition",
+    ) { targetState ->
+        when (targetState) {
+            is UiState.Loading -> loadingContent()
+            is UiState.Success -> successContent(targetState.data)
+            is UiState.Error -> errorContent(targetState.msg)
+        }
+    }
+}
+
+@Composable
+private fun ErrorContent(msg: String) {
+    // Default error UI (can be overridden per screen)
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Error: $msg", color = Color.White)
+    }
+}

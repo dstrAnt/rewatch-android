@@ -4,6 +4,9 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 val localProperties = Properties()
@@ -13,7 +16,7 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.rewatch"
+    namespace = "it.polimi.rewatch"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -21,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.rewatch"
+        applicationId = "it.polimi.rewatch"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -74,10 +77,14 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    implementation("io.coil-kt.coil3:coil-compose:3.3.0")
-    implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
-    implementation("app.moviebase:tmdb-api:1.7.10")
-    implementation("androidx.compose.material3:material3:1.5.0-alpha04")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.tmdb.api)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.material3)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
 
 }
