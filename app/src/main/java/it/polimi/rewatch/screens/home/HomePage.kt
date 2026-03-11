@@ -4,14 +4,14 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -21,9 +21,8 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -75,77 +74,80 @@ fun HomePage(
 fun HomeContent(
     data: HomeData,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-//        contentPadding = PaddingValues(bottom = 24.dp),
+    var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    val handleToggle: (String) -> Unit = { id ->
+        expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
+    }
+
+    LazyVerticalGrid(
+        // This creates exactly 4 columns, allocating 1/4 of the width to each
+        columns = GridCells.Fixed(4),
+        // Adds 5.dp spacing between the columns
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
+        // Optional: Adds padding around the entire grid so the edges aren't flush against the screen
+        contentPadding = PaddingValues(5.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .animateContentSize()
+            .padding(horizontal = 7.dp),
+        // <--- Put it here!
     ) {
-        item { MovieSection("Trending", data.trending) }
-        item { MovieSection("Top Rated", data.popular) }
-        item { MovieSection("Recent", data.recent) }
+        movieSection(
+            "Trending", data.trending,
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+        )
+        movieSection(
+            "Top Rated", data.popular,
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+        )
+        movieSection(
+            "Recent", data.recent,
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+        )
     }
 }
 
-@Composable
-fun MovieSection(
+fun LazyGridScope.movieSection(
     title: String,
     movies: List<TmdbMovie>,
+    expandedSectionIds: Set<String>,
+    onToggleSection: (String) -> Unit,
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    val isExpanded = expandedSectionIds.contains(title)
     val displayedMovies = if (isExpanded) movies else movies.take(12)
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            // 1. APPLICA L'ANIMAZIONE QUI
-            .animateContentSize(),
-    ) {
-        // --- Header ---
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+    item(key = "header_$title", span = { GridItemSpan(4) }) {
+        Text(
+            text = title,
+            color = Color.White,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp),
-        ) {
-            Text(
-                text = title,
-                color = Color.White,
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .padding(bottom = 15.dp)
-                    .weight(1f),
-            )
-        }
-        // --- Griglia Adattiva ---
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            displayedMovies.chunked(4).forEach { rowMovies ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    rowMovies.forEach {
-                        Box(modifier = Modifier.weight(1f)) {
-                            PosterItem(it.id, it.posterPath, it.title, MediaType.MOVIE)
-                        }
-                    }
-                    if (rowMovies.size < 4) {
-                        repeat(4 - rowMovies.size) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-        }
-        // --- Pulsante Dinamico ---
+                .padding(bottom = 15.dp)
+                .animateItem(fadeInSpec = null, fadeOutSpec = null),
+        )
+    }
+    // --- Griglia Adattiva ---
+    items(
+        items = displayedMovies,
+        key = { "${title}_${it.id}" },
+    ) { // CRUCIAL: Compose needs this to track which items are new) {
+        PosterItem(
+            it.id, it.posterPath, it.title, MediaType.MOVIE,
+            Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+        )
+    }
+    // --- Pulsante Dinamico ---
+    item(key = "button_$title", span = { GridItemSpan(4) }) {
         if (movies.size > 8) {
             ExpandBtn(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,
-                onClick = { isExpanded = !isExpanded },
+                onClick = { onToggleSection(title) },
+                Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
             )
         }
     }

@@ -93,6 +93,7 @@ fun ExpandBtn(
     string: String,
     isExpanded: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -102,7 +103,7 @@ fun ExpandBtn(
             .padding(15.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(string, style = MaterialTheme.typography.labelLarge)
+            Text(string, style = MaterialTheme.typography.labelLarge, modifier = modifier)
             if (isExpanded) Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
             else Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
         }
