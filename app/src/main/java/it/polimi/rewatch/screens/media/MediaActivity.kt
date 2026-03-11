@@ -29,12 +29,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.theme.RewatchTheme
 
 @AndroidEntryPoint // 2. Add this annotation!
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 class MediaActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val movieId = intent.getIntExtra("EXTRA_MEDIA_ID", -1)
-        val mediaType = intent.getSerializableExtra("EXTRA_MEDIA_TYPE", MediaType::class.java)
+        val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
+        // Parse it back to the Enum, providing a fallback just in case
+        val mediaType = try {
+            typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
+        } catch (e: IllegalArgumentException) {
+            MediaType.MOVIE // Fallback if the string doesn't match an Enum value
+        }
+
 
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
 

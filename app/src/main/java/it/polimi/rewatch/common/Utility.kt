@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import it.polimi.rewatch.components.RewatchAsyncImage
+import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaActivity
 import it.polimi.rewatch.screens.media.MediaType
 import it.polimi.rewatch.screens.person.PersonActivity
@@ -69,8 +70,6 @@ fun String.formatDate(format: String): String {
         this
     }
 }
-
-
 
 fun Modifier.relativeMove(y: Dp) =
     this.layout { measurable, constraints ->
@@ -131,6 +130,12 @@ fun BorderBox(
         content()
     }
 }
+fun onMovieClick(
+    media: Media,
+    context: Context,
+) {
+    onMovieClick(media.id, media.type, context)
+}
 
 fun onMovieClick(
     movieId: Int,
@@ -143,7 +148,7 @@ fun onMovieClick(
     ).apply {
         // Bundle the movieId into the Intent extras
         putExtra("EXTRA_MEDIA_ID", movieId)
-        putExtra("EXTRA_MEDIA_TYPE", mediaType) // Passes the Enum directly
+        putExtra("EXTRA_MEDIA_TYPE", MediaType.MOVIE.name) // Passes "MOVIE"
     }
     // Launch the activity! (This triggers the native OS transition)
     context.startActivity(intent)

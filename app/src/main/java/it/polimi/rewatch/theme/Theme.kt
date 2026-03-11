@@ -50,7 +50,7 @@ fun RewatchTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
-        content = content
+        typography = AppTypography,
+        content = content,
     )
 }

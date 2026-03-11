@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -206,7 +206,7 @@ fun MovieResultsList(
         modifier = Modifier.fillMaxSize(),
         state = listState,
     ) {
-        itemsIndexed(movies) { index, movie ->
+        items(movies) { movie ->
             ListItem(
                 headlineContent = {
                     Row(
@@ -225,7 +225,7 @@ fun MovieResultsList(
                 },
                 modifier = Modifier.clickable {
                     // 2. Trigger callback with the movie ID
-                    onMovieClick(movie.id, MediaType.MOVIE, context)
+                    onMovieClick(movie, context)
                 },
             )
             HorizontalDivider()
