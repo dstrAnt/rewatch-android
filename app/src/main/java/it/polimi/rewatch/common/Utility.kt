@@ -130,7 +130,6 @@ fun BorderBox(
         content()
     }
 }
-
 fun onMovieClick(
     media: Media,
     context: Context,
@@ -139,19 +138,16 @@ fun onMovieClick(
 }
 
 fun onMovieClick(
-    movieId: Int,
+    mediaId: Int,
     mediaType: MediaType,
     context: Context,
 ) {
-    // Create an Intent to start MovieActivity
     val intent = Intent(
         context, MediaActivity::class.java,
     ).apply {
-        // Bundle the movieId into the Intent extras
-        putExtra("EXTRA_MEDIA_ID", movieId)
-        putExtra("EXTRA_MEDIA_TYPE", mediaType.name) // Passes "MOVIE"
+        putExtra("EXTRA_MEDIA_ID", mediaId)
+        putExtra("EXTRA_MEDIA_TYPE", mediaType.name)
     }
-    // Launch the activity! (This triggers the native OS transition)
     context.startActivity(intent)
 }
 
@@ -220,14 +216,6 @@ data class TabItem(
         onToggle: (String) -> Unit,
     ) -> Unit,
 )
-
-@Composable
-fun PosterItem(
-    media: Media,
-    modifier: Modifier = Modifier,
-) {
-    PosterItem(media.id, media.posterPath, media.title, media.type, modifier)
-}
 
 @Composable
 fun PosterItem(

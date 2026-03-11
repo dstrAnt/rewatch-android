@@ -2,6 +2,7 @@ package it.polimi.rewatch.screens.person
 
 import app.moviebase.tmdb.model.TmdbPersonDetail
 import app.moviebase.tmdb.model.TmdbPersonMovieCredits
+import app.moviebase.tmdb.model.TmdbPersonShowCredits
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -11,7 +12,8 @@ import it.polimi.rewatch.common.TmdbRepository
 
 data class PersonDetailsData(
     val details: TmdbPersonDetail,
-    val credits: TmdbPersonMovieCredits,
+    val movieCredits: TmdbPersonMovieCredits,
+    val showCredits: TmdbPersonShowCredits,
 )
 
 @HiltViewModel(assistedFactory = PersonViewModel.Factory::class)

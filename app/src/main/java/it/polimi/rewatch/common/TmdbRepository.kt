@@ -86,11 +86,13 @@ class TmdbRepository @Inject constructor(
 
     suspend fun getPersonData(personId: Int): PersonDetailsData = withContext(Dispatchers.IO) {
         val detailsDeferred = async { tmdb.people.getDetails(personId) }
-        val creditsDeferred = async { tmdb.people.getCombinedCredits(personId) }
+        val movieCreditsDeferred = async { tmdb.people.getCombinedCredits(personId) }
+        val showCreditsDeferred = async { tmdb.people.getShowCredits(personId) }
 
         PersonDetailsData(
             details = detailsDeferred.await(),
-            credits = creditsDeferred.await(),
+            movieCredits = movieCreditsDeferred.await(),
+            showCredits = showCreditsDeferred.await(),
         )
     }
 

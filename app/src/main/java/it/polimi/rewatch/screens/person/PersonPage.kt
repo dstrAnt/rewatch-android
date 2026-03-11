@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
-import app.moviebase.tmdb.model.TmdbPersonCredit
 import coil3.compose.AsyncImage
 import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.common.formatDate
@@ -53,7 +52,15 @@ import it.polimi.rewatch.screens.media.MediaType
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
-import java.util.Locale.getDefault
+
+data class CreditDisplayInfo(
+    val id: Int,
+    val title: String,
+    val role: String,
+    val posterPath: String?,
+    val mediaType: MediaType,
+    val date: String?,
+)
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -93,8 +100,6 @@ fun PersonContent(
     val dateOfBirth = data.details.birthday?.toString()
     val dateOfDeath = data.details.deathday?.toString()
     val bio = data.details.biography
-    val actingRoles = data.credits.cast
-    val crewJobs = data.credits.crew
 
     Scaffold(
         topBar = {
@@ -121,7 +126,7 @@ fun PersonContent(
                     BirthInfo(dateOfBirth, dateOfDeath)
                     Bio(bio)
                     // lista delle Tab disponibili
-                    val availableTabs = computeAvailableTabs(data, actingRoles, crewJobs)
+                    val availableTabs = computeAvailableTabs(data)
                     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
                     PersonTabs(
@@ -143,108 +148,151 @@ private fun DisplayTab(
     selectedTabIndex: Int,
     data: PersonDetailsData,
 ) {
-    // 1. Determiniamo quale tab è selezionata
-    val currentTab = availableTabs.getOrNull(selectedTabIndex)
-    // 2. Filtriamo i dati in base alla tab
-    val displayList = remember(currentTab, data.credits) {
+    val currentTab = availableTabs.getOrNull(selectedTabIndex) ?: return
+
+    // Uniamo e filtriamo i dati in base alla tab selezionata
+    val displayList = remember(currentTab, data) {
         when (currentTab) {
-            "Acting" -> data.credits.cast
-                .sortedByDescending { it.releaseDate }
-                .map {
-                    // Struttura: Triple(ID, Titolo to Ruolo, PosterPath)
-                    Triple(it.id, it.title to (it.character ?: "Unknown Role"), it.posterPath)
+            "Acting" -> {
+                val movies = data.movieCredits.cast.map {
+                    CreditDisplayInfo(
+                        id = it.id,
+                        title = it.title ?: "Untitled",
+                        role = it.character ?: "Unknown Role",
+                        posterPath = it.posterPath,
+                        mediaType = MediaType.MOVIE,
+                        date = it.releaseDate?.toString(),
+                    )
                 }
 
-            else -> data.credits.crew
-                .filter {
-                    it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true)
+                // NOTA: Le serie TV usano "name" e "firstAirDate"
+                val shows = data.showCredits.cast.map {
+                    CreditDisplayInfo(
+                        id = it.id,
+                        title = it.name ?: "Untitled",
+                        role = it.character ?: "Unknown Role",
+                        posterPath = it.posterPath,
+                        mediaType = MediaType.TV_SHOW,
+                        date = it.firstAirDate?.toString(),
+                    )
                 }
-                .sortedByDescending { it.releaseDate }
-                .map {
-                    Triple(it.id, it.title to (it.job ?: "Member"), it.posterPath)
-                }
+
+                (movies + shows).sortedByDescending { it.date }
+            }
+
+            else -> {
+                // Stessa logica per la crew, ma applichiamo il filtro per dipartimento
+                val movies = data.movieCredits.crew
+                    .filter { it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true) }
+                    .map {
+                        CreditDisplayInfo(
+                            id = it.id,
+                            title = it.title ?: "Untitled",
+                            role = it.job ?: "Member",
+                            posterPath = it.posterPath,
+                            mediaType = MediaType.MOVIE,
+                            date = it.releaseDate?.toString(),
+                        )
+                    }
+
+                val shows = data.showCredits.crew
+                    .filter { it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true) }
+                    .map {
+                        CreditDisplayInfo(
+                            id = it.id,
+                            title = it.name ?: "Untitled",
+                            role = it.job ?: "Member",
+                            posterPath = it.posterPath,
+                            mediaType = MediaType.TV_SHOW,
+                            date = it.firstAirDate?.toString(),
+                        )
+                    }
+
+                (movies + shows).sortedByDescending { it.date }
+            }
         }
     }
 
+    // --- UI della Tab ---
     Spacer(Modifier.padding(top = 4.dp))
-    Row(
-        Modifier.padding(vertical = 5.dp, horizontal = 16.dp),
-    ) {
-        Text(
-            text = "${displayList.size} Films",
-        )
+    Row(Modifier.padding(vertical = 5.dp, horizontal = 16.dp)) {
+        Text(text = "${displayList.size} Titoli")
     }
 
-
-    displayList.chunked(4).forEach { rowMovies ->
+    displayList.chunked(4).forEach { rowItems ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            rowMovies.forEach { (movieId, info, poster) ->
-                val (movieTitle, _) = info
-
+            rowItems.forEach { item ->
                 Box(modifier = Modifier.weight(1f)) {
                     CreditItem(
-                        id = movieId,
-                        title = movieTitle ?: "Untitled",
-                        posterPath = poster,
+                        id = item.id,
+                        title = item.title,
+                        posterPath = item.posterPath,
+                        mediaType = item.mediaType,
+                        // Ora CreditItem deve accettare il mediaType come avevamo visto prima
                     )
                 }
             }
 
-            if (rowMovies.size < 4) {
-                repeat(4 - rowMovies.size) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
+            if (rowItems.size < 4) {
+                repeat(4 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
             }
         }
     }
 }
-
 @Composable
 private fun computeAvailableTabs(
     data: PersonDetailsData,
-    actingRoles: List<TmdbPersonCredit.Movie>,
-    crewJobs: List<TmdbPersonCredit.Movie>,
-): List<String> {
+): MutableList<String> {
     val knownFor = data.details.knownForDepartment?.toString()
 
-    return remember(data.credits, knownFor) {
+    val availableTabs = remember(data) {
         val tabs = mutableSetOf<String>()
 
-        if (actingRoles.isNotEmpty()) {
+        // Se c'è almeno un ruolo come attore (film o serie), aggiungiamo la tab Acting
+        val hasActingRoles = data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty()
+        if (hasActingRoles) {
             tabs.add("Acting")
         }
-        val crewDepartments = crewJobs
-            .map { dept ->
-                dept.department.toString()
-                    .replace("_", " ")
-                    .lowercase()
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString() }
-            }
 
-        tabs.addAll(crewDepartments)
+        // Estraiamo e puliamo i dipartimenti da ENTRAMBE le liste crew
+        val movieCrewDepts = data.movieCredits.crew.map { it.department.toString() }
+        val showCrewDepts = data.showCredits.crew.map { it.department.toString() }
 
-        tabs.toList().sortedWith(
+        val allCrewDepts = (movieCrewDepts + showCrewDepts).map { dept ->
+            dept.replace("_", " ")
+                .lowercase()
+                .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+        }
+
+        tabs.addAll(allCrewDepts)
+
+        // Ordinamento con match esatto
+        val sortedTabs = tabs.toList().sortedWith(
             compareBy<String> { tabName ->
                 when {
-                    tabName.equals(knownFor, ignoreCase = true) -> 0
+                    tabName.equals(knownFor?.replace("_", " "), ignoreCase = true) -> 0
                     tabName.equals("Acting", ignoreCase = true) -> 1
                     else -> 2
                 }
             }.thenBy { it },
         )
-    }
-}
 
+        sortedTabs.toMutableList()
+    }
+
+    return availableTabs
+}
 @Composable
 fun CreditItem(
     title: String,
     posterPath: String?,
     modifier: Modifier = Modifier,
+    mediaType: MediaType,
     id: Int,
 ) {
     LocalContext.current
@@ -253,7 +301,7 @@ fun CreditItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        PosterItem(id, posterPath, title, MediaType.MOVIE)
+        PosterItem(id, posterPath, title, mediaType)
     }
 }
 
