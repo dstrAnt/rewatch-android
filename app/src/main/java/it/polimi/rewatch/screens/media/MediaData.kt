@@ -8,6 +8,7 @@ import app.moviebase.tmdb.model.TmdbCrew
 import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovie
 import app.moviebase.tmdb.model.TmdbMovieDetail
+import app.moviebase.tmdb.model.TmdbPersonCredit
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
 import app.moviebase.tmdb.model.TmdbSeason
@@ -148,6 +149,7 @@ data class Media(
     val posterImage: TmdbImage?,
     val posterPath: String?,
     val releaseDate: LocalDate?,
+    val stringDate: String?,
     val title: String?,
     val type: MediaType,
 ) {
@@ -157,6 +159,7 @@ data class Media(
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
         releaseDate = movie.releaseDate,
+        stringDate = movie.releaseDate.toString(),
         title = movie.title,
         type = MediaType.MOVIE,
     )
@@ -166,7 +169,29 @@ data class Media(
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
         releaseDate = movie.firstAirDate,
+        stringDate = movie.firstAirDate.toString(),
         title = movie.name,
         type = MediaType.TV_SHOW,
     )
+
+    constructor(credit: TmdbPersonCredit.Movie) : this(
+        id = credit.id,
+        posterImage = null,
+        posterPath = credit.posterPath,
+        releaseDate = credit.releaseDate,
+        stringDate = credit.releaseDate.toString(),
+        title = credit.title,
+        type = MediaType.MOVIE,
+    )
+
+    constructor(credit: TmdbPersonCredit.Show) : this(
+        id = credit.id,
+        posterImage = null,
+        posterPath = credit.posterPath,
+        releaseDate = credit.firstAirDate,
+        stringDate = credit.firstAirDate.toString(),
+        title = credit.name,
+        type = MediaType.TV_SHOW,
+    )
+
 }

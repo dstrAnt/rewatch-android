@@ -18,8 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -27,9 +30,11 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +45,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
@@ -49,19 +55,17 @@ import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.screens.media.AppearingTopBar
 import it.polimi.rewatch.screens.media.ExpandableText
+import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
 
-data class CreditDisplayInfo(
-    val id: Int,
-    val title: String,
-    val role: String,
-    val posterPath: String?,
-    val mediaType: MediaType,
-    val date: String?,
-)
+enum class MediaTypeFilter(val label: String) {
+    ALL("All"),
+    MOVIE("Cinema"),
+    TV_SHOW("TV")
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -152,107 +156,87 @@ private fun DisplayTab(
 ) {
     val currentTab = availableTabs.getOrNull(selectedTabIndex) ?: return
 
-    // Uniamo, FILTRIAMO I DUPLICATI e ordiniamo in modo stabile
-    val displayList = remember(currentTab, data) {
+    // 1. STATO DEI CHIP
+    var selectedFilter by remember { mutableStateOf(MediaTypeFilter.ALL) }
+
+    // 2. LISTA BASE (Operazioni pesanti: mapping, distinct, sorting)
+    val baseList = remember(currentTab, data) {
         val rawList = when (currentTab) {
             "Acting" -> {
-                val movies = data.movieCredits.cast.map {
-                    CreditDisplayInfo(
-                        id = it.id,
-                        title = it.title ?: "Untitled",
-                        role = it.character ?: "Unknown Role",
-                        posterPath = it.posterPath,
-                        mediaType = MediaType.MOVIE,
-                        date = it.releaseDate?.toString(),
-                    )
-                }
-
-                val shows = data.showCredits.cast.map {
-
-                    CreditDisplayInfo(
-                        id = it.id,
-                        title = it.name ?: "Untitled",
-                        role = it.character ?: "Unknown Role",
-                        posterPath = it.posterPath,
-                        mediaType = MediaType.TV_SHOW,
-                        date = it.firstAirDate?.toString(),
-                    )
-                }
+                val movies = data.movieCredits.cast.map(::Media)
+                val shows = data.showCredits.cast.map(::Media)
                 movies + shows
             }
-
             else -> {
                 val movies = data.movieCredits.crew
                     .filter { it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true) }
-                    .map {
-                        CreditDisplayInfo(
-                            id = it.id,
-                            title = it.title ?: "Untitled",
-                            role = it.job ?: "Member",
-                            posterPath = it.posterPath,
-                            mediaType = MediaType.MOVIE,
-                            date = it.releaseDate?.toString(),
-                        )
-                    }
+                    .map(::Media)
 
                 val shows = data.showCredits.crew
                     .filter { it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true) }
-                    .map {
-                        CreditDisplayInfo(
-                            id = it.id,
-                            title = it.name ?: "Untitled",
-                            role = it.job ?: "Member",
-                            posterPath = it.posterPath,
-                            mediaType = MediaType.TV_SHOW,
-                            date = it.firstAirDate?.toString(),
-                        )
-                    }
+                    .map(::Media)
                 movies + shows
             }
         }
 
         rawList
-            // 1. Rimuove i duplicati (stesso ID e stesso tipo di media)
-            .distinctBy { it.id to it.mediaType }
-            // 2. Ordinamento stabile: i null in fondo, poi per data discendente
+            .distinctBy { it.id to it.type }
             .sortedWith(
-                compareBy<CreditDisplayInfo> { it.date.isNullOrBlank() }
-                    .thenByDescending { it.date },
+                compareBy<Media> { it.stringDate.isNullOrBlank() }
+                    .thenByDescending { it.stringDate },
             )
     }
-    /* DisplayList DEBUG LOG
 
-    Log.d("TMDB_DEBUG", "Tab selezionata: $currentTab")
-    displayList.forEachIndexed { index, item ->
-        Log.d("TMDB_DEBUG", "Posizione: $index | ID: ${item.id} | Tipo: ${item.mediaType} | Titolo: ${item.title}")
+    // 3. LISTA FILTRATA (Operazione iper-veloce legata al chip)
+    val displayList = remember(baseList, selectedFilter) {
+        when (selectedFilter) {
+            MediaTypeFilter.ALL -> baseList
+            // Sostituisci "MediaType.MOVIE" con l'enum o la stringa esatta usata nel tuo oggetto Media
+            MediaTypeFilter.MOVIE -> baseList.filter { it.type == MediaType.MOVIE }
+            MediaTypeFilter.TV_SHOW -> baseList.filter { it.type == MediaType.TV_SHOW }
+        }
     }
-
-    */
 
     // --- UI della Tab ---
-    Spacer(Modifier.padding(top = 4.dp))
-    Row(Modifier.padding(vertical = 5.dp, horizontal = 16.dp)) {
-        Text(text = "${displayList.size} Titles")
+
+    // Header con i Chip e il contatore allineati
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (!baseList.none { it.type == MediaType.MOVIE } && !baseList.none { it.type == MediaType.TV_SHOW })
+            MediaTypeFilterChips(
+                selectedFilter = selectedFilter,
+                onFilterSelected = { selectedFilter = it }, // Aggiorna lo stato quando clicchi
+            )
+
+        Text(
+            text = "${displayList.size} Titles",
+            style = MaterialTheme.typography.labelMedium, // Stile opzionale per pulizia visiva
+            lineHeight = 32.sp,
+        )
     }
 
-
-
+    // Griglia dei risultati
     displayList.chunked(4).forEach { rowItems ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             rowItems.forEach { item ->
-                // 3. LA CHIAVE DELLA SALVEZZA: previene il riciclo errato dei click!
-                key(item.id, item.mediaType) {
+                key(item.id, item.type) {
                     Box(modifier = Modifier.weight(1f)) {
                         CreditItem(
                             id = item.id,
-                            title = item.title,
+                            title = item.title ?: "Untitled", // Ricordati il fix degli Untitled discusso prima se serve!
                             posterPath = item.posterPath,
-                            mediaType = item.mediaType,
+                            mediaType = item.type,
                         )
                     }
                 }
@@ -264,6 +248,7 @@ private fun DisplayTab(
         }
     }
 }
+
 @Composable
 private fun computeAvailableTabs(
     data: PersonDetailsData,
@@ -364,7 +349,7 @@ private fun Bio(bio: String?) {
         ExpandableText(
             bio,
             modifier = Modifier.padding(horizontal = 16.dp),
-            maxLines = 4,
+            maxLines = 3,
         )
     }
 }
@@ -510,3 +495,35 @@ fun calculatePersonAge(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MediaTypeFilterChips(
+    selectedFilter: MediaTypeFilter,
+    onFilterSelected: (MediaTypeFilter) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        MediaTypeFilter.entries.forEach { filter ->
+            // --- QUESTA È LA PARTE CRUCIALE ---
+            CompositionLocalProvider(
+                LocalMinimumInteractiveComponentSize provides (1.dp),
+            ) {
+                FilterChip(
+                    selected = selectedFilter == filter,
+                    onClick = { onFilterSelected(filter) },
+                    label = {
+                        Text(
+                            text = filter.label,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    },
+                    contentPadding = PaddingValues(4.dp),
+                )
+            }
+        }
+    }
+}

@@ -145,7 +145,7 @@ fun PersonSkeleton() {
                         ) {
                             SkeletonPart(
                                 Modifier
-                                    .width(70.dp)
+                                    .fillMaxWidth()
                                     .height(20.dp),
                             )
                         }
