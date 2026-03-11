@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -133,7 +132,10 @@ fun RewatchApp() {
 }
 
 @Composable
-private fun BottomBar(currentDestination: AppDestinations, onClick: (AppDestinations) -> Unit) {
+private fun BottomBar(
+    currentDestination: AppDestinations,
+    onClick: (AppDestinations) -> Unit,
+) {
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
@@ -168,18 +170,22 @@ private fun BottomBar(currentDestination: AppDestinations, onClick: (AppDestinat
     }
 }
 
-enum class AppDestinations(val label: String, val imgVec: ImageVector? = null, val intIcon: Int? = null) {
-    HOME("Home", Icons.Default.Home),
+enum class AppDestinations(
+    val label: String,
+    val imgVec: ImageVector? = null,
+    val intIcon: Int? = null,
+) {
+    HOME("Home", intIcon = R.drawable.popcorn),
     SEARCH(
         "Search", Icons.Default.Search,
     ),
     MOVIE(
         "Movies",
-        intIcon = R.drawable.movie_svgrepo_com,
+        intIcon = R.drawable.movie,
     ),
     TV(
         "Tv Shows",
-        intIcon = R.drawable.tv_svgrepo_com,
+        intIcon = R.drawable.tv,
     ),
     PROFILE(
         "Profile", Icons.Default.AccountBox,
