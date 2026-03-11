@@ -90,7 +90,7 @@ fun MovieSection(
     movies: List<TmdbMovie>,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    val displayedMovies = if (isExpanded) movies else movies.take(16)
+    val displayedMovies = if (isExpanded) movies else movies.take(12)
 
     Column(
         modifier = Modifier

@@ -35,7 +35,7 @@ fun SkeletonSection() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp),
+            .padding(top = 5.dp),
     ) {
         // --- Titolo Sezione ---
         SkeletonPart(
@@ -53,7 +53,7 @@ fun SkeletonSection() {
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            repeat(2) { // 2 Righe
+            repeat(3) { // 2 Righe
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
