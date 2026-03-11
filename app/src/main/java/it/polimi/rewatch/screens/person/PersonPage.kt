@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -104,11 +104,9 @@ fun PersonContent(
                 onNavigateBack,
             )
         },
-        containerColor = Color.Black,
     ) {
         LazyColumn(
             state = scrollState,
-            modifier = Modifier.fillMaxSize(),
         ) {
             item {
                 Spacer(
@@ -174,8 +172,6 @@ private fun DisplayTab(
     ) {
         Text(
             text = "${displayList.size} Films",
-            color = Color.Gray,
-            style = MaterialTheme.typography.labelMedium,
         )
     }
 
@@ -275,8 +271,6 @@ private fun PersonTabs(
     PrimaryScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         edgePadding = 8.dp,
-        containerColor = Color.Black,
-        contentColor = Color.White,
     ) {
         availableTabs.forEachIndexed { index, title ->
             Tab(
@@ -285,7 +279,7 @@ private fun PersonTabs(
                 text = {
                     Text(
                         text = title.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString()
+                            if (it.isLowerCase()) it.titlecase(LocalLocale.current.platformLocale) else it.toString()
                         }.replace("_", " "),
                         style = MaterialTheme.typography.labelLarge,
                     )

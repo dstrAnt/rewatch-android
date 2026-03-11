@@ -57,6 +57,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -80,6 +81,7 @@ import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
+import it.polimi.rewatch.common.onPersonClick
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.RewatchAsyncImage
@@ -719,13 +721,14 @@ fun SimilarSection(similar: List<Media>, pad: Dp) {
 @Composable
 fun PersonItem(person: TmdbAnyPerson?) {
     val role = (person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job
+    val ctx = LocalContext.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(15.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Action */ }
+            .clickable { onPersonClick(person?.id!!, ctx) }
             .padding(vertical = 7.dp, horizontal = 15.dp),
     ) {
         RewatchAsyncImage(
