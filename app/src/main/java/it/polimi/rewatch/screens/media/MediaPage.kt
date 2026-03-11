@@ -89,6 +89,15 @@ import it.polimi.rewatch.components.StarRating
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 
+fun isDetailsAvailable(details: MediaDetail): Boolean {
+    if (details.specificDetails !is MediaSpecificDetails.Movie) return false
+    val movie: MediaSpecificDetails.Movie = details.specificDetails
+    return (movie.genres.isNotEmpty() ||
+            movie.budget > 0 ||
+            movie.releaseDate != null ||
+            !movie.productionCompanies.isNullOrEmpty())
+}
+
 // Define this outside your Composable (e.g., at the bottom of the file or in a separate configuration file)
 fun buildMediaTabs(movie: MediaDetail, pad: Dp): List<TabItem> {
     return listOf(
@@ -123,7 +132,7 @@ fun buildMediaTabs(movie: MediaDetail, pad: Dp): List<TabItem> {
         // ... Details and Watch tabs remain the same, they just ignore the lambda parameters
         TabItem(
             title = "Details",
-            isAvailable = { true },
+            isAvailable = { isDetailsAvailable(movie) },
             content = { _, _ ->
                 item {
                     DetailsTab(pad, movie)
@@ -562,7 +571,8 @@ fun TitleAndInfoSection(
                 if (releaseDate != null) Text(
                     releaseDate.toString().formatDate("MMM yyyy"),
                 )
-                if (runtime.isNotEmpty()) {
+                val intRuntime = runtime.toIntOrNull()
+                if (intRuntime != null && intRuntime > 0) {
                     if (releaseDate != null) Text("•")
                     Text("$runtime mins")
                 }

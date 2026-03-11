@@ -43,7 +43,7 @@ fun PersonSkeleton() {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = padding.calculateTopPadding() + 30.dp),
+                        .padding(top = padding.calculateTopPadding()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     // --- Foto Profilo ---
