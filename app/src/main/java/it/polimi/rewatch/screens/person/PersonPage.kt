@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -142,6 +143,7 @@ fun PersonContent(
     }
 }
 
+
 @Composable
 private fun DisplayTab(
     availableTabs: List<String>,
@@ -150,9 +152,9 @@ private fun DisplayTab(
 ) {
     val currentTab = availableTabs.getOrNull(selectedTabIndex) ?: return
 
-    // Uniamo e filtriamo i dati in base alla tab selezionata
+    // Uniamo, FILTRIAMO I DUPLICATI e ordiniamo in modo stabile
     val displayList = remember(currentTab, data) {
-        when (currentTab) {
+        val rawList = when (currentTab) {
             "Acting" -> {
                 val movies = data.movieCredits.cast.map {
                     CreditDisplayInfo(
@@ -165,7 +167,6 @@ private fun DisplayTab(
                     )
                 }
 
-                // NOTA: Le serie TV usano "name" e "firstAirDate"
                 val shows = data.showCredits.cast.map {
                     CreditDisplayInfo(
                         id = it.id,
@@ -176,12 +177,10 @@ private fun DisplayTab(
                         date = it.firstAirDate?.toString(),
                     )
                 }
-
-                (movies + shows).sortedByDescending { it.date }
+                movies + shows
             }
 
             else -> {
-                // Stessa logica per la crew, ma applichiamo il filtro per dipartimento
                 val movies = data.movieCredits.crew
                     .filter { it.department.toString().replace("_", " ").equals(currentTab, ignoreCase = true) }
                     .map {
@@ -207,16 +206,32 @@ private fun DisplayTab(
                             date = it.firstAirDate?.toString(),
                         )
                     }
-
-                (movies + shows).sortedByDescending { it.date }
+                movies + shows
             }
         }
+
+        rawList
+            // 1. Rimuove i duplicati (stesso ID e stesso tipo di media)
+            .distinctBy { it.id to it.mediaType }
+            // 2. Ordinamento stabile: i null in fondo, poi per data discendente
+            .sortedWith(
+                compareBy<CreditDisplayInfo> { it.date.isNullOrBlank() }
+                    .thenByDescending { it.date },
+            )
     }
+    /* DisplayList DEBUG LOG
+
+    Log.d("TMDB_DEBUG", "Tab selezionata: $currentTab")
+    displayList.forEachIndexed { index, item ->
+        Log.d("TMDB_DEBUG", "Posizione: $index | ID: ${item.id} | Tipo: ${item.mediaType} | Titolo: ${item.title}")
+    }
+
+    */
 
     // --- UI della Tab ---
     Spacer(Modifier.padding(top = 4.dp))
     Row(Modifier.padding(vertical = 5.dp, horizontal = 16.dp)) {
-        Text(text = "${displayList.size} Titoli")
+        Text(text = "${displayList.size} Titles")
     }
 
     displayList.chunked(4).forEach { rowItems ->
@@ -227,14 +242,16 @@ private fun DisplayTab(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             rowItems.forEach { item ->
-                Box(modifier = Modifier.weight(1f)) {
-                    CreditItem(
-                        id = item.id,
-                        title = item.title,
-                        posterPath = item.posterPath,
-                        mediaType = item.mediaType,
-                        // Ora CreditItem deve accettare il mediaType come avevamo visto prima
-                    )
+                // 3. LA CHIAVE DELLA SALVEZZA: previene il riciclo errato dei click!
+                key(item.id, item.mediaType) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        CreditItem(
+                            id = item.id,
+                            title = item.title,
+                            posterPath = item.posterPath,
+                            mediaType = item.mediaType,
+                        )
+                    }
                 }
             }
 
