@@ -2,21 +2,55 @@ package it.polimi.rewatch.theme
 
 import android.os.Build
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import it.polimi.rewatch.R
 
+@OptIn(ExperimentalTextApi::class)
 val GoogleSans = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     FontFamily(
-        Font(R.font.google, FontWeight.Thin),   // W100
-        Font(R.font.google, FontWeight.Normal), // W400
-        Font(R.font.google, FontWeight.Medium), // W500
-        Font(R.font.google, FontWeight.Bold),    // W700
+        // Map Thin (W100)
+        Font(
+            resId = R.font.google,
+            weight = FontWeight.W100,
+            variationSettings = FontVariation.Settings(
+                FontVariation.weight(100),
+            ),
+        ),
+        // Map Regular / Normal (W400)
+        Font(
+            resId = R.font.google,
+            weight = FontWeight.Normal,
+            variationSettings = FontVariation.Settings(
+                FontVariation.weight(400),
+            ),
+        ),
+        // Map Medium (W500)
+        Font(
+            resId = R.font.google,
+            weight = FontWeight.Medium,
+            variationSettings = FontVariation.Settings(
+                FontVariation.weight(500),
+            ),
+        ),
+        // Map Bold (W700) - Just in case you need it later!
+        Font(
+            resId = R.font.google,
+            weight = FontWeight.Bold,
+            variationSettings = FontVariation.Settings(
+                FontVariation.weight(700),
+            ),
+        ),
     )
 } else {
-    FontFamily.Default // Fallback for Android 7 and below
+    // Fallback for API 25 and below (requires a static .ttf font, 
+    // or you can just default to the system sans-serif)
+    FontFamily.Default
+    // OR: FontFamily(Font(R.font.google_sans_static_regular))
 }
 
 // 1. Grab the default Material 3 baseline typography

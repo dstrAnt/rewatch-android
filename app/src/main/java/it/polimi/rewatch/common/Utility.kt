@@ -130,6 +130,7 @@ fun BorderBox(
         content()
     }
 }
+
 fun onMovieClick(
     media: Media,
     context: Context,
@@ -219,6 +220,14 @@ data class TabItem(
         onToggle: (String) -> Unit,
     ) -> Unit,
 )
+
+@Composable
+fun PosterItem(
+    media: Media,
+    modifier: Modifier = Modifier,
+) {
+    PosterItem(media.id, media.posterPath, media.title, media.type, modifier)
+}
 
 @Composable
 fun PosterItem(
