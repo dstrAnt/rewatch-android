@@ -16,33 +16,25 @@
 
 package it.polimi.rewatch.screens.media
 
+
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.material3.Scaffold
 import dagger.hilt.android.AndroidEntryPoint
+import it.polimi.rewatch.common.movieFromIntent
 import it.polimi.rewatch.theme.RewatchTheme
 
 @AndroidEntryPoint // 2. Add this annotation!
 class MediaActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val movieId = intent.getIntExtra("EXTRA_MEDIA_ID", -1)
-        val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
-        // Parse it back to the Enum, providing a fallback just in case
-        val mediaType = try {
-            typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
-        } catch (e: IllegalArgumentException) {
-            MediaType.MOVIE // Fallback if the string doesn't match an Enum value
-        }
 
-
+        val (movieId, mediaType) = movieFromIntent(intent)
         enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
 
         setContent {
@@ -50,7 +42,7 @@ class MediaActivity : ComponentActivity() {
                 Scaffold { padding ->
                     MediaPage(
                         movieId = movieId,
-                        mediaType = mediaType ?: MediaType.MOVIE,
+                        mediaType = mediaType,
                         padding = padding,
                         onNavigateBack = { finish() },
                     )

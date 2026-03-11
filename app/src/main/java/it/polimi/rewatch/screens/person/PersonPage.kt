@@ -168,6 +168,7 @@ private fun DisplayTab(
                 }
 
                 val shows = data.showCredits.cast.map {
+
                     CreditDisplayInfo(
                         id = it.id,
                         title = it.name ?: "Untitled",
@@ -233,6 +234,8 @@ private fun DisplayTab(
     Row(Modifier.padding(vertical = 5.dp, horizontal = 16.dp)) {
         Text(text = "${displayList.size} Titles")
     }
+
+
 
     displayList.chunked(4).forEach { rowItems ->
         Row(

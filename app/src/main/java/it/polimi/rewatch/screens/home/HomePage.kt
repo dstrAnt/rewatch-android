@@ -62,6 +62,7 @@ fun HomePage(
     ) { paddingValues ->
         AnimatedUiState(
             state = viewModel.uiState,
+            animationDurationMillis = 100,
             modifier = Modifier.padding(top = paddingValues.calculateTopPadding() + 10.dp),
             loadingContent = ::HomeSkeleton,
         ) { data ->
@@ -128,7 +129,7 @@ fun MovieSection(
                 ) {
                     rowMovies.forEach {
                         Box(modifier = Modifier.weight(1f)) {
-                            PosterItem(it.id, it.posterPath, title, MediaType.MOVIE)
+                            PosterItem(it.id, it.posterPath, it.title, MediaType.MOVIE)
                         }
                     }
                     if (rowMovies.size < 4) {
