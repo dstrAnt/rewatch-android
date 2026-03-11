@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
+import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
-import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageScope
 import coil3.request.ImageRequest
 import coil3.request.crossfade
@@ -143,6 +143,7 @@ fun onMovieClick(
 ) {
     onMovieClick(media.id, media.type, context)
 }
+
 fun movieFromIntent(intent: Intent): Pair<Int, MediaType> {
     val movieId = intent.getIntExtra("EXTRA_MEDIA_ID", -1)
     val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
@@ -279,7 +280,7 @@ fun PosterItem3(
 }
 
 @Composable
-fun PosterItem(
+fun PosterItem2(
     id: Int,
     posterPath: String?,
     title: String?,
@@ -288,19 +289,22 @@ fun PosterItem(
 ) {
     val shape = RoundedCornerShape(5.dp)
     val context = LocalContext.current // Brought back for onMovieClick
-    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit = {
-        Box(contentAlignment = Alignment.Center) {
-            Text(
-                text = title.orEmpty(),
-                modifier = Modifier.padding(5.dp),
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium,
-                overflow = TextOverflow.Ellipsis,
-            )
+    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
+        {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = title.orEmpty(),
+                    modifier = Modifier.padding(5.dp),
+                    color = Color.Gray,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelMedium,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
-    }
-    val model = TmdbImageUrlBuilder.build(posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70)
+    val model = TmdbImageUrlBuilder.build(
+        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
+    )
     Box(
         modifier = modifier
             .aspectRatio(2f / 3f)
@@ -313,15 +317,60 @@ fun PosterItem(
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots
-        SubcomposeAsyncImage(
+        AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(model)
                 .crossfade(true)
                 .build(),
             contentDescription = title,
             modifier = Modifier.fillMaxSize(),
-            loading = fallbackContent,
-            error = fallbackContent,
         )
+    }
+}
+
+@Composable
+fun PosterItem(
+    id: Int,
+    posterPath: String?,
+    title: String?,
+    mediaType: MediaType, // Added parameter
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(5.dp)
+    val context = LocalContext.current // Brought back for onMovieClick
+    val model = TmdbImageUrlBuilder.build(posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70)
+
+
+    Box(
+        modifier = modifier
+            .aspectRatio(2f / 3f)
+            .clip(shape)
+            .border(1.dp, Color.Gray, shape)
+            .clickable {
+                // Click logic is now handled internally again
+                onMovieClick(id, mediaType, context)
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        if (posterPath != null) {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(model)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = title,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Text(
+                text = title.orEmpty(),
+                modifier = Modifier.padding(5.dp),
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }

@@ -24,7 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
@@ -82,6 +82,9 @@ fun SearchPage(
                 onClearQuery = { viewModel.onQueryChange("") },
                 focusRequester = focusRequester,
                 placeholder = "Search movies...",
+                onValueChange = {
+                    viewModel.onTabChanged(it)
+                },
             ) {
                 // This is the 'content' slot
                 MovieResultsList(movies)
@@ -98,6 +101,7 @@ fun CustomExpandedSearchBar(
     onClearQuery: () -> Unit,
     focusRequester: FocusRequester,
     placeholder: String = "Search movies...",
+    onValueChange: (MediaType) -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
@@ -161,7 +165,8 @@ fun CustomExpandedSearchBar(
             }
             val availableTabs = SearchTabs.entries
             var tabState by remember { mutableStateOf(availableTabs.getOrNull(0)) }
-            PrimaryTabRow(
+            PrimaryScrollableTabRow(
+                edgePadding = 8.dp,
                 selectedTabIndex = availableTabs.indexOf(
                     tabState,
                 ),
@@ -169,7 +174,11 @@ fun CustomExpandedSearchBar(
                 availableTabs.forEach {
                     Tab(
                         modifier = Modifier.height(50.dp),
-                        selected = it == tabState, onClick = { tabState = it },
+                        selected = it == tabState,
+                        onClick = {
+                            tabState = it
+                            onValueChange(it.type)
+                        },
                         text = {
                             Text(
                                 text = it.title,
@@ -232,7 +241,6 @@ fun MovieResultsList(
         }
     }
 }
-
-enum class SearchTabs(val title: String) {
-    MOVIES("Films"), CAST("Cast, Crew, Studios"),
+enum class SearchTabs(val title: String, val type: MediaType) {
+    MOVIES("Films", MediaType.MOVIE), TV("Tv", MediaType.TV_SHOW), CAST("Cast, Crew, Studios", MediaType.MOVIE),
 }

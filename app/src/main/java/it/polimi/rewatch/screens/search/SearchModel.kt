@@ -24,6 +24,15 @@ class SearchViewModel @Inject constructor(
     // Backing property for the search text
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
+    private val _mediaType = MutableStateFlow(MediaType.MOVIE)
+
+    // Public immutable state that the Composable will observe
+    val mediaType: StateFlow<MediaType> = _mediaType.asStateFlow()
+
+    // Function to update the state
+    fun onTabChanged(newText: MediaType) {
+        _mediaType.value = newText
+    }
 
     // Automatically reacts to query changes, debounces, and fetches movies
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -31,7 +40,7 @@ class SearchViewModel @Inject constructor(
 //        .debounce(0) // Wait 300ms after the user stops typing
         .mapLatest { currentQuery ->
             // The ViewModel doesn't care how the search works, it just asks the Repo!
-            repository.searchMedia(currentQuery, MediaType.MOVIE)
+            repository.searchMedia(currentQuery, mediaType.value)
         }
         .stateIn(
             scope = viewModelScope,

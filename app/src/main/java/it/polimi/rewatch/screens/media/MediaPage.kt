@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -36,7 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -315,7 +317,8 @@ fun LazyListScope.tabbedSection(
         item {
             HorizontalDivider()
 
-            PrimaryTabRow(
+            PrimaryScrollableTabRow(
+                edgePadding = 8.dp,
                 selectedTabIndex = availableTabs.indexOf(activeTab).coerceAtLeast(0),
             ) {
                 availableTabs.forEach { tab ->
@@ -414,8 +417,7 @@ fun <T> LazyListScope.expandableSection(
     items(
         items = visibleItems, itemContent = itemContent,
     )
-
-    println(title + itemsList.size)
+    //println(title + itemsList.size)
     // 2. The Header / Toggle Button
     item(key = "header_$title") {
         // 3. Pass the sectionId back up when clicked
@@ -450,15 +452,19 @@ fun ExpandableText(text: String, modifier: Modifier = Modifier, maxLines: Int = 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearingTopBar(scrollState: LazyListState, title: String?, onNavigateBack: () -> Unit) {
+fun AppearingTopBar(scrollState: ScrollableState, title: String?, onNavigateBack: () -> Unit) {
     val toolbarAlpha by remember {
         derivedStateOf {
-            // 1. Direct index check first (Early exit)
-            if (scrollState.firstVisibleItemIndex > 0) return@derivedStateOf 1f
-            // 2. Use the scroll offset (already an Int, no need for toFloat() until the math)
-            val offset = scrollState.firstVisibleItemScrollOffset
+            // 1. Extract both index and offset in a single pass
+            val (index, offset) = when (scrollState) {
+                is LazyListState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
+                is LazyGridState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
+                else -> return@derivedStateOf 1f // Fallback: fully visible if state is unsupported
+            }
+            // 2. Early exit
+            if (index > 0) return@derivedStateOf 1f
+
             // 3. Simple linear interpolation (lerp) logic
-            // Starts appearing at 450px, fully opaque at 700px (450 + 250)
             ((offset - 450f) / 250f).coerceIn(0f, 1f)
         }
     }
@@ -700,7 +706,7 @@ fun CompanyItem(company: TmdbCompany) {
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .height(20.dp)
-                        .clip(RoundedCornerShape(5.dp))
+                        .clip(RoundedCornerShape(3.dp))
                         .background(Color.White)
                         .padding(2.dp),
                 )
@@ -721,7 +727,7 @@ fun SimilarSection(similar: List<Media>, pad: Dp) {
         item { Spacer(Modifier.width(5.dp)) }
         // Movie items
         items(similar) {
-            PosterItem(it.id, it.posterPath, it.title, MediaType.MOVIE)
+            PosterItem(it.id, it.posterPath, it.title, it.type)
 
         }
         item { Spacer(Modifier.width(5.dp)) }

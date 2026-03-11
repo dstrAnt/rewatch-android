@@ -9,6 +9,8 @@ import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovie
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbPersonCredit
+import app.moviebase.tmdb.model.TmdbPersonCredit.Movie
+import app.moviebase.tmdb.model.TmdbPersonCredit.Show
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
 import app.moviebase.tmdb.model.TmdbSeason
@@ -173,25 +175,28 @@ data class Media(
         title = movie.name,
         type = MediaType.TV_SHOW,
     )
-
-    constructor(credit: TmdbPersonCredit.Movie) : this(
+    constructor(credit: TmdbPersonCredit) : this(
+        // If 'id' and 'posterPath' are shared properties on the base TmdbPersonCredit class,
+        // you can call them directly like this:
         id = credit.id,
         posterImage = null,
         posterPath = credit.posterPath,
-        releaseDate = credit.releaseDate,
-        stringDate = credit.releaseDate.toString(),
-        title = credit.title,
-        type = MediaType.MOVIE,
+        // For properties that differ, use inline 'when' statements:
+        releaseDate = when (credit) {
+            is Movie -> credit.releaseDate
+            is Show -> credit.firstAirDate
+        },
+        stringDate = when (credit) {
+            is Movie -> credit.releaseDate.toString()
+            is Show -> credit.firstAirDate.toString()
+        },
+        title = when (credit) {
+            is Movie -> credit.title
+            is Show -> credit.name
+        },
+        type = when (credit) {
+            is Movie -> MediaType.MOVIE
+            is Show -> MediaType.TV_SHOW
+        },
     )
-
-    constructor(credit: TmdbPersonCredit.Show) : this(
-        id = credit.id,
-        posterImage = null,
-        posterPath = credit.posterPath,
-        releaseDate = credit.firstAirDate,
-        stringDate = credit.firstAirDate.toString(),
-        title = credit.name,
-        type = MediaType.TV_SHOW,
-    )
-
 }

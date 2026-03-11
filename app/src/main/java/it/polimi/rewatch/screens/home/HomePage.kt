@@ -62,7 +62,7 @@ fun HomePage(
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding() + 10.dp),
+            modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
             loadingContent = ::HomeSkeleton,
         ) { data ->
             HomeContent(data)
