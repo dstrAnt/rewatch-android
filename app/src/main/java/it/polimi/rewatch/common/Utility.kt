@@ -149,7 +149,7 @@ fun onMovieClick(
     ).apply {
         // Bundle the movieId into the Intent extras
         putExtra("EXTRA_MEDIA_ID", movieId)
-        putExtra("EXTRA_MEDIA_TYPE", MediaType.MOVIE.name) // Passes "MOVIE"
+        putExtra("EXTRA_MEDIA_TYPE", mediaType.name) // Passes "MOVIE"
     }
     // Launch the activity! (This triggers the native OS transition)
     context.startActivity(intent)
