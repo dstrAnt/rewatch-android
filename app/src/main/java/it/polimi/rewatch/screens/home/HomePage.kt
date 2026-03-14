@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.model.TmdbMovie
 import it.polimi.rewatch.common.ExpandBtn
-import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.components.AnimatedUiState
+import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.screens.media.MediaType
 
 @RequiresApi(Build.VERSION_CODES.O)

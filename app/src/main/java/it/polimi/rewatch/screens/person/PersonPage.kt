@@ -50,9 +50,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
-import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.common.formatDate
+import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
+import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.screens.media.AppearingTopBar
 import it.polimi.rewatch.screens.media.ExpandableText
@@ -169,11 +170,15 @@ fun PersonContent(
                     BirthInfo(details.birthday?.toString(), details.deathday?.toString())
                     Bio(details.biography)
 
-                    PersonTabs(
-                        availableTabs = availableTabs,
-                        selectedTabIndex = availableTabs.indexOf(currentTab),
-                        onTabSelected = { currentTab = availableTabs[it] },
-                    )
+                    Column(
+                        Modifier.layoutEvade(),
+                    ) {
+                        PersonTabs(
+                            availableTabs = availableTabs,
+                            selectedTabIndex = availableTabs.indexOf(currentTab),
+                            onTabSelected = { currentTab = availableTabs[it] },
+                        )
+                    }
                     // Header for the Grid Filters
                     Row(
                         modifier = Modifier
@@ -199,7 +204,7 @@ fun PersonContent(
                 items = displayList,
                 key = { "${it.id}_${it.type.name}" },
             ) {
-                PosterItem(it.id.toString(), it.posterPath, it.title, it.type, Modifier.animateItem())
+                PosterItem(it, Modifier.animateItem())
             }
         }
     }
@@ -234,11 +239,12 @@ private fun PersonTabs(
     availableTabs: List<String>,
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Spacer(Modifier.height(16.dp))
     HorizontalDivider(color = Color.DarkGray)
 
-    PrimaryScrollableTabRow(selectedTabIndex = selectedTabIndex, edgePadding = 8.dp) {
+    PrimaryScrollableTabRow(selectedTabIndex = selectedTabIndex, edgePadding = 8.dp, modifier = modifier) {
         availableTabs.forEachIndexed { index, title ->
             Tab(
                 selected = selectedTabIndex == index,

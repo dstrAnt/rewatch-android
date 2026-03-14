@@ -16,12 +16,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -40,21 +39,13 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.moviebase.tmdb.image.TmdbImageType
-import app.moviebase.tmdb.image.TmdbImageUrlBuilder
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
 import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaActivity
 import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.screens.media.expandableSection
 import it.polimi.rewatch.screens.person.PersonActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -143,7 +134,6 @@ fun onMovieClick(
 
 fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
     val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
-
     val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
     val mediaType = try {
         typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
@@ -224,156 +214,49 @@ fun Modifier.pulseEffect(): Modifier = composed {
     // Use a solid color with the animated alpha
     background(Color.LightGray.copy(alpha = alpha))
 }
+fun Modifier.layoutEvade() = this.layout { measurable, constraints ->
+    val paddingPx = 7.dp.roundToPx()
+    // Tell the header it is allowed to be wider than the grid allows
+    val expandedConstraints = constraints.copy(
+        maxWidth = constraints.maxWidth + (paddingPx * 2),
+    )
+    val placeable = measurable.measure(expandedConstraints)
+    // Shift the header to the left so it perfectly aligns with screen edges
+    layout(placeable.width, placeable.height) {
+        placeable.place(0, 0)
+    }
+}
 
 data class TabItem(
     val title: String,
     val isAvailable: () -> Boolean,
     // We now pass the volatile state directly into the lambda when it executes
     val content: LazyListScope.() -> Unit,
-)
-
-//@Composable
-//fun PosterItem3(
-//    id: Int,
-//    posterPath: String?,
-//    title: String?,
-//    mediaType: MediaType, // Added parameter
-//    modifier: Modifier = Modifier,
-//) {
-//    val shape = RoundedCornerShape(5.dp)
-//    val context = LocalContext.current // Brought back for onMovieClick
-//
-//    Box(
-//        modifier = modifier
-//            .aspectRatio(2f / 3f)
-//            .clip(shape)
-//            .border(1.dp, Color.Gray, shape)
-//            .clickable {
-//                // Click logic is now handled internally again
-//                onMovieClick(id, mediaType, context)
-//            },
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        if (posterPath != null) {
-//            RewatchAsyncImage(
-//                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
-//                contentDescription = title,
-//                modifier = Modifier.fillMaxSize(),
-//                contentScale = ContentScale.Crop,
-//            )
-//        } else {
-//            Text(
-//                text = title.orEmpty(),
-//                modifier = Modifier.padding(5.dp),
-//                color = Color.Gray,
-//                textAlign = TextAlign.Center,
-//                style = MaterialTheme.typography.labelMedium,
-//                overflow = TextOverflow.Ellipsis,
-//            )
-//        }
-//    }
-//}
-
-//@Composable
-//fun PosterItem2(
-//    id: Int,
-//    posterPath: String?,
-//    title: String?,
-//    mediaType: MediaType, // Added parameter
-//    modifier: Modifier = Modifier,
-//) {
-//    val shape = RoundedCornerShape(5.dp)
-//    val context = LocalContext.current // Brought back for onMovieClick
-//    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
-//        {
-//            Box(contentAlignment = Alignment.Center) {
-//                Text(
-//                    text = title.orEmpty(),
-//                    modifier = Modifier.padding(5.dp),
-//                    color = Color.Gray,
-//                    textAlign = TextAlign.Center,
-//                    style = MaterialTheme.typography.labelMedium,
-//                    overflow = TextOverflow.Ellipsis,
-//                )
-//            }
-//        }
-//    val model = TmdbImageUrlBuilder.build(
-//        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
-//    )
-//    Box(
-//        modifier = modifier
-//            .aspectRatio(2f / 3f)
-//            .clip(shape)
-//            .border(1.dp, Color.Gray, shape)
-//            .clickable {
-//                // Click logic is now handled internally again
-//                onMovieClick(id, mediaType, context)
-//            },
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        // 2. Pass it directly into the built-in slots
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(model)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = title,
-//            modifier = Modifier.fillMaxSize(),
-//        )
-//    }
-//}
-
-@Composable
-fun PosterItem(
-    id: String,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
-    val model = TmdbImageUrlBuilder.build(posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70)
-
-
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                onMovieClick(id, mediaType, context)
+    companion object {
+        fun <T> expandable(
+            title: String,
+            itemsList: List<T>,
+            expandedSectionIds: Set<String>,
+            onToggleSection: (String) -> Unit,
+            initialVisibleCount: Int = 3,
+            itemContent: @Composable LazyItemScope.(T?) -> Unit,
+        ) = TabItem(
+            title = title,
+            isAvailable = itemsList::isNotEmpty,
+            content = {
+                expandableSection(
+                    title = title,
+                    itemsList = itemsList,
+                    expandedSectionIds = expandedSectionIds,
+                    onToggleSection = onToggleSection,
+                    initialVisibleCount = initialVisibleCount,
+                    itemContent = itemContent,
+                )
             },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (posterPath != null) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(model)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Text(
-                text = title.orEmpty(),
-                modifier = Modifier.padding(5.dp),
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        )
     }
 }
 
-fun getEpisodeId(
-    show: Int,
-    season: Int,
-    episode: Int,
-): String {
-    return show.toString() + "_" + season.toString() + "_" + episode.toString()
-}
+
+

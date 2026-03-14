@@ -50,8 +50,8 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.common.onMovieClick
+import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
 
@@ -229,7 +229,7 @@ fun MovieResultsList(
                 },
                 leadingContent = {
                     PosterItem(
-                        movie.id.toString(), movie.posterPath, movie.title, MediaType.MOVIE, modifier = Modifier.size(60.dp, 90.dp),
+                        movie, modifier = Modifier.size(60.dp, 90.dp),
                     )
                 },
                 modifier = Modifier.clickable {
@@ -241,6 +241,7 @@ fun MovieResultsList(
         }
     }
 }
+
 enum class SearchTabs(val title: String, val type: MediaType) {
     MOVIES("Films", MediaType.MOVIE), TV("Tv", MediaType.TV_SHOW), CAST("Cast, Crew, Studios", MediaType.MOVIE),
 }

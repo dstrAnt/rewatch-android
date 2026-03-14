@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,6 +38,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
@@ -73,15 +75,12 @@ import app.moviebase.tmdb.model.TmdbAnyPerson
 import app.moviebase.tmdb.model.TmdbCast
 import app.moviebase.tmdb.model.TmdbCompany
 import app.moviebase.tmdb.model.TmdbCrew
-import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
-import app.moviebase.tmdb.model.TmdbSeason
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.ExpandBtn
-import it.polimi.rewatch.common.PosterItem
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
@@ -89,6 +88,7 @@ import it.polimi.rewatch.common.onMovieClick
 import it.polimi.rewatch.common.onPersonClick
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
+import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
 import kotlinx.datetime.LocalDate
@@ -147,33 +147,77 @@ fun MediaContent(
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
-    val tabs = remember(movie) {
+    val tabs: List<TabItem> = remember(movie) {
         listOf(
-            TabItem(
+            TabItem.expandable(
                 title = "Cast",
-                isAvailable = { movie.cast.isNotEmpty() },
+                itemsList = movie.cast,
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                itemContent = { PersonItem(it) },
+            ),
+            TabItem.expandable(
+                title = "Crew",
+                itemsList = movie.crew.sortedByDescending { it.job == "Director" },
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                itemContent = { PersonItem(it) },
+            ),
+            // ... TV SHOW: Seasons tab ...
+            TabItem(
+                title = "Seasons",
+                isAvailable = {
+                    mediaType == MediaType.TV_SHOW &&
+                            !(movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.isNullOrEmpty()
+                },
                 content = {
                     expandableSection(
-                        title = "cast",
-                        itemsList = movie.cast,
+                        title = "seasons",
+                        itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
                         expandedSectionIds = expandedSectionIds,
                         onToggleSection = handleToggle,
                         initialVisibleCount = 7,
-                        itemContent = { PersonItem(it) },
+                        showDividers = true,
+                        itemContent = {
+                            EpisodeItem(
+                                number = it?.seasonNumber,
+                                name = it?.name,
+                                date = it?.airDate,
+                                count = "${it?.episodeCount} episodes",
+                                mediaType = MediaType.SEASON,
+                                mediaId,
+                            )
+                        },
                     )
                 },
             ),
+            // ... SEASON: Episodes tab ...
             TabItem(
-                title = "Crew",
-                isAvailable = { movie.crew.isNotEmpty() },
+                title = "Episodes",
+                isAvailable = {
+                    mediaType == MediaType.SEASON &&
+                            !(movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.isNullOrEmpty()
+                },
                 content = {
                     expandableSection(
-                        title = "crew",
-                        itemsList = movie.crew.sortedByDescending { it.job == "Director" },
+                        title = "episodes",
+                        itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
                         expandedSectionIds = expandedSectionIds,
                         onToggleSection = handleToggle,
                         initialVisibleCount = 7,
-                        itemContent = { PersonItem(it) },
+                        showDividers = true,
+                        itemContent = {
+                            EpisodeItem(
+                                number = it?.episodeNumber,
+                                name = it?.name,
+                                date = it?.airDate,
+                                count = "${it?.runtime} min",
+                                mediaType = MediaType.EPISODE,
+                                mediaId,
+                            )
+                        },
                     )
                 },
             ),
@@ -196,29 +240,9 @@ fun MediaContent(
                     } ?: false
                 },
                 content = {
-                    item { WatchTab(pad, movie.watchProviders["US"]) }
-                },
-            ),
-            // ... TV SHOW: Seasons tab ...
-            TabItem(
-                title = "Seasons",
-                isAvailable = {
-                    mediaType == MediaType.TV_SHOW &&
-                            !(movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.isNullOrEmpty()
-                },
-                content = {
-                    item { SeasonsTab((movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(), mediaId) }
-                },
-            ),
-            // ... SEASON: Episodes tab ...
-            TabItem(
-                title = "Episodes",
-                isAvailable = {
-                    mediaType == MediaType.SEASON &&
-                            !(movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.isNullOrEmpty()
-                },
-                content = {
-                    item { EpisodesTab((movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(), mediaId) }
+                    item {
+                        WatchTab(pad, movie.watchProviders["US"])
+                    }
                 },
             ),
         )
@@ -269,13 +293,11 @@ fun MediaContent(
             tabbedSection(
                 allTabs = tabs,
                 selectedTabTitle = selectedTabTitle,
-                expandedIds = expandedSectionIds, // Pass the volatile state here
-                onToggle = handleToggle, // Pass the action here
+                // Pass the volatile state here
                 onTabSelected = { title ->
                     selectedTabTitle = title
                     expandedSectionIds = emptySet() // Clear expansions on tab switch
                 },
-                mediaId = mediaId,
             )
             // 1. Reviews Section
             optionalTitledSection(
@@ -300,7 +322,7 @@ fun MediaContent(
                 pad = pad,
             ) {
                 item {
-                    SimilarSection(data.similar.take(7), pad)
+                    SimilarSection(data.similar.take(7))
                     Spacer(Modifier.height(pad))
                 }
             }
@@ -336,10 +358,8 @@ fun LazyListScope.optionalTitledSection(
 fun LazyListScope.tabbedSection(
     allTabs: List<TabItem>,
     selectedTabTitle: String?,
-    expandedIds: Set<String>, // Add this
-    onToggle: (String) -> Unit, // Add this
+    // Add this
     onTabSelected: (String) -> Unit,
-    mediaId: String,
 ) {
     // 1. Perform the available tabs calculation
     val availableTabs = allTabs.filter { it.isAvailable() }
@@ -438,7 +458,6 @@ fun TmdbRatings(
                 }
 
                 vote > 0 -> Text("%.1f".format(Locale.US, vote) + "/10", fontWeight = FontWeight.Bold)
-
                 else -> Text("No votes yet")
             }
         }
@@ -451,14 +470,19 @@ fun <T> LazyListScope.expandableSection(
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
     initialVisibleCount: Int = 3,
+    showDividers: Boolean = false,
     itemContent: @Composable LazyItemScope.(T?) -> Unit,
 ) {
 // 1. Evaluate the state internall
     val isExpanded = expandedSectionIds.contains(title)
     val visibleItems = if (isExpanded) itemsList else itemsList.take(initialVisibleCount)
 
-    items(
-        items = visibleItems, itemContent = itemContent,
+    itemsIndexed(
+        items = visibleItems,
+        itemContent = { idx, item ->
+            itemContent.invoke(this, item)
+            if (showDividers && idx != itemsList.lastIndex) HorizontalDivider()
+        },
     )
     //println(title + itemsList.size)
     // 2. The Header / Toggle Button
@@ -514,7 +538,6 @@ fun AppearingTopBar(
             }
             // 2. Early exit
             if (index > 0) return@derivedStateOf 1f
-
             // 3. Simple linear interpolation (lerp) logic
             ((offset - 450f) / 250f).coerceIn(0f, 1f)
         }
@@ -782,7 +805,6 @@ fun CompanyItem(company: TmdbCompany) {
 @Composable
 fun SimilarSection(
     similar: List<Media>,
-    pad: Dp,
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -793,26 +815,15 @@ fun SimilarSection(
         item { Spacer(Modifier.width(5.dp)) }
         // Movie items
         items(similar) {
-            PosterItem(it.id.toString(), it.posterPath, it.title, it.type)
-
+            PosterItem(it)
         }
         item { Spacer(Modifier.width(5.dp)) }
     }
 }
 
 @Composable
-fun PersonItem(person: TmdbAnyPerson?) {
-    val role = (person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job
-    val ctx = LocalContext.current
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(15.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onPersonClick(person?.id!!, ctx) }
-            .padding(vertical = 7.dp, horizontal = 15.dp),
-    ) {
+fun PersonItem(person: TmdbAnyPerson?) = ListItem(
+    leadingContent = {
         RewatchAsyncImage(
             model = person?.profileImage?.let { build(it, width = 70, height = 70) },
             contentDescription = person?.name.orEmpty(),
@@ -822,29 +833,34 @@ fun PersonItem(person: TmdbAnyPerson?) {
                 .size(width = 55.dp, height = 60.dp)
                 .clip(RoundedCornerShape(7.dp)),
         )
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = person?.name.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = role.orEmpty(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray,
-            )
-        }
-
+    },
+    headlineContent = {
+        Text(
+            text = person?.name.orEmpty(),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+        )
+    },
+    supportingContent = {
+        Text(
+            text = ((person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job).orEmpty(),
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray,
+        )
+    },
+    trailingContent = {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "Dettagli attore",
             tint = Color.Gray,
         )
-    }
-}
+    },
+    modifier = LocalContext.current.let {
+        Modifier
+            .fillMaxWidth()
+            .clickable { onPersonClick(person?.id!!, it) }
+    },
+)
 
 @Composable
 fun ReviewItem(review: TmdbReview?) {
@@ -955,129 +971,46 @@ fun WatchProviders(
 }
 
 @Composable
-fun EpisodesTab(
-    episodes: List<TmdbEpisode>,
-    seasonId: String,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        episodes.forEach { episode ->
-            EpisodeItem(episode = episode, seasonId = seasonId)
-
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
 fun EpisodeItem(
-    episode: TmdbEpisode,
-    seasonId: String,
+    number: Int?,
+    name: String?,
+    date: LocalDate?,
+    count: String,
+    mediaType: MediaType,
+    showId: String,
 ) {
-    val ctx = LocalContext.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onMovieClick(seasonId + "_" + episode.episodeNumber, MediaType.EPISODE, ctx)
-            }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = episode.episodeNumber.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(40.dp),
-        )
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
+    ListItem(
+        leadingContent = {
             Text(
-                text = episode.name ?: "Untitled",
+                text = number.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.width(20.dp),
+//            textAlign = TextAlign.Center,
+            )
+        },
+        headlineContent = {
+            Text(
+                text = name ?: "Untitled",
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
             )
-
-            val airDate = episode.airDate.toString().formatDate("d MMM YYYY") ?: ""
-            val runtime = if (episode.runtime != null) "${episode.runtime} min" else ""
-            val separator = if (airDate != "" && runtime != "") " • " else ""
+        },
+        supportingContent = {
+            val dateFormatted = date.toString().formatDate("d MMM YYYY")
+            val separator = if (dateFormatted != "") " • " else ""
 
             Text(
-                text = "$airDate$separator$runtime",
+                text = "$dateFormatted$separator$count",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-}
-
-@Composable
-fun SeasonsTab(
-    seasons: List<TmdbSeason>,
-    showId: String,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        seasons.forEach { season ->
-            SeasonItem(season, showId)
-
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-fun SeasonItem(
-    season: TmdbSeason,
-    showId: String,
-) {
-    val ctx = LocalContext.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onMovieClick(showId + "_" + season.seasonNumber, MediaType.SEASON, ctx)
+        },
+        modifier = LocalContext.current.let {
+            Modifier.clickable {
+                onMovieClick(showId + "_" + number, mediaType, it)
             }
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = season.seasonNumber.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.width(40.dp),
-        )
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = season.name ?: "Untitled",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-
-            val airDate = season.airDate.toString().formatDate("d MMM YYYY") ?: ""
-            val episodes = "${season.episodeCount} episodes"
-            val separator = if (airDate != "") " • " else ""
-
-            Text(
-                text = "$airDate$separator$episodes",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+        },
+    )
 }
