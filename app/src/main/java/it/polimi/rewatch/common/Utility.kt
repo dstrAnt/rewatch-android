@@ -229,10 +229,7 @@ data class TabItem(
     val title: String,
     val isAvailable: () -> Boolean,
     // We now pass the volatile state directly into the lambda when it executes
-    val content: LazyListScope.(
-        expandedIds: Set<String>,
-        onToggle: (String) -> Unit,
-    ) -> Unit,
+    val content: LazyListScope.() -> Unit,
 )
 
 //@Composable

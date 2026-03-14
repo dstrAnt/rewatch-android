@@ -5,6 +5,7 @@ import app.moviebase.tmdb.model.TmdbCast
 import app.moviebase.tmdb.model.TmdbCompany
 import app.moviebase.tmdb.model.TmdbCountry
 import app.moviebase.tmdb.model.TmdbCrew
+import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbEpisodeDetail
 import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovie
@@ -115,7 +116,7 @@ data class MediaDetail(
         posterImage = season.posterImage,
         backdropImage = null,
         specificDetails = MediaSpecificDetails.Season(
-            numberOfEpisodes = season.numberOfEpisodes,
+            episodes = season.episodes,
         ),
     )
 
@@ -163,7 +164,7 @@ sealed interface MediaSpecificDetails {
     ) : MediaSpecificDetails
 
     data class Season(
-        val numberOfEpisodes: Int,
+        val episodes: List<TmdbEpisode>?,
     ) : MediaSpecificDetails
 }
 

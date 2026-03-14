@@ -14,7 +14,7 @@ data class MovieData(
 )
 
 enum class MediaType {
-    MOVIE, TV_SHOW, EPISODE
+    MOVIE, TV_SHOW, EPISODE, SEASON
 }
 
 @HiltViewModel(assistedFactory = MediaViewModel.Factory::class)
@@ -42,6 +42,7 @@ class MediaViewModel @AssistedInject constructor(
         when (mediaType) {
             MediaType.MOVIE -> repository.movieData(mediaId.toInt())
             MediaType.TV_SHOW -> repository.tvData(mediaId.toInt())
+            MediaType.SEASON -> repository.seasonData(mediaId)
             MediaType.EPISODE -> repository.episodeData(mediaId)
         }
 }

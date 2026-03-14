@@ -84,6 +84,23 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    suspend fun seasonData(seasonId: String): MovieData = withContext(Dispatchers.IO) {
+        val (showId, seasonNumber) = seasonId.split("_").map { it.toInt() }
+        val details = tmdb.showSeasons.getDetails(
+            showId = showId,
+            seasonNumber = seasonNumber,
+            appendResponses = listOf(
+                AppendResponse.CREDITS,
+            ),
+        )
+        val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
+
+        MovieData(
+            MediaDetail(details),
+            similar,
+        )
+    }
+
     suspend fun episodeData(episodeId: String): MovieData = withContext(Dispatchers.IO) {
         val (showId, seasonNumber, episodeNumber) = episodeId.split("_").map { it.toInt() }
         val details = tmdb.showEpisodes.getDetails(
@@ -92,9 +109,6 @@ class TmdbRepository @Inject constructor(
             episodeNumber = episodeNumber,
             appendResponses = listOf(
                 AppendResponse.CREDITS,
-                AppendResponse.REVIEWS,
-                AppendResponse.RELEASES_DATES,
-                AppendResponse.WATCH_PROVIDERS,
             ),
         )
         val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
@@ -141,6 +155,7 @@ class TmdbRepository @Inject constructor(
                         .map(::Media) // Maps TmdbTvShow to your Media class
                 }
 
+                MediaType.SEASON -> emptyList() // TODO
                 MediaType.EPISODE -> emptyList() // TODO
             }
         } catch (e: Exception) {
