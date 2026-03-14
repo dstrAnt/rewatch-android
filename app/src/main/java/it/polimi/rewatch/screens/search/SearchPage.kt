@@ -229,7 +229,7 @@ fun MovieResultsList(
                 },
                 leadingContent = {
                     PosterItem(
-                        movie.id, movie.posterPath, movie.title, MediaType.MOVIE, modifier = Modifier.size(60.dp, 90.dp),
+                        movie.id.toString(), movie.posterPath, movie.title, MediaType.MOVIE, modifier = Modifier.size(60.dp, 90.dp),
                     )
                 },
                 modifier = Modifier.clickable {

@@ -84,7 +84,7 @@ fun RewatchApp() {
         ) {
             when (bottomBarState) {
                 AppDestinations.MOVIE -> MediaPage(
-                    1317288,
+                    "1317288",
                     mediaType = MediaType.MOVIE,
                     padding = PaddingValues(
                         outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -95,8 +95,8 @@ fun RewatchApp() {
                 )
 
                 AppDestinations.TV -> MediaPage(
-                    1396,
-                    mediaType = MediaType.TV_SHOW,
+                    "1396_1_1",
+                    mediaType = MediaType.EPISODE,
                     padding = PaddingValues(
                         outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                         outerPadding.calculateTopPadding(),

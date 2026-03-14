@@ -5,6 +5,7 @@ import app.moviebase.tmdb.model.TmdbCast
 import app.moviebase.tmdb.model.TmdbCompany
 import app.moviebase.tmdb.model.TmdbCountry
 import app.moviebase.tmdb.model.TmdbCrew
+import app.moviebase.tmdb.model.TmdbEpisodeDetail
 import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovie
 import app.moviebase.tmdb.model.TmdbMovieDetail
@@ -14,6 +15,7 @@ import app.moviebase.tmdb.model.TmdbPersonCredit.Show
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
 import app.moviebase.tmdb.model.TmdbSeason
+import app.moviebase.tmdb.model.TmdbSeasonDetail
 import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import app.moviebase.tmdb.model.TmdbShowStatus
@@ -92,44 +94,54 @@ data class MediaDetail(
             seasons = show.seasons,
             status = show.status, // Shows often provide a list of runtimes
         ),
-    )/*    constructor(season: TmdbSeason) : this(
-            title = season.name, // TMDB uses 'name' for TV shows
-            posterPath = season.posterPath,
-            overview = season.overview,
-            rating = season.voteAverage,
-            director = season.credits?.crew?.find { it.job == "Director" }?.name,
-            certification = null,
-            reviews = season.reviews?.results,
-            voteAverage = season.voteAverage,
-            voteCount = season.voteCount,
-            tagline = season.tagline,
-            releaseDate = season.airDate, // TMDB uses 'firstAirDate' for TV shows
-            posterImage = season.posterImage,
-            backdropImage = season.backdropImage,
-            specificDetails = MediaSpecificDetails.Show(
-                seasons = season.seasons,
-                status = season.status, // Shows often provide a list of runtimes
-            ),
-        )
-        constructor(episode: TmdbEpisode) : this(
-            title = episode.name, // TMDB uses 'name' for TV shows
-            posterPath = episode.posterPath,
-            overview = episode.overview,
-            rating = episode.voteAverage,
-            director = episode.credits?.crew?.find { it.job == "Director" }?.name,
-            certification = null,
-            reviews = episode.reviews?.results,
-            voteAverage = episode.voteAverage,
-            voteCount = episode.voteCount,
-            tagline = episode.tagline,
-            releaseDate = episode.airDate, // TMDB uses 'firstAirDate' for TV shows
-            posterImage = episode.posterImage,
-            backdropImage = episode.backdropImage,
-            specificDetails = MediaSpecificDetails.Show(
-                seasons = episode.seasons,
-                status = episode.status, // Shows often provide a list of runtimes
-            ),
-        )*/
+    )
+
+    constructor(season: TmdbSeasonDetail) : this(
+        title = season.name, // TMDB uses 'name' for TV shows
+        posterPath = season.posterPath,
+        overview = season.overview,
+        rating = season.voteAverage,
+        director = season.credits?.crew?.find { it.job == "Director" }?.name,
+        certification = null,
+        watchProviders = emptyMap(),
+        runtime = "",
+        cast = season.credits?.cast.orEmpty(),
+        crew = season.credits?.crew.orEmpty(),
+        reviews = emptyList(),
+        voteAverage = season.voteAverage,
+        voteCount = season.voteCount,
+        tagline = null,
+        releaseDate = season.airDate, // TMDB uses 'firstAirDate' for TV shows
+        posterImage = season.posterImage,
+        backdropImage = null,
+        specificDetails = MediaSpecificDetails.Season(
+            numberOfEpisodes = season.numberOfEpisodes,
+        ),
+    )
+
+    constructor(episode: TmdbEpisodeDetail) : this(
+        title = episode.name.orEmpty(), // TMDB uses 'name' for TV shows
+        posterPath = null,
+        overview = episode.overview.orEmpty(),
+        rating = episode.voteAverage,
+        director = episode.crew?.find { it.job == "Director" }?.name.orEmpty(),
+        certification = null,
+        watchProviders = emptyMap(),
+        runtime = episode.runtime.toString(),
+        cast = episode.guestStars.orEmpty(),
+        crew = episode.crew.orEmpty(),
+        reviews = emptyList(),
+        voteAverage = episode.voteAverage,
+        voteCount = episode.voteCount,
+        tagline = null,
+        releaseDate = episode.airDate, // TMDB uses 'firstAirDate' for TV shows
+        posterImage = null,
+        backdropImage = episode.backdropImage, // se non funziona, prova stillPath
+        specificDetails = MediaSpecificDetails.Episode(
+            season = episode.seasonNumber,
+            episodeNumber = episode.episodeNumber,
+        ),
+    )
 }
 
 // Sealed interface for the parts that differ
@@ -144,6 +156,15 @@ sealed interface MediaSpecificDetails {
     ) : MediaSpecificDetails
 
     data class Show(val status: TmdbShowStatus?, val seasons: List<TmdbSeason>) : MediaSpecificDetails
+
+    data class Episode(
+        val season: Int,
+        val episodeNumber: Int,
+    ) : MediaSpecificDetails
+
+    data class Season(
+        val numberOfEpisodes: Int,
+    ) : MediaSpecificDetails
 }
 
 data class Media(

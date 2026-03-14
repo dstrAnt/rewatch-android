@@ -136,7 +136,7 @@ fun LazyGridScope.movieSection(
         key = { "${title}_${it.id}" },
     ) { // CRUCIAL: Compose needs this to track which items are new) {
         PosterItem(
-            it.id, it.posterPath, it.title, MediaType.MOVIE,
+            it.id.toString(), it.posterPath, it.title, MediaType.MOVIE,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
         )
     }

@@ -14,12 +14,12 @@ data class MovieData(
 )
 
 enum class MediaType {
-    MOVIE, TV_SHOW
+    MOVIE, TV_SHOW, EPISODE
 }
 
 @HiltViewModel(assistedFactory = MediaViewModel.Factory::class)
 class MediaViewModel @AssistedInject constructor(
-    @Assisted("mediaId") private val mediaId: Int,
+    @Assisted("mediaId") private val mediaId: String,
     @Assisted("mediaType") private val mediaType: MediaType,
     private val repository: TmdbRepository,
 ) : BaseViewModel<MovieData>() { // <-- Changed to your unified MediaDetail class
@@ -27,7 +27,7 @@ class MediaViewModel @AssistedInject constructor(
     interface Factory {
         // Factory now requires both ID and Type
         fun create(
-            @Assisted("mediaId") mediaId: Int,
+            @Assisted("mediaId") mediaId: String,
             @Assisted("mediaType") mediaType: MediaType,
         ): MediaViewModel
     }
@@ -40,7 +40,8 @@ class MediaViewModel @AssistedInject constructor(
     override suspend fun fetchData() =
         // Switch the repository call based on the media type
         when (mediaType) {
-            MediaType.MOVIE -> repository.movieData(mediaId)
-            MediaType.TV_SHOW -> repository.tvData(mediaId) // Assuming this is your repo method
+            MediaType.MOVIE -> repository.movieData(mediaId.toInt())
+            MediaType.TV_SHOW -> repository.tvData(mediaId.toInt())
+            MediaType.EPISODE -> repository.episodeData(mediaId)
         }
 }

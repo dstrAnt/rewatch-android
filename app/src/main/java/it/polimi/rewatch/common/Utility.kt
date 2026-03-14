@@ -50,11 +50,8 @@ import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
 import coil3.compose.AsyncImage
-import coil3.compose.AsyncImagePainter
-import coil3.compose.SubcomposeAsyncImageScope
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaActivity
 import it.polimi.rewatch.screens.media.MediaType
@@ -141,23 +138,24 @@ fun onMovieClick(
     media: Media,
     context: Context,
 ) {
-    onMovieClick(media.id, media.type, context)
+    onMovieClick(media.id.toString(), media.type, context)
 }
 
-fun movieFromIntent(intent: Intent): Pair<Int, MediaType> {
-    val movieId = intent.getIntExtra("EXTRA_MEDIA_ID", -1)
+fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
+    val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
+
     val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
-    // Parse it back to the Enum, providing a fallback just in case
     val mediaType = try {
         typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
-    } catch (e: IllegalArgumentException) {
-        MediaType.MOVIE // Fallback if the string doesn't match an Enum value
+    } catch (_: IllegalArgumentException) {
+        MediaType.MOVIE
     }
-    return Pair(movieId, mediaType)
+
+    return Pair(mediaId, mediaType)
 }
 
 fun onMovieClick(
-    mediaId: Int,
+    mediaId: String,
     mediaType: MediaType,
     context: Context,
 ) {
@@ -237,100 +235,100 @@ data class TabItem(
     ) -> Unit,
 )
 
-@Composable
-fun PosterItem3(
-    id: Int,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
+//@Composable
+//fun PosterItem3(
+//    id: Int,
+//    posterPath: String?,
+//    title: String?,
+//    mediaType: MediaType, // Added parameter
+//    modifier: Modifier = Modifier,
+//) {
+//    val shape = RoundedCornerShape(5.dp)
+//    val context = LocalContext.current // Brought back for onMovieClick
+//
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(2f / 3f)
+//            .clip(shape)
+//            .border(1.dp, Color.Gray, shape)
+//            .clickable {
+//                // Click logic is now handled internally again
+//                onMovieClick(id, mediaType, context)
+//            },
+//        contentAlignment = Alignment.Center,
+//    ) {
+//        if (posterPath != null) {
+//            RewatchAsyncImage(
+//                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
+//                contentDescription = title,
+//                modifier = Modifier.fillMaxSize(),
+//                contentScale = ContentScale.Crop,
+//            )
+//        } else {
+//            Text(
+//                text = title.orEmpty(),
+//                modifier = Modifier.padding(5.dp),
+//                color = Color.Gray,
+//                textAlign = TextAlign.Center,
+//                style = MaterialTheme.typography.labelMedium,
+//                overflow = TextOverflow.Ellipsis,
+//            )
+//        }
+//    }
+//}
 
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                onMovieClick(id, mediaType, context)
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (posterPath != null) {
-            RewatchAsyncImage(
-                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Text(
-                text = title.orEmpty(),
-                modifier = Modifier.padding(5.dp),
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
-@Composable
-fun PosterItem2(
-    id: Int,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
-    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
-        {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = title.orEmpty(),
-                    modifier = Modifier.padding(5.dp),
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    val model = TmdbImageUrlBuilder.build(
-        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
-    )
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                onMovieClick(id, mediaType, context)
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        // 2. Pass it directly into the built-in slots
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(model)
-                .crossfade(true)
-                .build(),
-            contentDescription = title,
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
-}
+//@Composable
+//fun PosterItem2(
+//    id: Int,
+//    posterPath: String?,
+//    title: String?,
+//    mediaType: MediaType, // Added parameter
+//    modifier: Modifier = Modifier,
+//) {
+//    val shape = RoundedCornerShape(5.dp)
+//    val context = LocalContext.current // Brought back for onMovieClick
+//    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
+//        {
+//            Box(contentAlignment = Alignment.Center) {
+//                Text(
+//                    text = title.orEmpty(),
+//                    modifier = Modifier.padding(5.dp),
+//                    color = Color.Gray,
+//                    textAlign = TextAlign.Center,
+//                    style = MaterialTheme.typography.labelMedium,
+//                    overflow = TextOverflow.Ellipsis,
+//                )
+//            }
+//        }
+//    val model = TmdbImageUrlBuilder.build(
+//        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
+//    )
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(2f / 3f)
+//            .clip(shape)
+//            .border(1.dp, Color.Gray, shape)
+//            .clickable {
+//                // Click logic is now handled internally again
+//                onMovieClick(id, mediaType, context)
+//            },
+//        contentAlignment = Alignment.Center,
+//    ) {
+//        // 2. Pass it directly into the built-in slots
+//        AsyncImage(
+//            model = ImageRequest.Builder(LocalContext.current)
+//                .data(model)
+//                .crossfade(true)
+//                .build(),
+//            contentDescription = title,
+//            modifier = Modifier.fillMaxSize(),
+//        )
+//    }
+//}
 
 @Composable
 fun PosterItem(
-    id: Int,
+    id: String,
     posterPath: String?,
     title: String?,
     mediaType: MediaType, // Added parameter
@@ -373,4 +371,12 @@ fun PosterItem(
             )
         }
     }
+}
+
+fun getEpisodeId(
+    show: Int,
+    season: Int,
+    episode: Int,
+): String {
+    return show.toString() + "_" + season.toString() + "_" + episode.toString()
 }

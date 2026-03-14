@@ -158,7 +158,7 @@ fun buildMediaTabs(movie: MediaDetail, pad: Dp): List<TabItem> {
 
 @Composable
 fun MediaPage(
-    movieId: Int,
+    movieId: String,
     mediaType: MediaType,
     viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
         creationCallback = { it.create(movieId, mediaType) },
@@ -727,7 +727,7 @@ fun SimilarSection(similar: List<Media>, pad: Dp) {
         item { Spacer(Modifier.width(5.dp)) }
         // Movie items
         items(similar) {
-            PosterItem(it.id, it.posterPath, it.title, it.type)
+            PosterItem(it.id.toString(), it.posterPath, it.title, it.type)
 
         }
         item { Spacer(Modifier.width(5.dp)) }

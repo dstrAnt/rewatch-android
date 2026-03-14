@@ -149,10 +149,12 @@ fun PersonContent(
             state = scrollState,
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalArrangement = Arrangement.spacedBy(7.dp),
-            contentPadding = PaddingValues(top = padding.calculateTopPadding(), bottom = it.calculateBottomPadding() + 5.dp),
+            contentPadding = PaddingValues(
+                top = padding.calculateTopPadding(), bottom = it.calculateBottomPadding() + 5.dp,
+                start = 7.dp, end = 7.dp,
+            ),
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 7.dp),
+                .fillMaxSize(),
         ) {
             // 3. HEADER SECTION: Takes up all 4 columns via GridItemSpan
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -162,6 +164,7 @@ fun PersonContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ProfilePicture(details.profileImage)
+                    Spacer(Modifier.height(10.dp))
                     NameAndJob(details.name, details.knownForDepartment?.toString())
                     BirthInfo(details.birthday?.toString(), details.deathday?.toString())
                     Bio(details.biography)
@@ -175,7 +178,7 @@ fun PersonContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp, horizontal = 16.dp),
+                            .padding(vertical = 10.dp, horizontal = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -196,7 +199,7 @@ fun PersonContent(
                 items = displayList,
                 key = { "${it.id}_${it.type.name}" },
             ) {
-                PosterItem(it.id, it.posterPath, it.title, it.type, Modifier.animateItem())
+                PosterItem(it.id.toString(), it.posterPath, it.title, it.type, Modifier.animateItem())
             }
         }
     }
@@ -261,7 +264,10 @@ private fun Bio(bio: String?) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
+private fun BirthInfo(
+    dateOfBirth: String?,
+    dateOfDeath: String?,
+) {
     if (dateOfBirth == null) return
 
     Spacer(Modifier.height(24.dp))
@@ -301,7 +307,12 @@ private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
 }
 
 @Composable
-private fun InfoColumn(label: String, value: String, alignment: Alignment.Horizontal, modifier: Modifier = Modifier) {
+private fun InfoColumn(
+    label: String,
+    value: String,
+    alignment: Alignment.Horizontal,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier, horizontalAlignment = alignment) {
         Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
         Text(
@@ -313,7 +324,10 @@ private fun InfoColumn(label: String, value: String, alignment: Alignment.Horizo
 }
 
 @Composable
-private fun NameAndJob(personName: String?, job: String?) {
+private fun NameAndJob(
+    personName: String?,
+    job: String?,
+) {
     if (personName != null) {
         Text(
             text = personName,

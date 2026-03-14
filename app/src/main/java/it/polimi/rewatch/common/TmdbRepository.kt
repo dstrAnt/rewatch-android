@@ -84,6 +84,27 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    suspend fun episodeData(episodeId: String): MovieData = withContext(Dispatchers.IO) {
+        val (showId, seasonNumber, episodeNumber) = episodeId.split("_").map { it.toInt() }
+        val details = tmdb.showEpisodes.getDetails(
+            showId = showId,
+            seasonNumber = seasonNumber,
+            episodeNumber = episodeNumber,
+            appendResponses = listOf(
+                AppendResponse.CREDITS,
+                AppendResponse.REVIEWS,
+                AppendResponse.RELEASES_DATES,
+                AppendResponse.WATCH_PROVIDERS,
+            ),
+        )
+        val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
+
+        MovieData(
+            MediaDetail(details),
+            similar,
+        )
+    }
+
     suspend fun getPersonData(personId: Int): PersonDetailsData = withContext(Dispatchers.IO) {
         val detailsDeferred = async { tmdb.people.getDetails(personId) }
         val movieCreditsDeferred = async { tmdb.people.getMovieCredits(personId) }
@@ -96,7 +117,10 @@ class TmdbRepository @Inject constructor(
         )
     }
 
-    suspend fun searchMedia(query: String, mediaType: MediaType): List<Media> {
+    suspend fun searchMedia(
+        query: String,
+        mediaType: MediaType,
+    ): List<Media> {
         if (query.isBlank()) {
             return emptyList()
         }
@@ -116,6 +140,8 @@ class TmdbRepository @Inject constructor(
                         .results.sortedByDescending { it.popularity }
                         .map(::Media) // Maps TmdbTvShow to your Media class
                 }
+
+                MediaType.EPISODE -> emptyList() // TODO
             }
         } catch (e: Exception) {
             e.printStackTrace()
