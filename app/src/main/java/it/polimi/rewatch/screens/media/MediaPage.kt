@@ -77,6 +77,7 @@ import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
+import app.moviebase.tmdb.model.TmdbSeason
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.ExpandBtn
@@ -206,8 +207,7 @@ fun MediaContent(
                             !(movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.isNullOrEmpty()
                 },
                 content = {
-                    item { Text("Seasons") }
-//                    item { EpisodesTab((movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(), mediaId) }
+                    item { SeasonsTab((movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(), mediaId) }
                 },
             ),
             // ... SEASON: Episodes tab ...
@@ -963,7 +963,7 @@ fun EpisodesTab(
         modifier = Modifier.fillMaxWidth(),
     ) {
         episodes.forEach { episode ->
-            EpisodeListItem(episode = episode, seasonId = seasonId)
+            EpisodeItem(episode = episode, seasonId = seasonId)
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -974,7 +974,7 @@ fun EpisodesTab(
 }
 
 @Composable
-fun EpisodeListItem(
+fun EpisodeItem(
     episode: TmdbEpisode,
     seasonId: String,
 ) {
@@ -1011,6 +1011,70 @@ fun EpisodeListItem(
 
             Text(
                 text = "$airDate$separator$runtime",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun SeasonsTab(
+    seasons: List<TmdbSeason>,
+    showId: String,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        seasons.forEach { season ->
+            SeasonItem(season, showId)
+
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+fun SeasonItem(
+    season: TmdbSeason,
+    showId: String,
+) {
+    val ctx = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                onMovieClick(showId + "_" + season.seasonNumber, MediaType.SEASON, ctx)
+            }
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = season.seasonNumber.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(40.dp),
+        )
+
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = season.name ?: "Untitled",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            val airDate = season.airDate.toString().formatDate("d MMM YYYY") ?: ""
+            val episodes = "${season.episodeCount} episodes"
+            val separator = if (airDate != "") " • " else ""
+
+            Text(
+                text = "$airDate$separator$episodes",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

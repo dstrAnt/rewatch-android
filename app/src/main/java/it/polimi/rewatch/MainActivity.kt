@@ -95,8 +95,8 @@ fun RewatchApp() {
                 )
 
                 AppDestinations.TV -> MediaPage(
-                    "1396_1",
-                    mediaType = MediaType.SEASON,
+                    "1396",
+                    mediaType = MediaType.TV_SHOW,
                     padding = PaddingValues(
                         outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                         outerPadding.calculateTopPadding(),
