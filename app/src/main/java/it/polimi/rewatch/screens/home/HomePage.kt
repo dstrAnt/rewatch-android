@@ -177,10 +177,9 @@ fun HomeButton(
     ) {
         Box(
             modifier = Modifier
-                .padding(10.dp)
                 .clip(CircleShape)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 24.dp, vertical = 8.dp),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -189,14 +188,12 @@ fun HomeButton(
                 Text(
                     text = string,
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
 
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp
                     else Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
             }
         }
