@@ -2,7 +2,6 @@ package it.polimi.rewatch.screens.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -52,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.onMovieClick
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,7 +85,40 @@ fun SearchPage(
                 },
             ) {
                 // This is the 'content' slot
-                MovieResultsList(movies)
+                val focusManager = LocalFocusManager.current
+                val listState = rememberLazyListState()
+
+                LaunchedEffect(listState.isScrollInProgress) {
+                    if (listState.isScrollInProgress) {
+                        focusManager.clearFocus()
+                    }
+                }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    state = listState,
+                ) {
+                    items(movies) { movie ->
+                        ListItem(
+                            headlineContent = {
+                                Text("${movie.title.orEmpty()}, ${movie.releaseDate?.year}")
+                            },
+                            leadingContent = {
+                                PosterItem(
+                                    movie, modifier = Modifier.size(60.dp, 90.dp),
+                                )
+                            },
+                            modifier = LocalContext.current.let {
+                                Modifier.clickable {
+                                    // 2. Trigger callback with the movie ID
+                                    focusManager.clearFocus()
+                                    onMovieClick(movie, it)
+                                }
+                            },
+                        )
+
+                        HorizontalDivider()
+                    }
+                }
             }
         }
     }
@@ -193,51 +224,6 @@ fun CustomExpandedSearchBar(
             Column(
                 modifier = Modifier.fillMaxSize(), content = content,
             )
-        }
-    }
-}
-
-@Composable
-fun MovieResultsList(
-    movies: List<Media>,
-) {
-    val focusManager = LocalFocusManager.current
-    val context = LocalContext.current
-    val listState = rememberLazyListState()
-
-    LaunchedEffect(listState.isScrollInProgress) {
-        if (listState.isScrollInProgress) {
-            focusManager.clearFocus()
-        }
-    }
-
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        state = listState,
-    ) {
-        items(movies) { movie ->
-            ListItem(
-                headlineContent = {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(
-                            5.dp,
-                        ),
-                    ) {
-                        Text("${movie.title.orEmpty()}, ${movie.releaseDate?.year}")
-//                    Text(movie.credits?.crew?.find { it.job == "Director" }?.name)
-                    }
-                },
-                leadingContent = {
-                    PosterItem(
-                        movie, modifier = Modifier.size(60.dp, 90.dp),
-                    )
-                },
-                modifier = Modifier.clickable {
-                    // 2. Trigger callback with the movie ID
-                    onMovieClick(movie, context)
-                },
-            )
-            HorizontalDivider()
         }
     }
 }

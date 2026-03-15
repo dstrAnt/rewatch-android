@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 
@@ -36,17 +37,21 @@ class SearchViewModel @Inject constructor(
 
     // Automatically reacts to query changes, debounces, and fetches movies
     @OptIn(ExperimentalCoroutinesApi::class)
-    val media: StateFlow<List<Media>> = _query
-//        .debounce(0) // Wait 300ms after the user stops typing
-        .mapLatest { currentQuery ->
-            // The ViewModel doesn't care how the search works, it just asks the Repo!
-            repository.searchMedia(currentQuery, mediaType.value)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Lazily,
-            initialValue = emptyList(),
-        )
+    val media: StateFlow<List<Media>> = combine(
+        _query,
+        _mediaType,
+    ) { currentQuery, currentMediaType ->
+        // 1. Combine emits a new Pair whenever EITHER flow changes
+        Pair(currentQuery, currentMediaType)
+    }.mapLatest { (currentQuery, currentMediaType) ->
+        // 2. mapLatest receives the updated Pair.
+        // It will cancel the previous search if a new query or type comes in quickly!
+        repository.searchMedia(currentQuery, currentMediaType)
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = emptyList(),
+    )
 
     // Called from the UI when the user types
     fun onQueryChange(newQuery: String) {
