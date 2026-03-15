@@ -28,7 +28,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
@@ -53,9 +52,9 @@ import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
+import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.screens.media.AppearingTopBar
 import it.polimi.rewatch.screens.media.ExpandableText
 import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
@@ -142,16 +141,18 @@ fun PersonContent(
         }
     }
     // --------------------------------------------------
-    Scaffold(
-        topBar = { AppearingTopBar(scrollState, details.name, onNavigateBack) },
-    ) {
+    MediaScaffold(
+        details.name,
+        onNavigateBack,
+        scrollState,
+    ) { innerPadding, fullscreenImageModifier ->
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
             state = scrollState,
             horizontalArrangement = Arrangement.spacedBy(7.dp),
             verticalArrangement = Arrangement.spacedBy(7.dp),
             contentPadding = PaddingValues(
-                top = padding.calculateTopPadding(), bottom = it.calculateBottomPadding() + 5.dp,
+                top = padding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 5.dp,
                 start = 7.dp, end = 7.dp,
             ),
             modifier = Modifier
@@ -164,7 +165,13 @@ fun PersonContent(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    ProfilePicture(details.profileImage)
+                    ProfilePicture(
+                        details.profileImage,
+                        modifier = fullscreenImageModifier(
+                            details.profileImage?.let { build(it, width = 500, height = 500) },
+                        ),
+                    )
+
                     Spacer(Modifier.height(10.dp))
                     NameAndJob(details.name, details.knownForDepartment?.toString())
                     BirthInfo(details.birthday?.toString(), details.deathday?.toString())
@@ -353,13 +360,13 @@ private fun NameAndJob(
 }
 
 @Composable
-private fun ProfilePicture(profileImage: TmdbImage?) {
+private fun ProfilePicture(profileImage: TmdbImage?, modifier: Modifier = Modifier) {
     if (profileImage != null) {
         RewatchAsyncImage(
             model = build(profileImage, width = 150, height = 250),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = Modifier
+            modifier = modifier
                 .height(200.dp)
                 .clip(RoundedCornerShape(10.dp)),
         )

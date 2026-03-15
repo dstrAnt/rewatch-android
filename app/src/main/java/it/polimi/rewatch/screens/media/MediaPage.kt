@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,32 +21,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +47,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -88,6 +78,7 @@ import it.polimi.rewatch.common.onMovieClick
 import it.polimi.rewatch.common.onPersonClick
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
+import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
@@ -151,26 +142,26 @@ fun MediaContent(
         expandedSectionIds,
         buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad),
     )
-
-    Scaffold(
-        topBar = {
-            AppearingTopBar(
-                scrollState, movie.title, onNavigateBack,
-            )
-        },
-    ) {
+    MediaScaffold(
+        scrollState = scrollState,
+        title = movie.title,
+        onNavigateBack = onNavigateBack,
+    ) { padding, fullscreenImageModifier ->
         LazyColumn(
             state = scrollState,
-            verticalArrangement = Arrangement.spacedBy(
-                3.dp,
-            ),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
 //            contentPadding = PaddingValues(
 //                start = padding.calculateStartPadding(LayoutDirection.Ltr),
 //                end = padding.calculateEndPadding(LayoutDirection.Ltr),
 //            ),
         ) {
             item {
-                BackdropImage(movie.backdropImage, padding)
+                BackdropImage(
+                    movie.backdropImage, padding,
+                    modifier = fullscreenImageModifier(
+                        movie.backdropImage?.let { build(it, width = 500, height = 500) },
+                    ),
+                )
 
                 TitleAndInfoSection(
                     pad,
@@ -181,6 +172,9 @@ fun MediaContent(
                     runtime = movie.runtime,
                     releaseDate = movie.releaseDate,
                     certification = movie.certification,
+                    modifier = fullscreenImageModifier(
+                        movie.posterImage?.let { build(it, width = 500, height = 500) },
+                    ),
                 )
 
                 TaglineAndOverview(
@@ -528,68 +522,18 @@ fun ExpandableText(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AppearingTopBar(
-    scrollState: ScrollableState,
-    title: String?,
-    onNavigateBack: () -> Unit,
-) {
-    val toolbarAlpha by remember {
-        derivedStateOf {
-            // 1. Extract both index and offset in a single pass
-            val (index, offset) = when (scrollState) {
-                is LazyListState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
-                is LazyGridState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
-                else -> return@derivedStateOf 1f // Fallback: fully visible if state is unsupported
-            }
-            // 2. Early exit
-            if (index > 0) return@derivedStateOf 1f
-            // 3. Simple linear interpolation (lerp) logic
-            ((offset - 450f) / 250f).coerceIn(0f, 1f)
-        }
-    }
-    TopAppBar(
-        title = {
-            if (title != null) {
-                Text(
-                    title,
-                    modifier = Modifier.alpha(toolbarAlpha),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
-            }
-        },
-        // Apply background color with alpha
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black.copy(alpha = toolbarAlpha),
-            scrolledContainerColor = Color.Black.copy(alpha = toolbarAlpha),
-        ),
-        // Crucial: Add status bar insets so the buttons don't hit the clock/battery
-//        windowInsets = WindowInsets.statusBars
-    )
-}
-
 @Composable
 fun BackdropImage(
     image: TmdbImage?,
     padding: PaddingValues,
+    modifier: Modifier = Modifier,
 ) {
     image?.let {
         Box {
             RewatchAsyncImage(
                 model = build(it, width = 600, height = 300),
                 contentDescription = null,
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .height(210.dp),
             )
@@ -621,6 +565,7 @@ fun TitleAndInfoSection(
     runtime: String,
     releaseDate: LocalDate?,
     certification: String?,
+    modifier: Modifier = Modifier,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -678,7 +623,7 @@ fun TitleAndInfoSection(
                 model = posterImage?.let { build(it, width = 100, height = 100) },
                 contentScale = ContentScale.Fit,
                 contentDescription = title.orEmpty(),
-                modifier = Modifier.height(150.dp),
+                modifier = modifier.height(150.dp),
             )
         }
     }
