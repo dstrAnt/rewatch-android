@@ -147,106 +147,10 @@ fun MediaContent(
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
-    val tabs: List<TabItem> = remember(movie) {
-        listOf(
-            TabItem.expandable(
-                title = "Cast",
-                itemsList = movie.cast,
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                itemContent = { PersonItem(it) },
-            ),
-            TabItem.expandable(
-                title = "Crew",
-                itemsList = movie.crew.sortedByDescending { it.job == "Director" },
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                itemContent = { PersonItem(it) },
-            ),
-            // ... TV SHOW: Seasons tab ...
-            TabItem(
-                title = "Seasons",
-                isAvailable = {
-                    mediaType == MediaType.TV_SHOW &&
-                            !(movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.isNullOrEmpty()
-                },
-                content = {
-                    expandableSection(
-                        title = "seasons",
-                        itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
-                        expandedSectionIds = expandedSectionIds,
-                        onToggleSection = handleToggle,
-                        initialVisibleCount = 7,
-                        showDividers = true,
-                        itemContent = {
-                            EpisodeItem(
-                                number = it?.seasonNumber,
-                                name = it?.name,
-                                date = it?.airDate,
-                                count = "${it?.episodeCount} episodes",
-                                mediaType = MediaType.SEASON,
-                                mediaId,
-                            )
-                        },
-                    )
-                },
-            ),
-            // ... SEASON: Episodes tab ...
-            TabItem(
-                title = "Episodes",
-                isAvailable = {
-                    mediaType == MediaType.SEASON &&
-                            !(movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.isNullOrEmpty()
-                },
-                content = {
-                    expandableSection(
-                        title = "episodes",
-                        itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
-                        expandedSectionIds = expandedSectionIds,
-                        onToggleSection = handleToggle,
-                        initialVisibleCount = 7,
-                        showDividers = true,
-                        itemContent = {
-                            EpisodeItem(
-                                number = it?.episodeNumber,
-                                name = it?.name,
-                                date = it?.airDate,
-                                count = "${it?.runtime} min",
-                                mediaType = MediaType.EPISODE,
-                                mediaId,
-                            )
-                        },
-                    )
-                },
-            ),
-            // ... Details and Watch tabs remain the same, they just ignore the lambda parameters
-            TabItem(
-                title = "Details",
-                isAvailable = { isDetailsAvailable(movie) },
-                content = {
-                    item {
-                        DetailsTab(pad, movie)
-                    }
-                },
-            ),
-            // ... Watch tab ...
-            TabItem(
-                title = "Watch",
-                isAvailable = {
-                    movie.watchProviders["US"]?.run {
-                        buy.isNotEmpty() || flatrate.isNotEmpty()
-                    } ?: false
-                },
-                content = {
-                    item {
-                        WatchTab(pad, movie.watchProviders["US"])
-                    }
-                },
-            ),
-        )
-    }
+    val tabs: List<TabItem> = remember(
+        expandedSectionIds,
+        buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad),
+    )
 
     Scaffold(
         topBar = {
@@ -331,6 +235,109 @@ fun MediaContent(
                 Spacer(Modifier.height(padding.calculateBottomPadding()))
             }
         }
+    }
+}
+
+@Composable
+private fun buildTabs(
+    movie: MediaDetail,
+    expandedSectionIds: Set<String>,
+    handleToggle: (String) -> Unit,
+    mediaType: MediaType,
+    mediaId: String,
+    pad: Dp,
+): () -> List<TabItem> = {
+    buildList {
+        add(
+            TabItem.expandable(
+                title = "Cast",
+                itemsList = movie.cast,
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                itemContent = { PersonItem(it) },
+            ),
+        )
+        add(
+            TabItem.expandable(
+                title = "Crew",
+                itemsList = movie.crew.sortedByDescending { it.job == "Director" },
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                itemContent = { PersonItem(it) },
+            ),
+        )
+        // ... TV SHOW: Seasons tab ...
+        if (mediaType == MediaType.TV_SHOW) add(
+            TabItem.expandable(
+                title = "Seasons",
+                itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                showDividers = true,
+                itemContent = {
+                    EpisodeItem(
+                        number = it?.seasonNumber,
+                        name = it?.name,
+                        date = it?.airDate,
+                        count = "${it?.episodeCount} episodes",
+                        mediaType = MediaType.SEASON,
+                        mediaId,
+                    )
+                },
+            ),
+        )
+        // ... SEASON: Episodes tab ...
+        if (mediaType == MediaType.SEASON) add(
+            TabItem.expandable(
+                title = "Episodes",
+                itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
+                expandedSectionIds = expandedSectionIds,
+                onToggleSection = handleToggle,
+                initialVisibleCount = 7,
+                showDividers = true,
+                itemContent = {
+                    EpisodeItem(
+                        number = it?.episodeNumber,
+                        name = it?.name,
+                        date = it?.airDate,
+                        count = "${it?.runtime} min",
+                        mediaType = MediaType.EPISODE,
+                        mediaId,
+                    )
+                },
+            ),
+        )
+        // ... Details and Watch tabs remain the same, they just ignore the lambda parameters
+        add(
+            TabItem(
+                title = "Details",
+                isAvailable = { isDetailsAvailable(movie) },
+                content = {
+                    item {
+                        DetailsTab(pad, movie)
+                    }
+                },
+            ),
+        )
+        // ... Watch tab ...
+        add(
+            TabItem(
+                title = "Watch",
+                isAvailable = {
+                    movie.watchProviders["US"]?.run {
+                        buy.isNotEmpty() || flatrate.isNotEmpty()
+                    } ?: false
+                },
+                content = {
+                    item {
+                        WatchTab(pad, movie.watchProviders["US"])
+                    }
+                },
+            ),
+        )
     }
 }
 

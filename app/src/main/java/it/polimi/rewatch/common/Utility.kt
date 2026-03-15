@@ -241,6 +241,7 @@ data class TabItem(
             onToggleSection: (String) -> Unit,
             initialVisibleCount: Int = 3,
             itemContent: @Composable LazyItemScope.(T?) -> Unit,
+            showDividers: Boolean = false,
         ) = TabItem(
             title = title,
             isAvailable = itemsList::isNotEmpty,
@@ -252,6 +253,7 @@ data class TabItem(
                     onToggleSection = onToggleSection,
                     initialVisibleCount = initialVisibleCount,
                     itemContent = itemContent,
+                    showDividers = showDividers,
                 )
             },
         )
