@@ -154,9 +154,11 @@ class TmdbRepository @Inject constructor(
                         .results.sortedByDescending { it.popularity }
                         .map(::Media) // Maps TmdbTvShow to your Media class
                 }
-
-                MediaType.SEASON -> emptyList() // TODO
-                MediaType.EPISODE -> emptyList() // TODO
+//                MediaType.TV_SHOW -> {
+//                    tmdb.search.findPeople(query = query, page = 1).results                        .map(::Media) // Maps TmdbTvShow to your Media class
+//                }
+                //}
+                else -> emptyList()
             }
         } catch (e: Exception) {
             e.printStackTrace()

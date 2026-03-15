@@ -100,7 +100,7 @@ fun SearchPage(
                     items(movies) { movie ->
                         ListItem(
                             headlineContent = {
-                                Text("${movie.title.orEmpty()}, ${movie.releaseDate?.year}")
+                                Text(movie.title.orEmpty() + movie.releaseDate?.let { ", ${it.year}" }.orEmpty())
                             },
                             leadingContent = {
                                 PosterItem(

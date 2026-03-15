@@ -147,7 +147,7 @@ fun MediaContent(
         scrollState = scrollState,
         title = movie.title,
         onNavigateBack = onNavigateBack,
-    ) { padding, fullscreenImageModifier ->
+    ) { innerPadding, fullscreenImageModifier ->
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
