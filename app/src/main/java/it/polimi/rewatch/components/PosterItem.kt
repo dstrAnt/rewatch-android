@@ -34,8 +34,8 @@ import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import it.polimi.rewatch.common.onMovieClick
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaType
 
 @Composable
 fun PosterItem3(
@@ -164,7 +164,7 @@ fun PosterItem(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMovieClick(id.toString(), mediaType, context)
+                onMovieClick(id, mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {

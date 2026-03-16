@@ -55,8 +55,8 @@ import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaType
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
@@ -127,8 +127,8 @@ fun PersonContent(
             .map(::Media)
             .distinctBy { it.id to it.type }
             .sortedWith(
-                compareBy<Media> { it.stringDate.isNullOrBlank() }
-                    .thenByDescending { it.stringDate },
+                compareBy<Media> { it.releaseDate.toString().isBlank() }
+                    .thenByDescending { it.releaseDate.toString() },
             )
             .toList() // Terminal operation: builds the final list just once
     }

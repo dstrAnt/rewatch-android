@@ -39,9 +39,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
+import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
-import it.polimi.rewatch.screens.media.MediaType
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.tracking.TrackingPage

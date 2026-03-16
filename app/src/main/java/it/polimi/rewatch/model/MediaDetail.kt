@@ -1,4 +1,4 @@
-package it.polimi.rewatch.screens.media
+package it.polimi.rewatch.model
 
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.model.TmdbCast
@@ -8,20 +8,16 @@ import app.moviebase.tmdb.model.TmdbCrew
 import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbEpisodeDetail
 import app.moviebase.tmdb.model.TmdbGenre
-import app.moviebase.tmdb.model.TmdbMovie
 import app.moviebase.tmdb.model.TmdbMovieDetail
-import app.moviebase.tmdb.model.TmdbPersonCredit
-import app.moviebase.tmdb.model.TmdbPersonCredit.Movie
-import app.moviebase.tmdb.model.TmdbPersonCredit.Show
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
 import app.moviebase.tmdb.model.TmdbSeason
 import app.moviebase.tmdb.model.TmdbSeasonDetail
-import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import app.moviebase.tmdb.model.TmdbShowStatus
 import kotlinx.datetime.LocalDate
 
+// Data object for relative screen
 data class MediaDetail(
     val title: String?,
     val posterPath: String?,
@@ -166,59 +162,4 @@ sealed interface MediaSpecificDetails {
     data class Season(
         val episodes: List<TmdbEpisode>?,
     ) : MediaSpecificDetails
-}
-
-data class Media(
-    val id: Int,
-    val posterImage: TmdbImage?,
-    val posterPath: String?,
-    val releaseDate: LocalDate?,
-    val stringDate: String?,
-    val title: String?,
-    val type: MediaType,
-) {
-    // Constructor for Movie Data
-    constructor(movie: TmdbMovie) : this(
-        id = movie.id,
-        posterImage = movie.posterImage,
-        posterPath = movie.posterPath,
-        releaseDate = movie.releaseDate,
-        stringDate = movie.releaseDate.toString(),
-        title = movie.title,
-        type = MediaType.MOVIE,
-    )
-
-    constructor(movie: TmdbShow) : this(
-        id = movie.id,
-        posterImage = movie.posterImage,
-        posterPath = movie.posterPath,
-        releaseDate = movie.firstAirDate,
-        stringDate = movie.firstAirDate.toString(),
-        title = movie.name,
-        type = MediaType.TV_SHOW,
-    )
-    constructor(credit: TmdbPersonCredit) : this(
-        // If 'id' and 'posterPath' are shared properties on the base TmdbPersonCredit class,
-        // you can call them directly like this:
-        id = credit.id,
-        posterImage = null,
-        posterPath = credit.posterPath,
-        // For properties that differ, use inline 'when' statements:
-        releaseDate = when (credit) {
-            is Movie -> credit.releaseDate
-            is Show -> credit.firstAirDate
-        },
-        stringDate = when (credit) {
-            is Movie -> credit.releaseDate.toString()
-            is Show -> credit.firstAirDate.toString()
-        },
-        title = when (credit) {
-            is Movie -> credit.title
-            is Show -> credit.name
-        },
-        type = when (credit) {
-            is Movie -> MediaType.MOVIE
-            is Show -> MediaType.TV_SHOW
-        },
-    )
 }

@@ -10,7 +10,7 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.screens.media.Media
+import it.polimi.rewatch.model.Media
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -67,8 +67,8 @@ class PersonViewModel @AssistedInject constructor(
             .map(::Media)
             .distinctBy { it.id to it.type }
             .sortedWith(
-                compareBy<Media> { it.stringDate.isNullOrBlank() }
-                    .thenByDescending { it.stringDate },
+                compareBy<Media> { it.releaseDate.toString().isBlank() }
+                    .thenByDescending { it.releaseDate.toString() },
             )
             .toList()
     }

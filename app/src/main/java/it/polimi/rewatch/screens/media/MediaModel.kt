@@ -8,14 +8,13 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.MediaType
 
 data class MovieData(
     var movie: MediaDetail, var similar: List<Media>,
 )
-
-enum class MediaType {
-    MOVIE, TV_SHOW, EPISODE, SEASON
-}
 
 @HiltViewModel(assistedFactory = MediaViewModel.Factory::class)
 class MediaViewModel @AssistedInject constructor(

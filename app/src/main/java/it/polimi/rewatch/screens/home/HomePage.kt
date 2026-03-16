@@ -43,7 +43,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.model.TmdbMovie
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.model.MediaType
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)

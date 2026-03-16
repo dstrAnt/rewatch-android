@@ -8,12 +8,12 @@ import app.moviebase.tmdb.model.TmdbDiscover
 import app.moviebase.tmdb.model.TmdbDiscoverMovieSortBy
 import app.moviebase.tmdb.model.TmdbDiscoverTimeRange
 import app.moviebase.tmdb.model.TmdbTimeWindow
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.screens.home.HomeData
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaDetail
-import it.polimi.rewatch.screens.media.MediaType
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
+import it.polimi.rewatch.screens.search.SearchType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -133,31 +133,32 @@ class TmdbRepository @Inject constructor(
 
     suspend fun searchMedia(
         query: String,
-        mediaType: MediaType,
+        searchType: SearchType,
     ): List<Media> {
         if (query.isBlank()) {
             return emptyList()
         }
 
         return try {
-            when (mediaType) {
-                MediaType.MOVIE -> {
+            when (searchType) {
+                SearchType.MOVIES -> {
                     tmdb.search.findMovies(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
                         .map(::Media) // Maps TmdbMovie to your Media class
                 }
 
-                MediaType.TV_SHOW -> {
+                SearchType.TV -> {
                     // Note: The exact method name depends on your TMDB library wrapper,
                     // it might be findTv(), searchTv(), or findTvShows()
                     tmdb.search.findShows(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
                         .map(::Media) // Maps TmdbTvShow to your Media class
                 }
-//                MediaType.TV_SHOW -> {
-//                    tmdb.search.findPeople(query = query, page = 1).results                        .map(::Media) // Maps TmdbTvShow to your Media class
-//                }
-                //}
+//
+                SearchType.CAST -> {
+                    tmdb.search.findPeople(query = query, page = 1).results.map(::Media) // Maps TmdbTvShow to your Media class
+                }
+
                 else -> emptyList()
             }
         } catch (e: Exception) {

@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.model.Media
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -25,13 +24,13 @@ class SearchViewModel @Inject constructor(
     // Backing property for the search text
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
-    private val _mediaType = MutableStateFlow(MediaType.MOVIE)
+    private val _mediaType = MutableStateFlow(SearchType.MOVIES)
 
     // Public immutable state that the Composable will observe
-    val mediaType: StateFlow<MediaType> = _mediaType.asStateFlow()
+    val mediaType: StateFlow<SearchType> = _mediaType.asStateFlow()
 
     // Function to update the state
-    fun onTabChanged(newText: MediaType) {
+    fun onTabChanged(newText: SearchType) {
         _mediaType.value = newText
     }
 

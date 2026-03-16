@@ -48,9 +48,9 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import it.polimi.rewatch.screens.media.Media
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.media.MediaActivity
-import it.polimi.rewatch.screens.media.MediaType
 import it.polimi.rewatch.screens.media.expandableSection
 import it.polimi.rewatch.screens.person.PersonActivity
 import java.text.SimpleDateFormat

@@ -51,8 +51,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.onMovieClick
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaType
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,14 +76,12 @@ fun SearchPage(
                 .padding(top = padding.calculateTopPadding()),
         ) {
             CustomExpandedSearchBar(
+                placeholder = "Search movies...",
                 query = query,
                 onQueryChange = viewModel::onQueryChange,
                 onClearQuery = { viewModel.onQueryChange("") },
+                onTabChange = viewModel::onTabChanged,
                 focusRequester = focusRequester,
-                placeholder = "Search movies...",
-                onValueChange = {
-                    viewModel.onTabChanged(it)
-                },
             )
             // This is the 'content' slot
             val focusManager = LocalFocusManager.current
@@ -139,7 +137,7 @@ fun CustomExpandedSearchBar(
     onClearQuery: () -> Unit,
     focusRequester: FocusRequester,
     placeholder: String = "Search movies...",
-    onValueChange: (MediaType) -> Unit,
+    onTabChange: (SearchType) -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -198,14 +196,14 @@ fun CustomExpandedSearchBar(
                     }
                 }
             }
-            val availableTabs = SearchTabs.entries
+            val availableTabs = SearchType.entries
             var tabState by remember { mutableStateOf(availableTabs.getOrNull(0)) }
 
             CustomTabRow(
                 availableTabs = availableTabs,
                 onClick = {
                     tabState = it
-                    onValueChange(it.type)
+                    onTabChange(it)
                 },
                 title = { it.title },
                 tabState = tabState,
@@ -214,6 +212,6 @@ fun CustomExpandedSearchBar(
     }
 }
 
-enum class SearchTabs(val title: String, val type: MediaType) {
+enum class SearchType(val title: String, val type: MediaType) {
     MOVIES("Films", MediaType.MOVIE), TV("Tv", MediaType.TV_SHOW), CAST("Cast, Crew, Studios", MediaType.MOVIE),
 }

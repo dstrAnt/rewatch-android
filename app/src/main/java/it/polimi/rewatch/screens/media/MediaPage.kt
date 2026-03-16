@@ -83,6 +83,10 @@ import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.MediaSpecificDetails
+import it.polimi.rewatch.model.MediaType
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 
@@ -374,7 +378,6 @@ fun LazyListScope.tabbedSection(
 
         item {
             HorizontalDivider()
-
 
             CustomTabRow(
                 availableTabs = availableTabs,

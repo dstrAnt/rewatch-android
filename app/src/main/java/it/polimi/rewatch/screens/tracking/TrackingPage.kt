@@ -35,10 +35,10 @@ import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomeData
 import it.polimi.rewatch.screens.home.HomeViewModel
-import it.polimi.rewatch.screens.media.Media
-import it.polimi.rewatch.screens.media.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
