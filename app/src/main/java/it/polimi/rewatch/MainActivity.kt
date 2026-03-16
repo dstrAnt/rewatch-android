@@ -38,10 +38,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomePage
-import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -51,6 +51,7 @@ import it.polimi.rewatch.theme.RewatchTheme
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(
@@ -84,18 +85,9 @@ fun RewatchApp() {
                 .padding(bottom = outerPadding.calculateBottomPadding()),
         ) {
             when (bottomBarState) {
-                AppDestinations.MOVIE -> TrackingPage {}
+                AppDestinations.MOVIE -> TrackingPage(type = MediaType.MOVIE) {}
 
-                AppDestinations.TV -> MediaPage(
-                    "1396",
-                    mediaType = MediaType.TV_SHOW,
-                    padding = PaddingValues(
-                        outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                        outerPadding.calculateTopPadding(),
-                        outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                    ),
-                    onNavigateBack = {},
-                )
+                AppDestinations.TV -> TrackingPage(type = MediaType.TV_SHOW) {}
 
                 AppDestinations.HOME -> {
                     HomePage()

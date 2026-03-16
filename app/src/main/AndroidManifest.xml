@@ -15,9 +15,8 @@
         android:theme="@style/Theme.Rewatch">
         <activity
             android:name="it.polimi.rewatch.MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.Rewatch">
+            android:theme="@style/Theme.App.Starting"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
