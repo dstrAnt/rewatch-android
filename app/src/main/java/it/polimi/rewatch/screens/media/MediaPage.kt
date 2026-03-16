@@ -138,7 +138,7 @@ fun MediaContent(
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
-    var selectedTab by rememberSaveable { mutableStateOf<TabItem?>(null) }
+    var selectedTab by remember { mutableStateOf<TabItem?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
@@ -214,7 +214,13 @@ fun MediaContent(
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
                     showDividers = true,
-                    divider = { HorizontalDivider(Modifier.padding(start = 75.dp)) },
+                    divider = {
+                        HorizontalDivider(
+                            Modifier
+                                .padding(start = 75.dp)
+                                .animateItem(),
+                        )
+                    },
                     initialVisibleCount = 3,
                 ) {
                     ReviewItem(it)
@@ -283,7 +289,7 @@ private fun buildTabs(
                         number = it?.seasonNumber,
                         name = it?.name,
                         date = it?.airDate,
-                        count = "${it?.episodeCount} episodes",
+                        count = it?.episodeCount?.let { "${it} episodes" }.orEmpty(),
                         mediaType = MediaType.SEASON,
                         mediaId,
                     )
@@ -304,7 +310,7 @@ private fun buildTabs(
                         number = it?.episodeNumber,
                         name = it?.name,
                         date = it?.airDate,
-                        count = "${it?.runtime} min",
+                        count = it?.runtime?.let { "${it} min" }.orEmpty(),
                         mediaType = MediaType.EPISODE,
                         mediaId,
                     )
@@ -468,7 +474,7 @@ fun <T> LazyListScope.expandableSection(
     onToggleSection: (String) -> Unit,
     initialVisibleCount: Int = 3,
     showDividers: Boolean = false,
-    divider: @Composable () -> Unit = ::HorizontalDivider,
+    divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
     itemContent: @Composable LazyItemScope.(T?) -> Unit,
 ) {
 // 1. Evaluate the state internall
@@ -492,6 +498,7 @@ fun <T> LazyListScope.expandableSection(
             if (isExpanded) "Hide $title" else "Show $remaining more",
             onClick = { onToggleSection(title) },
             isExpanded = isExpanded,
+            modifier = Modifier.animateItem(),
         )
     }
 }
@@ -592,13 +599,15 @@ fun TitleAndInfoSection(
             }
         }
 
-        BorderBox {
-            RewatchAsyncImage(
-                model = posterImage?.let { build(it, width = 100, height = 100) },
-                contentScale = ContentScale.Fit,
-                contentDescription = title.orEmpty(),
-                modifier = modifier.height(150.dp),
-            )
+        posterImage?.let {
+            BorderBox {
+                RewatchAsyncImage(
+                    model = build(it, width = 100, height = 100),
+                    contentScale = ContentScale.Fit,
+                    contentDescription = title.orEmpty(),
+                    modifier = modifier.height(150.dp),
+                )
+            }
         }
     }
 }
@@ -789,7 +798,7 @@ fun PersonItem(person: TmdbAnyPerson?) = ListItem(
 )
 
 @Composable
-fun ReviewItem(review: TmdbReview?) {
+fun LazyItemScope.ReviewItem(review: TmdbReview?) {
     var isExpanded by remember { mutableStateOf(false) }
 
     ListItem(
@@ -832,6 +841,7 @@ fun ReviewItem(review: TmdbReview?) {
             )
         },
         modifier = Modifier
+            .animateItem()
             .animateContentSize()
             .clickable { isExpanded = !isExpanded },
     )
@@ -914,14 +924,15 @@ fun EpisodeItem(
         )
     },
     supportingContent = {
-        val dateFormatted = date.toString().formatDate("d MMM YYYY")
-        val separator = if (dateFormatted != "") " • " else ""
-
-        Text(
-            text = "$dateFormatted$separator$count",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        val dateFormatted = date?.toString()?.formatDate("d MMM YYYY") ?: ""
+        val separator = if (dateFormatted.isNotBlank() && count.isNotBlank()) " • " else ""
+        val text = "$dateFormatted$separator$count"
+        if (text.isNotBlank())
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
     },
     modifier = LocalContext.current.let {
         Modifier.clickable {

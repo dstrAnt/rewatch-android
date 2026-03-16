@@ -2,20 +2,15 @@ package it.polimi.rewatch.screens.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.model.TmdbMovie
+import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.MediaType
@@ -90,20 +86,7 @@ fun HomeContent(
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
 
-    LazyVerticalGrid(
-        // This creates exactly 4 columns, allocating 1/4 of the width to each
-        columns = GridCells.Fixed(4),
-        // Adds 5.dp spacing between the columns
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-        // Optional: Adds padding around the entire grid so the edges aren't flush against the screen
-        contentPadding = PaddingValues(5.dp),
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize()
-            .padding(horizontal = 7.dp),
-        // <--- Put it here!
-    ) {
+    CustomLazyGrid {
         movieSection(
             "Trending", data.trending,
             expandedSectionIds = expandedSectionIds,
@@ -137,7 +120,7 @@ fun LazyGridScope.movieSection(
             color = Color.White,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
-                .padding(bottom = 15.dp)
+                .padding(bottom = 10.dp)
                 .animateItem(fadeInSpec = null, fadeOutSpec = null),
         )
     }

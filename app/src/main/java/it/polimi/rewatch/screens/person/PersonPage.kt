@@ -10,14 +10,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
+import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.formatDate
@@ -145,18 +143,12 @@ fun PersonContent(
         onNavigateBack,
         scrollState,
     ) { innerPadding, fullscreenImageModifier ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
+        CustomLazyGrid(
             state = scrollState,
-            horizontalArrangement = Arrangement.spacedBy(7.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp),
             contentPadding = PaddingValues(
                 top = padding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 5.dp,
                 start = 5.dp, end = 5.dp,
             ),
-            modifier = Modifier
-                .padding(horizontal = 7.dp)
-                .fillMaxSize(),
         ) {
             // 3. HEADER SECTION: Takes up all 4 columns via GridItemSpan
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -194,7 +186,7 @@ fun PersonContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 7.dp)
+                            .padding(top = 10.dp, bottom = 3.dp)
                             .padding(horizontal = 7.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,

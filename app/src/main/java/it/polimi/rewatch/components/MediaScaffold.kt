@@ -55,6 +55,7 @@ fun MediaScaffold(
     title: String?,
     onNavigateBack: () -> Unit,
     scrollState: ScrollableState,
+    modifier: Modifier = Modifier,
     content: @Composable (PaddingValues, (String?) -> Modifier) -> Unit,
 ) {
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
@@ -64,6 +65,7 @@ fun MediaScaffold(
         topBar = {
             AppearingTopBar(scrollState, title, onNavigateBack)
         },
+        modifier = modifier,
     ) { padding ->
         content.invoke(
             padding,

@@ -14,15 +14,23 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.GridCells.Fixed
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -91,7 +99,7 @@ fun ExpandBtn(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(15.dp),
@@ -130,6 +138,7 @@ fun BorderBox(
         content()
     }
 }
+
 fun onMediaClick(
     media: Media,
     context: Context,
@@ -148,6 +157,7 @@ fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
 
     return Pair(mediaId, mediaType)
 }
+
 fun onMediaClick(
     mediaId: String,
     mediaType: MediaType,
@@ -209,6 +219,7 @@ fun Modifier.pulseEffect(): Modifier = composed {
     // Use a solid color with the animated alpha
     background(Color.LightGray.copy(alpha = alpha))
 }
+
 fun Modifier.layoutEvade(
     padding: Dp = 7.dp,
 ) = this.layout { measurable, constraints ->
@@ -286,27 +297,42 @@ fun <T> CustomTabRow(
     onClick: (T) -> Unit,
     title: (T) -> String,
     tabState: T?,
+) = PrimaryScrollableTabRow(
+    edgePadding = 8.dp,
+    selectedTabIndex = availableTabs.indexOf(
+        tabState,
+    ),
 ) {
-    PrimaryScrollableTabRow(
-        edgePadding = 8.dp,
-        selectedTabIndex = availableTabs.indexOf(
-            tabState,
-        ),
-    ) {
-        availableTabs.forEach {
-            Tab(
-                modifier = Modifier.height(50.dp),
-                selected = it == tabState,
-                onClick = { onClick(it) },
-                text = {
-                    Text(
-                        text = title(it),
-                        style = MaterialTheme.typography.labelLarge, // Explicitly setting it here
+    availableTabs.forEach {
+        Tab(
+            modifier = Modifier.height(50.dp),
+            selected = it == tabState,
+            onClick = { onClick(it) },
+            text = {
+                Text(
+                    text = title(it),
+                    style = MaterialTheme.typography.labelLarge, // Explicitly setting it here
 //                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
-                    )
-                },
-            )
-        }
+                )
+            },
+        )
     }
 }
 
+@Composable
+fun CustomLazyGrid(
+    state: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
+    content: LazyGridScope.() -> Unit,
+) = LazyVerticalGrid(
+    columns = Fixed(4),
+    state = state,
+    horizontalArrangement = Arrangement.spacedBy(7.dp),
+    verticalArrangement = Arrangement.spacedBy(7.dp),
+    contentPadding = contentPadding,
+    modifier = Modifier
+        .fillMaxSize()
+        .animateContentSize()
+        .padding(horizontal = 7.dp),
+    content = content,
+)
