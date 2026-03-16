@@ -209,8 +209,10 @@ fun Modifier.pulseEffect(): Modifier = composed {
     // Use a solid color with the animated alpha
     background(Color.LightGray.copy(alpha = alpha))
 }
-fun Modifier.layoutEvade() = this.layout { measurable, constraints ->
-    val paddingPx = 7.dp.roundToPx()
+fun Modifier.layoutEvade(
+    padding: Dp = 7.dp,
+) = this.layout { measurable, constraints ->
+    val paddingPx = padding.roundToPx()
     // Tell the header it is allowed to be wider than the grid allows
     val expandedConstraints = constraints.copy(
         maxWidth = constraints.maxWidth + (paddingPx * 2),

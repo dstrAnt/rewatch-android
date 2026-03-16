@@ -152,16 +152,18 @@ fun PersonContent(
             verticalArrangement = Arrangement.spacedBy(7.dp),
             contentPadding = PaddingValues(
                 top = padding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 5.dp,
-                start = 7.dp, end = 7.dp,
+                start = 5.dp, end = 5.dp,
             ),
             modifier = Modifier
+                .padding(horizontal = 7.dp)
                 .fillMaxSize(),
         ) {
             // 3. HEADER SECTION: Takes up all 4 columns via GridItemSpan
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .layoutEvade(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     ProfilePicture(
@@ -180,7 +182,7 @@ fun PersonContent(
                         Modifier.layoutEvade(),
                     ) {
                         Spacer(Modifier.height(16.dp))
-                        HorizontalDivider(color = Color.DarkGray)
+                        HorizontalDivider()
                         CustomTabRow(
                             availableTabs = availableTabs,
                             onClick = { it: String -> currentTab = it },
@@ -192,7 +194,8 @@ fun PersonContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 10.dp, horizontal = 10.dp),
+                            .padding(top = 7.dp)
+                            .padding(horizontal = 7.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -372,12 +375,20 @@ fun MediaTypeFilterChips(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MediaTypeFilter.entries.forEach { filter ->
-            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides (1.dp)) {
+            CompositionLocalProvider(
+                LocalMinimumInteractiveComponentSize provides 0.dp,
+            ) {
                 FilterChip(
+                    modifier = Modifier.height(28.dp),
                     selected = selectedFilter == filter,
                     onClick = { onFilterSelected(filter) },
-                    label = { Text(text = filter.label, style = MaterialTheme.typography.labelMedium) },
-                    contentPadding = PaddingValues(4.dp),
+                    label = {
+                        Text(
+                            text = filter.label,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    },
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                 )
             }
         }
