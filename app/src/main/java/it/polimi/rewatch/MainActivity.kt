@@ -44,6 +44,7 @@ import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaType
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
 
 @AndroidEntryPoint // 2. Add this annotation!
@@ -83,16 +84,7 @@ fun RewatchApp() {
                 .padding(bottom = outerPadding.calculateBottomPadding()),
         ) {
             when (bottomBarState) {
-                AppDestinations.MOVIE -> MediaPage(
-                    "1317288",
-                    mediaType = MediaType.MOVIE,
-                    padding = PaddingValues(
-                        outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                        outerPadding.calculateTopPadding(),
-                        outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                    ),
-                    onNavigateBack = {},
-                )
+                AppDestinations.MOVIE -> TrackingPage {}
 
                 AppDestinations.TV -> MediaPage(
                     "1396",

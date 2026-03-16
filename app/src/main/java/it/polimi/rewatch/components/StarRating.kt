@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 fun StarRating(
     rating: Double,
     maxRating: Int = 5,
+    starSize: Dp = 15.dp,
 ) {
     // Convertiamo il voto da base 10 a base 5
     val starRating = (rating / 2).coerceIn(0.0, 5.0)
@@ -31,7 +33,6 @@ fun StarRating(
     val partialStarFill = (starRating - fullStars).toFloat()
     val emptyStars =
         maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
-    val starSize = 15.dp
     Row(verticalAlignment = Alignment.CenterVertically) {
         // 1. Stelle Piene
         repeat(fullStars) {
@@ -49,7 +50,7 @@ fun StarRating(
                 Icon(
                     Icons.Filled.Star,
                     contentDescription = null,
-                    tint = Color.LightGray,
+                    tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.size(starSize),
                 )
                 // Parte riempita (ritagliata)
