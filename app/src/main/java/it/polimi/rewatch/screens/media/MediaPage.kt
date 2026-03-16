@@ -35,8 +35,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,7 +69,9 @@ import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbReview
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.BorderBox
+import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandBtn
+import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
@@ -134,7 +134,7 @@ fun MediaContent(
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
-    var selectedTabTitle by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedTab by rememberSaveable { mutableStateOf<TabItem?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
@@ -191,10 +191,10 @@ fun MediaContent(
 //            println(movie.crew)
             tabbedSection(
                 allTabs = tabs,
-                selectedTabTitle = selectedTabTitle,
+                activeTab = selectedTab,
                 // Pass the volatile state here
                 onTabSelected = { title ->
-                    selectedTabTitle = title
+                    selectedTab = title
                     expandedSectionIds = emptySet() // Clear expansions on tab switch
                 },
             )
@@ -209,6 +209,8 @@ fun MediaContent(
                     itemsList = movie.reviews,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
+                    showDividers = true,
+                    divider = { HorizontalDivider(Modifier.padding(start = 75.dp)) },
                     initialVisibleCount = 3,
                 ) {
                     ReviewItem(it)
@@ -359,42 +361,32 @@ fun LazyListScope.optionalTitledSection(
 
 fun LazyListScope.tabbedSection(
     allTabs: List<TabItem>,
-    selectedTabTitle: String?,
+    activeTab: TabItem?,
     // Add this
-    onTabSelected: (String) -> Unit,
+    onTabSelected: (TabItem) -> Unit,
 ) {
     // 1. Perform the available tabs calculation
     val availableTabs = allTabs.filter { it.isAvailable() }
 
     if (availableTabs.isNotEmpty()) {
         // 2. Resolve the active tab (fallback to the first available if none selected/found)
-        val activeTab = availableTabs.find { it.title == selectedTabTitle } ?: availableTabs.first()
+        val activeTab = availableTabs.find { it == activeTab } ?: availableTabs.first()
 
         item {
             HorizontalDivider()
 
-            PrimaryScrollableTabRow(
-                edgePadding = 8.dp,
-                selectedTabIndex = availableTabs.indexOf(activeTab).coerceAtLeast(0),
-            ) {
-                availableTabs.forEach { tab ->
-                    Tab(
-                        selected = tab.title == activeTab.title,
-                        onClick = { onTabSelected(tab.title) },
-                        text = {
-                            Text(
-                                text = tab.title,
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        },
-                    )
-                }
-            }
+
+            CustomTabRow(
+                availableTabs = availableTabs,
+                onClick = onTabSelected,
+                title = { it.title },
+                tabState = activeTab,
+            )
             Spacer(Modifier.height(7.dp))
         }
         // 3. Render the content seamlessly
 // Pass the state into the content execution
-        activeTab.content(this)
+        activeTab?.content(this)
     }
 }
 
@@ -473,6 +465,7 @@ fun <T> LazyListScope.expandableSection(
     onToggleSection: (String) -> Unit,
     initialVisibleCount: Int = 3,
     showDividers: Boolean = false,
+    divider: @Composable () -> Unit = ::HorizontalDivider,
     itemContent: @Composable LazyItemScope.(T?) -> Unit,
 ) {
 // 1. Evaluate the state internall
@@ -483,7 +476,7 @@ fun <T> LazyListScope.expandableSection(
         items = visibleItems,
         itemContent = { idx, item ->
             itemContent.invoke(this, item)
-            if (showDividers && idx != itemsList.lastIndex) HorizontalDivider()
+            if (showDividers && idx != itemsList.lastIndex) divider()
         },
     )
     //println(title + itemsList.size)
@@ -496,29 +489,6 @@ fun <T> LazyListScope.expandableSection(
             if (isExpanded) "Hide $title" else "Show $remaining more",
             onClick = { onToggleSection(title) },
             isExpanded = isExpanded,
-        )
-    }
-}
-
-@Composable
-fun ExpandableText(
-    text: String,
-    modifier: Modifier = Modifier,
-    maxLines: Int = 3,
-) {
-    var isExpanded by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .animateContentSize() // 1. Internal: Handle animation first
-            .clickable { isExpanded = !isExpanded } // 2. Internal: Handle click logic
-            .then(modifier), // 3. Argument: Apply user modifiers (padding, background, etc.) last    )
-    ) {
-        Text(
-            text = text,
-            // When expanded, we set maxLines to Int.MAX_VALUE
-            maxLines = if (isExpanded) Int.MAX_VALUE else maxLines,
-            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -819,58 +789,49 @@ fun PersonItem(person: TmdbAnyPerson?) = ListItem(
 fun ReviewItem(review: TmdbReview?) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(15.dp),
+    ListItem(
+        leadingContent = {
+            RewatchAsyncImage(
+                model = review?.authorDetails?.avatarPath?.let { image ->
+                    build(image, TmdbImageType.PROFILE, width = 70, height = 70)
+                },
+                contentDescription = "Avatar for ${review?.author}",
+                fallbackIcon = Icons.Default.Person,
+                modifier = Modifier
+                    .size(45.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, Color.Gray, CircleShape),
+            )
+        },
+        headlineContent = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = review?.author.orEmpty(),
+                    modifier = Modifier.weight(1f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                review?.authorDetails?.rating?.toDouble()?.let { rating ->
+                    StarRating(rating)
+                }
+            }
+        },
+        supportingContent = {
+            Text(
+                text = review?.content.orEmpty(),
+                maxLines = if (isExpanded) Int.MAX_VALUE else 5,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         modifier = Modifier
             .animateContentSize()
-            .clickable { isExpanded = !isExpanded }
-            .padding(top = 7.dp, start = 15.dp), // end = 0.dp is default, so it can be omitted
-    ) {
-        RewatchAsyncImage(
-            model = review?.authorDetails?.avatarPath?.let { image ->
-                build(image, TmdbImageType.PROFILE, width = 70, height = 70)
-            },
-            contentDescription = "Avatar for ${review?.author}",
-            fallbackIcon = Icons.Default.Person,
-            modifier = Modifier
-                .size(45.dp)
-                .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape),
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(7.dp),
-        ) {
-            Column(
-                modifier = Modifier.padding(end = 15.dp),
-                verticalArrangement = Arrangement.spacedBy(7.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        text = review?.author.orEmpty(),
-                        modifier = Modifier.weight(1f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    review?.authorDetails?.rating?.toDouble()?.let { rating ->
-                        StarRating(rating)
-                    }
-                }
-                Text(
-                    text = review?.content.orEmpty(),
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 5,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            HorizontalDivider()
-        }
-    }
+            .clickable { isExpanded = !isExpanded },
+    )
 }
 
 @Composable
@@ -931,39 +892,37 @@ fun EpisodeItem(
     count: String,
     mediaType: MediaType,
     showId: String,
-) {
-    ListItem(
-        leadingContent = {
-            Text(
-                text = number.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.width(30.dp),
-                textAlign = TextAlign.Center,
-            )
-        },
-        headlineContent = {
-            Text(
-                text = name ?: "Untitled",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        },
-        supportingContent = {
-            val dateFormatted = date.toString().formatDate("d MMM YYYY")
-            val separator = if (dateFormatted != "") " • " else ""
+) = ListItem(
+    leadingContent = {
+        Text(
+            text = number.toString(),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.width(30.dp),
+            textAlign = TextAlign.Center,
+        )
+    },
+    headlineContent = {
+        Text(
+            text = name ?: "Untitled",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    },
+    supportingContent = {
+        val dateFormatted = date.toString().formatDate("d MMM YYYY")
+        val separator = if (dateFormatted != "") " • " else ""
 
-            Text(
-                text = "$dateFormatted$separator$count",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-        modifier = LocalContext.current.let {
-            Modifier.clickable {
-                onMovieClick(showId + "_" + number, mediaType, it)
-            }
-        },
-    )
-}
+        Text(
+            text = "$dateFormatted$separator$count",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    },
+    modifier = LocalContext.current.let {
+        Modifier.clickable {
+            onMovieClick(showId + "_" + number, mediaType, it)
+        }
+    },
+)

@@ -2,6 +2,7 @@ package it.polimi.rewatch.common
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -28,11 +29,15 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -40,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.screens.media.Media
@@ -260,5 +266,56 @@ data class TabItem(
     }
 }
 
+@Composable
+fun ExpandableText(
+    text: String,
+    modifier: Modifier = Modifier,
+    maxLines: Int = 3,
+) {
+    var isExpanded by remember { mutableStateOf(false) }
 
+    Box(
+        modifier = Modifier
+            .animateContentSize() // 1. Internal: Handle animation first
+            .clickable { isExpanded = !isExpanded } // 2. Internal: Handle click logic
+            .then(modifier), // 3. Argument: Apply user modifiers (padding, background, etc.) last    )
+    ) {
+        Text(
+            text = text,
+            // When expanded, we set maxLines to Int.MAX_VALUE
+            maxLines = if (isExpanded) Int.MAX_VALUE else maxLines,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+fun <T> CustomTabRow(
+    availableTabs: List<T>,
+    onClick: (T) -> Unit,
+    title: (T) -> String,
+    tabState: T?,
+) {
+    PrimaryScrollableTabRow(
+        edgePadding = 8.dp,
+        selectedTabIndex = availableTabs.indexOf(
+            tabState,
+        ),
+    ) {
+        availableTabs.forEach {
+            Tab(
+                modifier = Modifier.height(50.dp),
+                selected = it == tabState,
+                onClick = { onClick(it) },
+                text = {
+                    Text(
+                        text = title(it),
+                        style = MaterialTheme.typography.labelLarge, // Explicitly setting it here
+//                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
+                    )
+                },
+            )
+        }
+    }
+}
 

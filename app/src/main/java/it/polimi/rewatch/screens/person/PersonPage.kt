@@ -27,8 +27,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -49,13 +47,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
+import it.polimi.rewatch.common.CustomTabRow
+import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.screens.media.ExpandableText
 import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
 import java.time.LocalDate
@@ -180,10 +179,13 @@ fun PersonContent(
                     Column(
                         Modifier.layoutEvade(),
                     ) {
-                        PersonTabs(
+                        Spacer(Modifier.height(16.dp))
+                        HorizontalDivider(color = Color.DarkGray)
+                        CustomTabRow(
                             availableTabs = availableTabs,
-                            selectedTabIndex = availableTabs.indexOf(currentTab),
-                            onTabSelected = { currentTab = availableTabs[it] },
+                            onClick = { it: String -> currentTab = it },
+                            title = { it.capitalize() },
+                            tabState = currentTab,
                         )
                     }
                     // Header for the Grid Filters
@@ -238,33 +240,6 @@ private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
             }
         }.thenBy { it },
     )
-}
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@Composable
-private fun PersonTabs(
-    availableTabs: List<String>,
-    selectedTabIndex: Int,
-    onTabSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Spacer(Modifier.height(16.dp))
-    HorizontalDivider(color = Color.DarkGray)
-
-    PrimaryScrollableTabRow(selectedTabIndex = selectedTabIndex, edgePadding = 8.dp, modifier = modifier) {
-        availableTabs.forEachIndexed { index, title ->
-            Tab(
-                selected = selectedTabIndex == index,
-                onClick = { onTabSelected(index) },
-                text = {
-                    Text(
-                        text = title.capitalize(),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                },
-            )
-        }
-    }
 }
 
 @Composable

@@ -3,8 +3,8 @@ package it.polimi.rewatch.screens.search
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,11 +23,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -40,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -49,8 +48,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.onMovieClick
 import it.polimi.rewatch.components.PosterItem
+import it.polimi.rewatch.screens.media.Media
 import it.polimi.rewatch.screens.media.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,46 +84,52 @@ fun SearchPage(
                 onValueChange = {
                     viewModel.onTabChanged(it)
                 },
-            ) {
-                // This is the 'content' slot
-                val focusManager = LocalFocusManager.current
-                val listState = rememberLazyListState()
+            )
+            // This is the 'content' slot
+            val focusManager = LocalFocusManager.current
+            val listState = rememberLazyListState()
 
-                LaunchedEffect(listState.isScrollInProgress) {
-                    if (listState.isScrollInProgress) {
-                        focusManager.clearFocus()
-                    }
+            LaunchedEffect(listState.isScrollInProgress) {
+                if (listState.isScrollInProgress) {
+                    focusManager.clearFocus()
                 }
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    state = listState,
-                ) {
-                    items(movies) { movie ->
-                        ListItem(
-                            headlineContent = {
-                                Text(movie.title.orEmpty() + movie.releaseDate?.let { ", ${it.year}" }.orEmpty())
-                            },
-                            leadingContent = {
-                                PosterItem(
-                                    movie, modifier = Modifier.size(60.dp, 90.dp),
-                                )
-                            },
-                            modifier = LocalContext.current.let {
-                                Modifier.clickable {
-                                    // 2. Trigger callback with the movie ID
-                                    focusManager.clearFocus()
-                                    onMovieClick(movie, it)
-                                }
-                            },
-                        )
+            }
+            // 2. The Results Area
+            LazyColumn(
+                modifier = Modifier.fillMaxHeight(),
+                state = listState,
+            ) {
+                items(movies) {
+                    ResultItem(it, focusManager)
 
-                        HorizontalDivider()
-                    }
+                    HorizontalDivider()
                 }
             }
         }
     }
 }
+
+@Composable
+private fun ResultItem(
+    movie: Media,
+    focusManager: FocusManager,
+) = ListItem(
+    headlineContent = {
+        Text(movie.title.orEmpty() + movie.releaseDate?.let { ", ${it.year}" }.orEmpty())
+    },
+    leadingContent = {
+        PosterItem(
+            movie, modifier = Modifier.size(60.dp, 90.dp),
+        )
+    },
+    modifier = LocalContext.current.let {
+        Modifier.clickable {
+            // 2. Trigger callback with the movie ID
+            focusManager.clearFocus()
+            onMovieClick(movie, it)
+        }
+    },
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,18 +140,15 @@ fun CustomExpandedSearchBar(
     focusRequester: FocusRequester,
     placeholder: String = "Search movies...",
     onValueChange: (MediaType) -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
 
     Surface(
-        modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = SearchBarDefaults.TonalElevation, // Gives it that slight M3 tinted look
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {
@@ -196,33 +200,15 @@ fun CustomExpandedSearchBar(
             }
             val availableTabs = SearchTabs.entries
             var tabState by remember { mutableStateOf(availableTabs.getOrNull(0)) }
-            PrimaryScrollableTabRow(
-                edgePadding = 8.dp,
-                selectedTabIndex = availableTabs.indexOf(
-                    tabState,
-                ),
-            ) {
-                availableTabs.forEach {
-                    Tab(
-                        modifier = Modifier.height(50.dp),
-                        selected = it == tabState,
-                        onClick = {
-                            tabState = it
-                            onValueChange(it.type)
-                        },
-                        text = {
-                            Text(
-                                text = it.title,
-                                style = MaterialTheme.typography.labelLarge, // Explicitly setting it here
-//                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
-                            )
-                        },
-                    )
-                }
-            }
-            // 2. The Results Area
-            Column(
-                modifier = Modifier.fillMaxSize(), content = content,
+
+            CustomTabRow(
+                availableTabs = availableTabs,
+                onClick = {
+                    tabState = it
+                    onValueChange(it.type)
+                },
+                title = { it.title },
+                tabState = tabState,
             )
         }
     }
