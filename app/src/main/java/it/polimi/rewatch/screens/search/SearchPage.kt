@@ -49,10 +49,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
-import it.polimi.rewatch.common.onMovieClick
+import it.polimi.rewatch.common.onMediaClick
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.Media
-import it.polimi.rewatch.model.MediaType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,7 +123,7 @@ private fun ResultItem(
         Modifier.clickable {
             // 2. Trigger callback with the movie ID
             focusManager.clearFocus()
-            onMovieClick(movie, it)
+            onMediaClick(movie, it)
         }
     },
 )
@@ -211,7 +210,6 @@ fun CustomExpandedSearchBar(
         }
     }
 }
-
-enum class SearchType(val title: String, val type: MediaType) {
-    MOVIES("Films", MediaType.MOVIE), TV("Tv", MediaType.TV_SHOW), CAST("Cast, Crew, Studios", MediaType.MOVIE),
+enum class SearchType(val title: String) {
+    MOVIES("Films"), TV("Tv"), CAST("Cast, Crew, Studios"),
 }

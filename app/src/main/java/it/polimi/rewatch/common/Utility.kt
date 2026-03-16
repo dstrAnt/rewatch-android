@@ -130,12 +130,11 @@ fun BorderBox(
         content()
     }
 }
-
-fun onMovieClick(
+fun onMediaClick(
     media: Media,
     context: Context,
 ) {
-    onMovieClick(media.id.toString(), media.type, context)
+    onMediaClick(media.id.toString(), media.type, context)
 }
 
 fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
@@ -149,36 +148,26 @@ fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
 
     return Pair(mediaId, mediaType)
 }
-
-fun onMovieClick(
+fun onMediaClick(
     mediaId: String,
     mediaType: MediaType,
     context: Context,
-) {
-    // Create an Intent to start MovieActivity
-    val intent = Intent(context, MediaActivity::class.java).apply {
+) = context.startActivity(
+    Intent(context, MediaActivity::class.java).apply {
         // Bundle the movieId into the Intent extras
         putExtra("EXTRA_MEDIA_ID", mediaId)
         putExtra("EXTRA_MEDIA_TYPE", mediaType.name) // Passes "MOVIE"
-    }
-    // Launch the activity! (This triggers the native OS transition)
-    context.startActivity(intent)
-}
+    },
+)
 
 fun onPersonClick(
     personId: Int,
     context: Context,
-) {
-    val intent = Intent(
-        context, PersonActivity::class.java,
-    ).apply {
-        putExtra(
-            "EXTRA_PERSON_ID", personId,
-        )
-    }
-
-    context.startActivity(intent)
-}
+) = context.startActivity(
+    Intent(context, PersonActivity::class.java).apply {
+        putExtra("EXTRA_PERSON_ID", personId)
+    },
+)
 
 fun Double.getShortNotation(): String {
     return when {

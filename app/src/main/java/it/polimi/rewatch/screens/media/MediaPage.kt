@@ -75,7 +75,7 @@ import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
-import it.polimi.rewatch.common.onMovieClick
+import it.polimi.rewatch.common.onMediaClick
 import it.polimi.rewatch.common.onPersonClick
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
@@ -389,7 +389,7 @@ fun LazyListScope.tabbedSection(
         }
         // 3. Render the content seamlessly
 // Pass the state into the content execution
-        activeTab?.content(this)
+        activeTab.content(this)
     }
 }
 
@@ -925,7 +925,7 @@ fun EpisodeItem(
     },
     modifier = LocalContext.current.let {
         Modifier.clickable {
-            onMovieClick(showId + "_" + number, mediaType, it)
+            onMediaClick(showId + "_" + number, mediaType, it)
         }
     },
 )

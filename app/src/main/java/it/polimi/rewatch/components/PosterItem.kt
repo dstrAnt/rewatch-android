@@ -33,7 +33,7 @@ import coil3.compose.SubcomposeAsyncImageScope
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import it.polimi.rewatch.common.onMovieClick
+import it.polimi.rewatch.common.onMediaClick
 import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaType
 
@@ -55,7 +55,7 @@ fun PosterItem3(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMovieClick(id.toString(), mediaType, context)
+                onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -112,7 +112,7 @@ fun PosterItem2(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMovieClick(id.toString(), mediaType, context)
+                onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -132,7 +132,7 @@ fun PosterItem2(
 fun PosterItem(
     media: Media,
     modifier: Modifier = Modifier,
-) = PosterItem(media.id.toString(), media.posterPath, media.title, media.type, modifier)
+) = PosterItem(id = media.id.toString(), posterPath = media.posterPath, title = media.title, mediaType = media.type, modifier = modifier)
 
 @Composable
 fun PosterItem(
@@ -141,9 +141,13 @@ fun PosterItem(
     title: String?,
     mediaType: MediaType, // Added parameter
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
 ) {
+
     val shape = RoundedCornerShape(5.dp)
     val context = LocalContext.current // Brought back for onMovieClick
+    val onClickFun = onClick ?: { onMediaClick(id, mediaType, context) }
+
     val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit = {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -162,10 +166,7 @@ fun PosterItem(
             .aspectRatio(2f / 3f)
             .clip(shape)
             .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                onMovieClick(id, mediaType, context)
-            },
+            .clickable(onClick = onClickFun),
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots
@@ -204,7 +205,7 @@ fun PosterItemCustom(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMovieClick(id.toString(), mediaType, context)
+                onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
