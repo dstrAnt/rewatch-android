@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -129,7 +130,7 @@ private fun BottomBar(
     // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
         modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
-        containerColor = MaterialTheme.colorScheme.onSecondaryFixed,
+        containerColor = MaterialTheme.colorScheme.surfaceContainer,
         tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
         windowInsets = NavigationBarDefaults.windowInsets,
     ) {
@@ -141,6 +142,10 @@ private fun BottomBar(
                 onClick = { onClick(destination) },
                 label = null, // Rimuoviamo il testo
                 alwaysShowLabel = false,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSurface,      // Color of the icon when active
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface, // Color of the icon when inactive
+                ),
                 icon = {
                     if (destination.imgVec != null) Icon(
                         imageVector = destination.imgVec,
