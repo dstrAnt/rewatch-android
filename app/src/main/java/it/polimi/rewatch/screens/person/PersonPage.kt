@@ -54,18 +54,16 @@ import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.model.Media
-import it.polimi.rewatch.model.MediaType
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
 
-enum class MediaTypeFilter(val label: String) {
-    ALL("All"),
-    MOVIE("Cinema"),
-    TV_SHOW("TV")
+// 1. Nuovo Enum per l'ordinamento
+enum class SortOrder(val label: String) {
+    POPULARITY("Popularity"),
+    DATE("Date")
 }
 
-// Helper for formatting strings like "acting_role" to "Acting Role"
 private fun String.capitalize(): String = this.replace("_", " ").lowercase().replaceFirstChar {
     if (it.isLowerCase()) it.titlecase() else it.toString()
 }
@@ -93,7 +91,6 @@ fun PersonPage(
     }
 }
 
-// ... other imports
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -102,42 +99,66 @@ fun PersonContent(
     padding: PaddingValues,
     onNavigateBack: () -> Unit,
 ) {
-    // 1. Change to GridState
     val details = data.details
     val scrollState = rememberLazyGridState()
-    // --- Data & State Logic (Moved from DisplayTab) ---
+
     val availableTabs = remember(data) { computeAvailableTabs(data) }
-    var currentTab by remember { mutableStateOf(availableTabs.first()) }
-    var selectedFilter by remember { mutableStateOf(MediaTypeFilter.ALL) }
-    val baseList = remember(currentTab, data) {
+    var currentTab by remember { mutableStateOf(availableTabs.firstOrNull() ?: "") }
+    var selectedSort by remember { mutableStateOf(SortOrder.POPULARITY) }
+
+    val knownFor = remember(details) {
+        details.knownForDepartment?.toString()?.replace("_", " ") ?: "Acting"
+    }
+    val isActingPrimary = remember(knownFor) {
+        knownFor.equals("Acting", ignoreCase = true)
+    }
+
+    // 2. Base list popolata in base alla nuova logica di divisione delle tab
+    val baseList = remember(currentTab, data, knownFor, isActingPrimary) {
         if (currentTab.isBlank()) return@remember emptyList()
-        val isActing = currentTab.equals("Acting", ignoreCase = true)
-        // 1. Combine raw data as sequences to avoid intermediate list allocations
-        val combinedSequence = if (isActing) {
-            data.movieCredits.cast.asSequence() + data.showCredits.cast.asSequence()
-        } else {
-            (data.movieCredits.crew.asSequence() + data.showCredits.crew.asSequence())
-                // 2. Removed redundant .toString().capitalize()
-                .filter { it.department.toString().equals(currentTab, ignoreCase = true) }
+
+        val combinedSequence = when (currentTab) {
+            "Movies" -> {
+                if (isActingPrimary) data.movieCredits.cast.asSequence()
+                else data.movieCredits.crew.asSequence().filter { it.department.toString().equals(knownFor, ignoreCase = true) }
+            }
+
+            "Shows" -> {
+                if (isActingPrimary) data.showCredits.cast.asSequence()
+                else data.showCredits.crew.asSequence().filter { it.department.toString().equals(knownFor, ignoreCase = true) }
+            }
+
+            "Acting" -> {
+                data.movieCredits.cast.asSequence() + data.showCredits.cast.asSequence()
+            }
+
+            else -> {
+                (data.movieCredits.crew.asSequence() + data.showCredits.crew.asSequence())
+                    .filter { it.department.toString().equals(currentTab, ignoreCase = true) }
+            }
         }
-        // 3. Apply transformations sequentially
+
         combinedSequence
             .map(::Media)
             .distinctBy { it.id to it.type }
-            .sortedWith(
-                compareBy<Media> { it.releaseDate.toString().isBlank() }
-                    .thenByDescending { it.releaseDate.toString() },
-            )
-            .toList() // Terminal operation: builds the final list just once
+            .toList()
     }
-    val displayList = remember(baseList, selectedFilter) {
-        when (selectedFilter) {
-            MediaTypeFilter.ALL -> baseList
-            MediaTypeFilter.MOVIE -> baseList.filter { it.type == MediaType.MOVIE }
-            MediaTypeFilter.TV_SHOW -> baseList.filter { it.type == MediaType.TV_SHOW }
+
+    // 3. Ordinamento dinamico per Data o Popolarità
+    val displayList = remember(baseList, selectedSort) {
+        when (selectedSort) {
+            SortOrder.DATE -> baseList.sortedWith(
+                compareBy<Media> { it.releaseDate?.toString().isNullOrBlank() }
+                    .thenByDescending { it.releaseDate?.toString() },
+            )
+
+            SortOrder.POPULARITY -> baseList.sortedByDescending {
+                // NOTA: Se il tuo modello Media usa una property diversa per la popolarità (es: voteAverage o simili), modificala qui.
+                it.popularity
+            }
         }
     }
-    // --------------------------------------------------
+
     MediaScaffold(
         details.name,
         onNavigateBack,
@@ -150,7 +171,6 @@ fun PersonContent(
                 start = 5.dp, end = 5.dp,
             ),
         ) {
-            // 3. HEADER SECTION: Takes up all 4 columns via GridItemSpan
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(
                     modifier = Modifier
@@ -170,19 +190,20 @@ fun PersonContent(
                     BirthInfo(details.birthday?.toString(), details.deathday?.toString())
                     Bio(details.biography)
 
-                    Column(
-                        Modifier.layoutEvade(),
-                    ) {
-                        Spacer(Modifier.height(16.dp))
-                        HorizontalDivider()
-                        CustomTabRow(
-                            availableTabs = availableTabs,
-                            onClick = { it: String -> currentTab = it },
-                            title = { it.capitalize() },
-                            tabState = currentTab,
-                        )
+                    if (availableTabs.isNotEmpty()) {
+                        Column(Modifier.layoutEvade()) {
+                            Spacer(Modifier.height(16.dp))
+                            HorizontalDivider()
+                            CustomTabRow(
+                                availableTabs = availableTabs,
+                                onClick = { it: String -> currentTab = it },
+                                title = { it.capitalize() },
+                                tabState = currentTab,
+                            )
+                        }
                     }
-                    // Header for the Grid Filters
+
+                    // Sezione Filtri di Ordinamento
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -191,19 +212,22 @@ fun PersonContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        if (baseList.any { it.type == MediaType.MOVIE } && baseList.any { it.type == MediaType.TV_SHOW }) {
-                            MediaTypeFilterChips(selectedFilter, onFilterSelected = { selectedFilter = it })
+                        if (displayList.isNotEmpty()) {
+                            SortFilterChips(selectedSort, onSortSelected = { selectedSort = it })
+                        } else {
+                            Spacer(Modifier.weight(1f))
                         }
 
+                        val listSize = displayList.size
                         Text(
-                            text = "${displayList.size} Titles",
+                            text = "$listSize Title${if (listSize > 1) "s" else ""}",
                             style = MaterialTheme.typography.labelMedium,
                             lineHeight = 32.sp,
                         )
                     }
                 }
             }
-            // 4. GRID SECTION: Automatically populates the 4 columns
+
             items(
                 items = displayList,
                 key = { "${it.id}_${it.type.name}" },
@@ -214,24 +238,45 @@ fun PersonContent(
     }
 }
 
-// Pure function, no longer a @Composable
+// 4. Funzione aggiornata per estrarre le tab dinamicamente
 private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
-    val knownFor = data.details.knownForDepartment?.toString()?.replace("_", " ")
+    val knownFor = data.details.knownForDepartment?.toString()?.replace("_", " ") ?: "Acting"
+    val isActingPrimary = knownFor.equals("Acting", ignoreCase = true)
 
     return buildSet {
-        if (data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty()) {
+        // Tab "Movies" per il dipartimento principale
+        val hasPrimaryMovies = if (isActingPrimary) {
+            data.movieCredits.cast.isNotEmpty()
+        } else {
+            data.movieCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
+        }
+        if (hasPrimaryMovies) add("Movies")
+
+        // Tab "Shows" per il dipartimento principale
+        val hasPrimaryShows = if (isActingPrimary) {
+            data.showCredits.cast.isNotEmpty()
+        } else {
+            data.showCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
+        }
+        if (hasPrimaryShows) add("Shows")
+
+        // Se non è primariamente un attore ma ha crediti recitativi, crea una tab "Acting" secondaria
+        if (!isActingPrimary && (data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty())) {
             add("Acting")
         }
-        // Avoids multiple intermediate list allocations
+
+        // Aggiungi tutti gli altri dipartimenti (escludendo quello principale che ora è in Movies/Shows)
         sequenceOf(data.movieCredits.crew, data.showCredits.crew)
             .flatten()
+            .filter { !it.department.toString().equals(knownFor, ignoreCase = true) }
             .mapTo(this) { it.department.toString().replaceFirstChar { char -> char.titlecase() } }
     }.sortedWith(
         compareBy<String> { tabName ->
-            when {
-                tabName.equals(knownFor, ignoreCase = true) -> 0
-                tabName.equals("Acting", ignoreCase = true) -> 1
-                else -> 2
+            when (tabName) {
+                "Movies" -> 0
+                "Shows" -> 1
+                "Acting" -> 2
+                else -> 3
             }
         }.thenBy { it },
     )
@@ -247,10 +292,7 @@ private fun Bio(bio: String?) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun BirthInfo(
-    dateOfBirth: String?,
-    dateOfDeath: String?,
-) {
+private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
     if (dateOfBirth == null) return
 
     Spacer(Modifier.height(24.dp))
@@ -307,10 +349,7 @@ private fun InfoColumn(
 }
 
 @Composable
-private fun NameAndJob(
-    personName: String?,
-    job: String?,
-) {
+private fun NameAndJob(personName: String?, job: String?) {
     if (personName != null) {
         Text(
             text = personName,
@@ -354,11 +393,12 @@ fun calculatePersonAge(birthday: String?): String {
     }
 }
 
+// 5. Componente dei Chip aggiornato per l'ordinamento
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MediaTypeFilterChips(
-    selectedFilter: MediaTypeFilter,
-    onFilterSelected: (MediaTypeFilter) -> Unit,
+fun SortFilterChips(
+    selectedSort: SortOrder,
+    onSortSelected: (SortOrder) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -366,17 +406,17 @@ fun MediaTypeFilterChips(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MediaTypeFilter.entries.forEach { filter ->
+        SortOrder.entries.forEach { sort ->
             CompositionLocalProvider(
                 LocalMinimumInteractiveComponentSize provides 0.dp,
             ) {
                 FilterChip(
                     modifier = Modifier.height(28.dp),
-                    selected = selectedFilter == filter,
-                    onClick = { onFilterSelected(filter) },
+                    selected = selectedSort == sort,
+                    onClick = { onSortSelected(sort) },
                     label = {
                         Text(
-                            text = filter.label,
+                            text = sort.label,
                             style = MaterialTheme.typography.labelMedium,
                         )
                     },

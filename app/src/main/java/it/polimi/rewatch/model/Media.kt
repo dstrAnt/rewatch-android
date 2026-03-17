@@ -17,6 +17,7 @@ data class Media(
     val releaseDate: LocalDate?,
     val title: String?,
     val type: MediaType,
+    val popularity: Float,
 ) {
     // Constructor for Movie Data
     constructor(movie: TmdbMovie) : this(
@@ -26,6 +27,7 @@ data class Media(
         releaseDate = movie.releaseDate,
         title = movie.title,
         type = MediaType.MOVIE,
+        popularity = movie.popularity,
     )
 
     constructor(movie: TmdbShow) : this(
@@ -35,6 +37,7 @@ data class Media(
         releaseDate = movie.firstAirDate,
         title = movie.name,
         type = MediaType.TV_SHOW,
+        popularity = movie.popularity,
     )
 
     constructor(credit: TmdbPersonCredit) : this(
@@ -56,6 +59,7 @@ data class Media(
             is Movie -> MediaType.MOVIE
             is Show -> MediaType.TV_SHOW
         },
+        popularity = credit.popularity ?: 0.0f,
     )
 
     constructor(movie: TmdbPerson) : this(
@@ -65,5 +69,6 @@ data class Media(
         releaseDate = null,
         title = movie.name,
         type = MediaType.TV_SHOW,
+        popularity = movie.popularity,
     )
 }
