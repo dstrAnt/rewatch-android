@@ -42,6 +42,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomePage
+import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -87,7 +88,11 @@ fun RewatchApp() {
             when (bottomBarState) {
                 AppDestinations.MOVIE -> TrackingPage(type = MediaType.MOVIE) {}
 
-                AppDestinations.TV -> TrackingPage(type = MediaType.TV_SHOW) {}
+                AppDestinations.TV -> MediaPage(
+                    movieId = "1379",
+                    mediaType = MediaType.MOVIE,
+                    padding = outerPadding,
+                ) {}
 
                 AppDestinations.HOME -> {
                     HomePage()
@@ -124,7 +129,7 @@ private fun BottomBar(
     // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
         modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.onSecondaryFixed,
         tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
         windowInsets = NavigationBarDefaults.windowInsets,
     ) {
