@@ -138,7 +138,7 @@ fun MediaContent(
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
-    var selectedTab by remember { mutableStateOf<TabItem?>(null) }
+    var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
@@ -197,8 +197,8 @@ fun MediaContent(
                 allTabs = tabs,
                 activeTab = selectedTab,
                 // Pass the volatile state here
-                onTabSelected = { title ->
-                    selectedTab = title
+                onTabSelected = {
+                    selectedTab = it
                     expandedSectionIds = emptySet() // Clear expansions on tab switch
                 },
             )
@@ -371,25 +371,25 @@ fun LazyListScope.optionalTitledSection(
 
 fun LazyListScope.tabbedSection(
     allTabs: List<TabItem>,
-    activeTab: TabItem?,
-    // Add this
-    onTabSelected: (TabItem) -> Unit,
+    activeTab: String?,
+    onTabSelected: (String) -> Unit,
 ) {
     // 1. Perform the available tabs calculation
     val availableTabs = allTabs.filter { it.isAvailable() }
 
     if (availableTabs.isNotEmpty()) {
         // 2. Resolve the active tab (fallback to the first available if none selected/found)
-        val activeTab = availableTabs.find { it == activeTab } ?: availableTabs.first()
+        //val activeTab = availableTabs.find { it == activeTab } ?: availableTabs.first()
+        val activeTab = availableTabs.find { it.title == activeTab } ?: availableTabs.first()
 
         item {
             HorizontalDivider()
 
             CustomTabRow(
-                availableTabs = availableTabs,
+                availableTabs = availableTabs.map { it.title },
                 onClick = onTabSelected,
-                title = { it.title },
-                tabState = activeTab,
+                title = { it },
+                tabState = activeTab.title,
             )
             Spacer(Modifier.height(7.dp))
         }
@@ -494,12 +494,13 @@ fun <T> LazyListScope.expandableSection(
         // 3. Pass the sectionId back up when clicked
         val remaining = itemsList.size - visibleItems.size
 
-        if (isExpanded || remaining > 0) ExpandBtn(
-            if (isExpanded) "Hide $title" else "Show $remaining more",
-            onClick = { onToggleSection(title) },
-            isExpanded = isExpanded,
-            modifier = Modifier.animateItem(),
-        )
+        if (isExpanded || remaining > 0)
+            ExpandBtn(
+                if (isExpanded) "Hide $title" else "Show $remaining more",
+                onClick = { onToggleSection(title) },
+                isExpanded = isExpanded,
+                modifier = Modifier.animateItem(),
+            )
     }
 }
 

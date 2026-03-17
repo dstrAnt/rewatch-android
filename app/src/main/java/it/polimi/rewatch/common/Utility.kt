@@ -260,8 +260,8 @@ data class TabItem(
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = onToggleSection,
                     initialVisibleCount = initialVisibleCount,
-                    itemContent = itemContent,
                     showDividers = showDividers,
+                    itemContent = itemContent,
                 )
             },
         )
