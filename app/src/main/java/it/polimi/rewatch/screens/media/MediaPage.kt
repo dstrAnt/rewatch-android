@@ -72,18 +72,16 @@ import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandBtn
 import it.polimi.rewatch.common.ExpandableText
+import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
-import it.polimi.rewatch.common.onMediaClick
-import it.polimi.rewatch.common.onPersonClick
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
-import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
@@ -104,10 +102,11 @@ fun MediaPage(
     movieId: String,
     mediaType: MediaType,
     viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
+        key = movieId,
         creationCallback = { it.create(movieId, mediaType) },
     ),
-    padding: PaddingValues,
-    onNavigateBack: () -> Unit,
+    outerPadding: PaddingValues,
+    actions: NavigationActions,
 ) {
     AnimatedUiState(
         state = viewModel.uiState,
@@ -116,9 +115,9 @@ fun MediaPage(
         MediaContent(
             data = data,
             mediaType = mediaType,
-            padding = padding,
-            onNavigateBack = onNavigateBack,
+            padding = outerPadding,
             mediaId = movieId,
+            actions = actions,
         )
     }
 }
@@ -129,7 +128,7 @@ fun MediaPage(
     ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
 )
 fun MediaContent(
-    onNavigateBack: () -> Unit,
+    actions: NavigationActions,
     padding: PaddingValues,
     data: MovieData,
     mediaType: MediaType,
@@ -145,13 +144,13 @@ fun MediaContent(
     }
     val tabs: List<TabItem> = remember(
         expandedSectionIds,
-        buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad),
+        buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad, actions),
     )
     MediaScaffold(
         scrollState = scrollState,
         title = movie.title,
-        onNavigateBack = onNavigateBack,
-    ) { innerPadding, fullscreenImageModifier ->
+        onNavigateBack = actions.onNavigateBack,
+    ) { innerPadding ->
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -163,7 +162,7 @@ fun MediaContent(
             item {
                 BackdropImage(
                     movie.backdropImage, padding,
-                    modifier = fullscreenImageModifier(
+                    modifier = actions.onFullscreenImage(
                         movie.backdropImage?.let { build(it, width = 500, height = 500) },
                     ),
                 )
@@ -177,7 +176,7 @@ fun MediaContent(
                     runtime = movie.runtime,
                     releaseDate = movie.releaseDate,
                     certification = movie.certification,
-                    modifier = fullscreenImageModifier(
+                    modifier = actions.onFullscreenImage(
                         movie.posterImage?.let { build(it, width = 500, height = 500) },
                     ),
                 )
@@ -233,7 +232,9 @@ fun MediaContent(
                 pad = pad,
             ) {
                 item {
-                    SimilarSection(data.similar.take(7))
+                    SimilarSection(data.similar.take(7)) {
+                        PosterItem(it, actions.onNavigateToMedia)
+                    }
                     Spacer(Modifier.height(pad))
                 }
             }
@@ -253,6 +254,7 @@ private fun buildTabs(
     mediaType: MediaType,
     mediaId: String,
     pad: Dp,
+    actions: NavigationActions,
 ): () -> List<TabItem> = {
     buildList {
         add(
@@ -262,7 +264,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it) },
+                itemContent = { PersonItem(it, { actions.onNavigateToProfile(it.id) }) },
             ),
         )
         add(
@@ -272,7 +274,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it) },
+                itemContent = { PersonItem(it) { actions.onNavigateToProfile(it.id) } },
             ),
         )
         // ... TV SHOW: Seasons tab ...
@@ -292,6 +294,7 @@ private fun buildTabs(
                         count = it?.episodeCount?.let { "${it} episodes" }.orEmpty(),
                         mediaType = MediaType.SEASON,
                         mediaId,
+                        actions.onNavigateToMedia,
                     )
                 },
             ),
@@ -313,6 +316,7 @@ private fun buildTabs(
                         count = it?.runtime?.let { "${it} min" }.orEmpty(),
                         mediaType = MediaType.EPISODE,
                         mediaId,
+                        actions.onNavigateToMedia,
                     )
                 },
             ),
@@ -475,7 +479,7 @@ fun <T> LazyListScope.expandableSection(
     initialVisibleCount: Int = 3,
     showDividers: Boolean = false,
     divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
-    itemContent: @Composable LazyItemScope.(T?) -> Unit,
+    itemContent: @Composable LazyItemScope.(T) -> Unit,
 ) {
 // 1. Evaluate the state internall
     val isExpanded = expandedSectionIds.contains(title)
@@ -739,8 +743,9 @@ fun CompanyItem(company: TmdbCompany) {
 }
 
 @Composable
-fun SimilarSection(
-    similar: List<Media>,
+fun <T> SimilarSection(
+    similar: List<T>,
+    content: @Composable (LazyItemScope.(T) -> Unit),
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -750,15 +755,13 @@ fun SimilarSection(
         // Leading spacer
         item { Spacer(Modifier.width(5.dp)) }
         // Movie items
-        items(similar) {
-            PosterItem(it)
-        }
+        items(items = similar, itemContent = content)
         item { Spacer(Modifier.width(5.dp)) }
     }
 }
 
 @Composable
-fun PersonItem(person: TmdbAnyPerson?) = ListItem(
+fun PersonItem(person: TmdbAnyPerson?, function: () -> Unit) = ListItem(
     leadingContent = {
         RewatchAsyncImage(
             model = person?.profileImage?.let { build(it, width = 70, height = 70) },
@@ -794,7 +797,7 @@ fun PersonItem(person: TmdbAnyPerson?) = ListItem(
     modifier = LocalContext.current.let {
         Modifier
             .fillMaxWidth()
-            .clickable { onPersonClick(person?.id!!, it) }
+            .clickable(onClick = function)
     },
 )
 
@@ -906,6 +909,7 @@ fun EpisodeItem(
     count: String,
     mediaType: MediaType,
     showId: String,
+    onNavigateToMedia: (String, MediaType) -> Unit,
 ) = ListItem(
     leadingContent = {
         Text(
@@ -935,9 +939,8 @@ fun EpisodeItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
     },
-    modifier = LocalContext.current.let {
+    modifier =
         Modifier.clickable {
-            onMediaClick(showId + "_" + number, mediaType, it)
-        }
-    },
+            onNavigateToMedia(showId + "_" + number, mediaType)
+        },
 )

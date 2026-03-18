@@ -23,11 +23,11 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {    // Initialize TMDB client here (or inject via Hilt/Koin in a real app)
     // Backing property for the search text
     private val _query = MutableStateFlow("")
-    val query: StateFlow<String> = _query.asStateFlow()
+    val query = _query.asStateFlow()
     private val _mediaType = MutableStateFlow(SearchType.MOVIES)
+    val mediaType = _mediaType.asStateFlow()
 
     // Public immutable state that the Composable will observe
-    val mediaType: StateFlow<SearchType> = _mediaType.asStateFlow()
 
     // Function to update the state
     fun onTabChanged(newText: SearchType) {

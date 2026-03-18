@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.model.TmdbMovie
 import it.polimi.rewatch.common.CustomLazyGrid
+import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.MediaType
@@ -46,6 +48,8 @@ import it.polimi.rewatch.model.MediaType
 @Composable
 fun HomePage(
     viewModel: HomeViewModel = hiltViewModel(),
+    actions: NavigationActions,
+    outerPadding: PaddingValues,
 ) {
     Scaffold(
         topBar = {
@@ -69,10 +73,13 @@ fun HomePage(
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
+            modifier = Modifier.padding(top = paddingValues.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding()),
             loadingContent = ::HomeSkeleton,
         ) { data ->
-            HomeContent(data)
+            HomeContent(
+                data,
+                actions,
+            )
         }
     }
 }
@@ -80,6 +87,7 @@ fun HomePage(
 @Composable
 fun HomeContent(
     data: HomeData,
+    actions: NavigationActions,
 ) {
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -91,16 +99,19 @@ fun HomeContent(
             "Trending", data.trending,
             expandedSectionIds = expandedSectionIds,
             onToggleSection = handleToggle,
+            actions.onNavigateToMedia,
         )
         movieSection(
             "Top Rated", data.popular,
             expandedSectionIds = expandedSectionIds,
             onToggleSection = handleToggle,
+            actions.onNavigateToMedia,
         )
         movieSection(
             "Recent", data.recent,
             expandedSectionIds = expandedSectionIds,
             onToggleSection = handleToggle,
+            actions.onNavigateToMedia,
         )
     }
 }
@@ -110,6 +121,7 @@ fun LazyGridScope.movieSection(
     movies: List<TmdbMovie>,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
+    onNavigateToMovie: (String, MediaType) -> Unit,
 ) {
     val isExpanded = expandedSectionIds.contains(title)
     val displayedMovies = if (isExpanded) movies else movies.take(12)
@@ -130,8 +142,9 @@ fun LazyGridScope.movieSection(
         key = { "${title}_${it.id}" },
     ) { // CRUCIAL: Compose needs this to track which items are new) {
         PosterItem(
-            it.id.toString(), it.posterPath, it.title, MediaType.MOVIE,
+            it.posterPath, it.title,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+            { onNavigateToMovie(it.id.toString(), MediaType.MOVIE) },
         )
     }
     // --- Pulsante Dinamico ---

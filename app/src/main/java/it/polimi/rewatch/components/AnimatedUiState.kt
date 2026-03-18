@@ -24,7 +24,7 @@ import it.polimi.rewatch.common.UiState
 fun <T> AnimatedUiState(
     state: UiState<T>,
     modifier: Modifier = Modifier,
-    animationDurationMillis: Int = 700,
+    animationDurationMillis: Int = 1000,
     loadingContent: @Composable () -> Unit,
     errorContent: @Composable (String) -> Unit = ::ErrorContent,
     successContent: @Composable (T) -> Unit,

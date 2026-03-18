@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -27,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +42,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
+import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
@@ -63,14 +66,24 @@ enum class WatchTabItem(val title: String) {
 fun TrackingPage(
     viewModel: TrackingViewModel = hiltViewModel(),
     type: MediaType,
-    onNavigateBack: () -> Unit,
+    actions: NavigationActions,
+    outerPadding: PaddingValues,
 ) {
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
     var selectedTab by remember { mutableStateOf(tabs.first()) }
-    var watchlistOrder by remember { mutableStateOf(SortOption.POPULARITY) }
-    var watchedOrder by remember { mutableStateOf(SortOption.DATE) }
+    val tabSortOrders = remember {
+        mutableStateMapOf(
+            WatchTabItem.WATCHLIST to SortOption.POPULARITY, // Default for Watchlist
+            WatchTabItem.WATCHED to SortOption.DATE,          // Default for Watched
+        )
+    }
+    val availableSortOptions = mapOf(
+        WatchTabItem.WATCHLIST to listOf(SortOption.POPULARITY, SortOption.RATING, SortOption.ALPHABETICAL),
+        WatchTabItem.WATCHED to listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
+    )
+    val activeOrder = tabSortOrders.getValue(selectedTab)
 
     Scaffold(
         topBar = {
@@ -86,65 +99,40 @@ fun TrackingPage(
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding()),
+            modifier = Modifier.padding(top = paddingValues.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding()),
             loadingContent = ::TrackingSkeleton,
         ) { data ->
             CustomLazyGrid {
-
                 // 1. CHIPS DI ORDINAMENTO (Span completo)
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    if (selectedTab == WatchTabItem.WATCHLIST) {
-                        SortFilterChips(
-                            options = listOf(SortOption.POPULARITY, SortOption.RATING, SortOption.ALPHABETICAL),
-                            selectedSort = watchlistOrder,
-                            onSortSelected = { watchlistOrder = it },
-                        )
-                    } else {
-                        SortFilterChips(
-                            options = listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
-                            selectedSort = watchedOrder,
-                            onSortSelected = { watchedOrder = it },
-                        )
-                    }
+                    SortFilterChips(
+                        options = availableSortOptions.getValue(selectedTab),
+                        selectedSort = activeOrder,
+                        onSortSelected = { newSort ->
+                            // Update the map for the currently active tab
+                            tabSortOrders[selectedTab] = newSort
+                        },
+                    )
                 }
+                // 1. Route to the correct list and order
+                val items = when (selectedTab) {
+                    WatchTabItem.WATCHLIST -> data.watchlist
+                    WatchTabItem.WATCHED -> data.watched
+                }
+// 2. Sort and group the unified data structure
+                val groupedItems = items.run {
+                    when (activeOrder) {
+                        SortOption.POPULARITY -> sortedByDescending { it.popularity }
+                            .groupBy { getPopularityHeader(it.popularity) }
 
-                // 2. ORDINAMENTO E RAGGRUPPAMENTO
-                // Usiamo groupBy per ottenere un Map<String, List<Media>>
-                val groupedItems = when (selectedTab) {
-                    WatchTabItem.WATCHLIST -> {
-                        when (watchlistOrder) {
-                            SortOption.POPULARITY -> data.watchlist
-                                .sortedByDescending { it.mediaData.popularity }
-                                .groupBy { getPopularityHeader(it.mediaData.popularity) }
+                        SortOption.RATING -> sortedByDescending { it.rating }
+                            .groupBy { getRatingHeader(it.rating) }
 
-                            SortOption.RATING -> data.watchlist
-                                .sortedByDescending { it.mediaData.rating }
-                                .groupBy { getRatingHeader(it.mediaData.rating) }
+                        SortOption.ALPHABETICAL -> sortedBy { it.title }
+                            .groupBy { getAlphabeticalHeader(it.title) }
 
-                            SortOption.ALPHABETICAL -> data.watchlist
-                                .sortedBy { it.mediaData.title }
-                                .groupBy { getAlphabeticalHeader(it.mediaData.title) }
-
-                            else -> emptyMap()
-                        }
-                    }
-
-                    WatchTabItem.WATCHED -> {
-                        when (watchedOrder) {
-                            SortOption.DATE -> data.watched
-                                .sortedByDescending { it.date }
-                                .groupBy { getDateHeader(it.date) }
-
-                            SortOption.RATING -> data.watched
-                                .sortedByDescending { it.rating }
-                                .groupBy { getRatingHeader(it.rating) }
-
-                            SortOption.ALPHABETICAL -> data.watched
-                                .sortedBy { it.mediaData.title }
-                                .groupBy { getAlphabeticalHeader(it.mediaData.title) }
-
-                            else -> emptyMap()
-                        }
+                        SortOption.DATE -> sortedByDescending { it.date }
+                            .groupBy { getDateHeader(it.date) }
                     }
                 }
 
@@ -159,33 +147,33 @@ fun TrackingPage(
                             modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
                         )
                     }
-
                     // Elementi della sezione
                     items(key = { "${it.id}" }, items = items) { media ->
-                        Column(
-                            horizontalAlignment = Alignment.Start,
-                            verticalArrangement = Arrangement.spacedBy(3.dp),
-                            modifier = Modifier.animateItem(),
-                        ) {
-                            PosterItem(
-                                media.id.toString(),
-                                media.mediaData.posterPath,
-                                media.mediaData.title,
-                                media.type,
-                            )
-                            val rating = when (media) {
-                                is WatchlistMedia -> media.mediaData.rating
-                                is WatchedMedia -> media.rating
-                                else -> 0.0f
-                            }
-                            StarRating(rating = rating ?: 0.0f, starSize = 10.dp)
-                        }
+                        PosterStarsItem(media, actions.onNavigateToMedia)
                     }
                 }
             }
         }
     }
 }
+
+@Composable
+private fun LazyGridItemScope.PosterStarsItem(
+    media: BaseMedia,
+    onNavigateToMedia: (String, MediaType) -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+        modifier = Modifier.animateItem(),
+    ) {
+        PosterItem(media, onNavigateToMedia)
+        val rating = media.rating ?: 0.0f
+
+        StarRating(rating = rating, starSize = 10.dp)
+    }
+}
+
 @Composable
 private fun TopTabBar(
     icon: Int,

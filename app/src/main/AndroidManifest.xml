@@ -23,12 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="it.polimi.rewatch.screens.media.MediaActivity"
-            android:exported="false" />
-        <activity
-            android:name="it.polimi.rewatch.screens.person.PersonActivity"
-            android:exported="false" />
     </application>
 
 </manifest>

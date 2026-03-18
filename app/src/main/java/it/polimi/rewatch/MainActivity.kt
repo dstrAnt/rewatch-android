@@ -8,15 +8,20 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -28,19 +33,27 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.metadata
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
+import it.polimi.rewatch.common.AnimatedNavDisplay
+import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.components.FullScreenImageOverlay
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
@@ -48,6 +61,7 @@ import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint // 2. Add this annotation!
 class MainActivity : ComponentActivity() {
@@ -72,52 +86,117 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RewatchApp() {
     var bottomBarState by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    rememberNavController()
+    val backStack = rememberNavBackStack(Home)
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
+    var isOverlayVisible by remember { mutableStateOf(false) }
+    val navActions = remember(backStack) {
+        NavigationActions(
+            onNavigateToProfile = { id -> backStack.add(PersonPage(id)) },
+            onNavigateToMedia = { id, type -> backStack.add(MediaPage(id, type)) },
+            onNavigateBack = { backStack.removeLastOrNull() },
+            onFullscreenImage = {
+                Modifier.clickable {
+                    fullScreenImageUrl = it
+                    isOverlayVisible = true
+                }
+            },
+        )
+    }
 
     Scaffold(
         bottomBar = {
             BottomBar(
                 bottomBarState,
-                { bottomBarState = it },
+                {
+                    bottomBarState = it
+
+                    backStack.removeAll({ true })
+                    backStack.add(it.navKey)
+                },
             )
         },
     ) { outerPadding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = outerPadding.calculateBottomPadding()),
-        ) {
-            when (bottomBarState) {
-                AppDestinations.MOVIE -> TrackingPage(type = MediaType.MOVIE) {}
-
-                AppDestinations.TV -> MediaPage(
-                    movieId = "1379",
-                    mediaType = MediaType.MOVIE,
-                    padding = outerPadding,
-                ) {}
-
-                AppDestinations.HOME -> {
-                    HomePage()
-                }
-
-                AppDestinations.PROFILE -> {
-                    PersonPage(
-                        31,
-                        padding = PaddingValues(
-                            outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                            outerPadding.calculateTopPadding(),
-                            outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                        ),
-                        onNavigateBack = {},
+        // 5. Render the stack using NavDisplay
+        AnimatedNavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            entryProvider = entryProvider {
+                entry<Home>(
+                    metadata = noAnimationMetadata(),
+                ) {
+                    // Update HomePage to accept lambdas instead of navController
+                    HomePage(
+                        actions = navActions,
+                        outerPadding = outerPadding,
                     )
                 }
 
-                AppDestinations.SEARCH -> {
-                    SearchPage(onNavigateBack = { })
+                entry<Search>(
+                    metadata = noAnimationMetadata(),
+                ) {
+                    SearchPage(
+                        actions = navActions,
+                        outerPadding = outerPadding,
+                    )
                 }
 
-                else -> {}
-            }
-        }
+                entry<TrackingPage>(
+                    metadata = noAnimationMetadata(),
+                ) { key ->
+                    TrackingPage(
+                        actions = navActions,
+                        type = key.type,
+                        outerPadding = outerPadding,
+                    )
+                }
+
+                entry<MediaPage> { key ->
+                    // 4. Look how clean this is! No more backStackEntry.arguments?.getString()
+                    // You just access key.movieId directly.
+                    Box(
+                        Modifier.background(MaterialTheme.colorScheme.surface),
+                    ) {
+                        MediaPage(
+                            actions = navActions,
+                            movieId = key.mediaId, // Type-safe property
+                            mediaType = key.mediaType,
+                            outerPadding = outerPadding,
+                        )
+                    }
+                }
+
+                entry<PersonPage> { key ->
+                    PersonPage(
+                        actions = navActions,
+                        personId = key.personId,
+                        outerPadding = outerPadding,
+                    )
+                }
+            },
+        )
+        // Add your movie details route here just like before
+        // composable("movie_page/{movieId}") { ... }
+    }
+    val animationSpec = tween<Float>(durationMillis = 300)
+    AnimatedVisibility(
+        visible = isOverlayVisible,
+        enter = fadeIn(animationSpec = animationSpec),
+        exit = fadeOut(animationSpec = animationSpec),
+    ) {
+        // Use lastSeenImageUrl instead of fullScreenImageUrl here!
+        FullScreenImageOverlay(
+            imageUrl = fullScreenImageUrl.orEmpty(),
+            onDismiss = { isOverlayVisible = false },
+        )
+    }
+}
+
+@Composable
+private fun noAnimationMetadata(): Map<String, Any> = metadata {
+    put(NavDisplay.TransitionKey) {
+        // Slide new content up, keeping the old content in place underneath
+        EnterTransition.None togetherWith ExitTransition.None
     }
 }
 
@@ -163,25 +242,45 @@ private fun BottomBar(
         }
     }
 }
+sealed interface TopLevelTab : NavKey
 
+@Serializable
+data object Home : TopLevelTab
+
+@Serializable
+data object Search : TopLevelTab
+
+@Serializable
+data class TrackingPage(val type: MediaType) : TopLevelTab
+
+@Serializable
+data class MediaPage(val mediaId: String, val mediaType: MediaType) : NavKey
+
+@Serializable
+data class PersonPage(val personId: Int) : NavKey
 enum class AppDestinations(
     val label: String,
     val imgVec: ImageVector? = null,
     val intIcon: Int? = null,
+    val navKey: NavKey,
 ) {
-    HOME("Home", intIcon = R.drawable.popcorn),
+    HOME("Home", intIcon = R.drawable.popcorn, navKey = Home),
     SEARCH(
         "Search", Icons.Default.Search,
+        navKey = Search,
     ),
     MOVIE(
         "Movies",
         intIcon = R.drawable.movie,
+        navKey = TrackingPage(MediaType.MOVIE),
     ),
     TV(
         "Tv Shows",
         intIcon = R.drawable.tv,
+        navKey = TrackingPage(MediaType.TV_SHOW),
     ),
     PROFILE(
         "Profile", Icons.Default.AccountBox,
+        navKey = PersonPage(31),
     ),
 }

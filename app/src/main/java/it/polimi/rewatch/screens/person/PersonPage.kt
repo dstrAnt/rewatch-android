@@ -47,6 +47,7 @@ import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandableText
+import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
@@ -73,9 +74,10 @@ private fun String.capitalize(): String = this.replace("_", " ").lowercase().rep
 @Composable
 fun PersonPage(
     personId: Int,
-    onNavigateBack: () -> Unit,
-    padding: PaddingValues,
+    actions: NavigationActions,
+    outerPadding: PaddingValues,
     viewModel: PersonViewModel = hiltViewModel<PersonViewModel, PersonViewModel.Factory>(
+        key = personId.toString(),
         creationCallback = { it.create(personId) },
     ),
 ) {
@@ -85,8 +87,8 @@ fun PersonPage(
     ) {
         PersonContent(
             data = it,
-            padding = padding,
-            onNavigateBack = onNavigateBack,
+            outerPadding = outerPadding,
+            actions = actions,
         )
     }
 }
@@ -96,8 +98,8 @@ fun PersonPage(
 @Composable
 fun PersonContent(
     data: PersonDetailsData,
-    padding: PaddingValues,
-    onNavigateBack: () -> Unit,
+    outerPadding: PaddingValues,
+    actions: NavigationActions,
 ) {
     val details = data.details
     val scrollState = rememberLazyGridState()
@@ -161,13 +163,13 @@ fun PersonContent(
 
     MediaScaffold(
         details.name,
-        onNavigateBack,
+        actions.onNavigateBack,
         scrollState,
-    ) { innerPadding, fullscreenImageModifier ->
+    ) { innerPadding ->
         CustomLazyGrid(
             state = scrollState,
             contentPadding = PaddingValues(
-                top = padding.calculateTopPadding(), bottom = innerPadding.calculateBottomPadding() + 5.dp,
+                top = outerPadding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding() + 5.dp,
                 start = 5.dp, end = 5.dp,
             ),
         ) {
@@ -180,7 +182,7 @@ fun PersonContent(
                 ) {
                     ProfilePicture(
                         details.profileImage,
-                        modifier = fullscreenImageModifier(
+                        modifier = actions.onFullscreenImage(
                             details.profileImage?.let { build(it, width = 500, height = 500) },
                         ),
                     )
@@ -232,7 +234,7 @@ fun PersonContent(
                 items = displayList,
                 key = { "${it.id}_${it.type.name}" },
             ) {
-                PosterItem(it, Modifier.animateItem())
+                PosterItem(it, actions.onNavigateToMedia, Modifier.animateItem())
             }
         }
     }

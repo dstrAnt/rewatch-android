@@ -1,14 +1,19 @@
 package it.polimi.rewatch.common
 
-import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.view.RoundedCorner
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,14 +58,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import it.polimi.rewatch.model.Media
+import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.ui.NavDisplay
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.screens.media.MediaActivity
 import it.polimi.rewatch.screens.media.expandableSection
-import it.polimi.rewatch.screens.person.PersonActivity
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -139,12 +147,6 @@ fun BorderBox(
     }
 }
 
-fun onMediaClick(
-    media: Media,
-    context: Context,
-) {
-    onMediaClick(media.id.toString(), media.type, context)
-}
 
 fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
     val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
@@ -157,27 +159,10 @@ fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
 
     return Pair(mediaId, mediaType)
 }
-
-fun onMediaClick(
+fun onMediaClickNav(
     mediaId: String,
-    mediaType: MediaType,
-    context: Context,
-) = context.startActivity(
-    Intent(context, MediaActivity::class.java).apply {
-        // Bundle the movieId into the Intent extras
-        putExtra("EXTRA_MEDIA_ID", mediaId)
-        putExtra("EXTRA_MEDIA_TYPE", mediaType.name) // Passes "MOVIE"
-    },
-)
-
-fun onPersonClick(
-    personId: Int,
-    context: Context,
-) = context.startActivity(
-    Intent(context, PersonActivity::class.java).apply {
-        putExtra("EXTRA_PERSON_ID", personId)
-    },
-)
+    navController: NavHostController,
+) = navController.navigate("movie_page/$mediaId")
 
 fun Double.getShortNotation(): String {
     return when {
@@ -249,7 +234,7 @@ data class TabItem(
             onToggleSection: (String) -> Unit,
             initialVisibleCount: Int = 3,
             showDividers: Boolean = false,
-            itemContent: @Composable LazyItemScope.(T?) -> Unit,
+            itemContent: @Composable LazyItemScope.(T) -> Unit,
         ) = TabItem(
             title = title,
             isAvailable = itemsList::isNotEmpty,
@@ -336,3 +321,102 @@ fun CustomLazyGrid(
         .padding(horizontal = 7.dp),
     content = content,
 )
+
+@Composable
+fun getDeviceCornerRadius(): Dp {
+    val view = LocalView.current
+    val density = LocalDensity.current
+    // Only attempt to read hardware corners on Android 12+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val windowInsets = view.rootWindowInsets
+        val corner = windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)
+        val radiusPx = corner?.radius ?: 0
+
+        if (radiusPx > 0) {
+            // Convert the raw pixels to Compose Dp
+            return with(density) { radiusPx.toDp() }
+        }
+    }
+    // Fallback for Android 11 and below, or if the device has square corners
+    return 32.dp
+}
+
+class NavigationActions(
+    val onNavigateToProfile: (Int) -> Unit,
+    val onNavigateToMedia: (String, MediaType) -> Unit,
+    val onNavigateBack: () -> Unit,
+    val onFullscreenImage: (String?) -> Modifier,
+)
+
+@Composable
+fun <T : Any> AnimatedNavDisplay(
+    backStack: List<T>,
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit = {
+        if (backStack is MutableList<T>) {
+            backStack.removeLastOrNull()
+        }
+    },
+    entryProvider: (key: T) -> NavEntry<T>,
+) = NavDisplay(
+    backStack = backStack,
+    onBack = onBack,
+    transitionSpec = {
+        // Forward Navigation:
+        // New screen slides in from the right TOGETHER WITH old screen pushing left
+        slideInHorizontally(
+            animationSpec = tween(400),
+            initialOffsetX = { fullWidth -> fullWidth },
+        ) togetherWith slideOutHorizontally(
+            animationSpec = tween(400),
+            targetOffsetX = { fullWidth -> -fullWidth / 4 },
+        )
+    },
+    popTransitionSpec = {
+        // Backward Navigation (Predictive Back):
+        // Old screen pulls in from the left TOGETHER WITH top screen sliding right
+        slideInHorizontally(
+            animationSpec = tween(
+                durationMillis = 400,
+                easing = EaseInOutCubic,
+            ),
+            initialOffsetX = { fullWidth -> -fullWidth / 4 },
+        ) togetherWith slideOutHorizontally(
+            animationSpec = tween(
+                durationMillis = 400,
+                easing = EaseInOutCubic,
+            ),
+            targetOffsetX = { fullWidth -> fullWidth },
+        ).apply {
+            // CRITICAL FOR PARALLAX:
+            // This forces the returning bottom screen to render underneath the exiting top screen.
+            // Without this, the bottom screen will pop on top and hide your slide/shadow.
+            //targetContentZIndex = -1f
+        }
+    },
+    predictivePopTransitionSpec = {
+        // PREDICTIVE BACK: Triggered ONLY by the edge-swipe gesture.
+        // Using a standard tween here allows the OS to seamlessly map your
+        // finger's physical swipe distance to the X-offset of the slide.
+        slideInHorizontally(
+            animationSpec = tween(400),
+            initialOffsetX = { fullWidth -> -fullWidth / 4 },
+        ) togetherWith slideOutHorizontally(
+            animationSpec = tween(400),
+            targetOffsetX = { fullWidth -> fullWidth },
+        ).apply {
+            // Keeps the exiting screen hovering ON TOP of the returning screen
+            //   targetContentZIndex = -1f
+        }
+    },
+    entryProvider = entryProvider,
+)
+
+fun getRawNavKey(state: Any?): String {
+    return when (state) {
+        // Digs into the Scene wrapper and grabs our overridden contentKey
+        is Scene<*> -> state.entries.lastOrNull()?.contentKey
+        is NavEntry<*> -> state
+        else -> state
+    }.toString().substringAfterLast(".").substringBefore("(")
+}

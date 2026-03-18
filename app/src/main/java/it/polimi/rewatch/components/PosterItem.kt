@@ -33,9 +33,9 @@ import coil3.compose.SubcomposeAsyncImageScope
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import it.polimi.rewatch.common.onMediaClick
 import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.screens.tracking.BaseMedia
 
 @Composable
 fun PosterItem3(
@@ -46,8 +46,7 @@ fun PosterItem3(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
-
+    LocalContext.current // Brought back for onMovieClick
     Box(
         modifier = modifier
             .aspectRatio(2f / 3f)
@@ -55,7 +54,7 @@ fun PosterItem3(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMediaClick(id.toString(), mediaType, context)
+                //onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -88,7 +87,7 @@ fun PosterItem2(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
+    LocalContext.current // Brought back for onMovieClick
     val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
         {
             Box(contentAlignment = Alignment.Center) {
@@ -112,7 +111,7 @@ fun PosterItem2(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMediaClick(id.toString(), mediaType, context)
+                //onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -131,23 +130,35 @@ fun PosterItem2(
 @Composable
 fun PosterItem(
     media: Media,
+    onNavigateToMedia: (String, MediaType) -> Unit,
     modifier: Modifier = Modifier,
-) = PosterItem(id = media.id.toString(), posterPath = media.posterPath, title = media.title, mediaType = media.type, modifier = modifier)
+) = PosterItem(
+    posterPath = media.posterPath, title = media.title, modifier = modifier,
+    {
+        onNavigateToMedia(media.id.toString(), media.type)
+    },
+)
 
 @Composable
 fun PosterItem(
-    id: String,
+    media: BaseMedia,
+    onNavigateToMedia: (String, MediaType) -> Unit,
+    modifier: Modifier = Modifier,
+) = PosterItem(
+    posterPath = media.mediaData.posterPath, title = media.mediaData.title, modifier = modifier,
+    {
+        onNavigateToMedia(media.id.toString(), media.type)
+    },
+)
+
+@Composable
+fun PosterItem(
     posterPath: String?,
     title: String?,
-    mediaType: MediaType, // Added parameter
     modifier: Modifier = Modifier,
-    onClick: (() -> Unit)? = null,
+    onNavigateToMedia: () -> Unit,
 ) {
-
     val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
-    val onClickFun = onClick ?: { onMediaClick(id, mediaType, context) }
-
     val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit = {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -166,7 +177,7 @@ fun PosterItem(
             .aspectRatio(2f / 3f)
             .clip(shape)
             .border(1.dp, Color.Gray, shape)
-            .clickable(onClick = onClickFun),
+            .clickable(onClick = onNavigateToMedia),
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots
@@ -196,7 +207,7 @@ fun PosterItemCustom(
     val painter = rememberAsyncImagePainter(model = model)
     val state by painter.state.collectAsState()
     val shape = RoundedCornerShape(5.dp)
-    val context = LocalContext.current // Brought back for onMovieClick
+    LocalContext.current // Brought back for onMovieClick
     // 2. Wrap in a standard Box (avoids SubcomposeLayout entirely)
     Box(
         modifier = modifier
@@ -205,7 +216,7 @@ fun PosterItemCustom(
             .border(1.dp, Color.Gray, shape)
             .clickable {
                 // Click logic is now handled internally again
-                onMediaClick(id.toString(), mediaType, context)
+                //onMediaClick(id.toString(), mediaType, context)
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -213,7 +224,7 @@ fun PosterItemCustom(
             targetState = state,
             animationSpec = tween(durationMillis = 500), // Adjust speed here (500ms is default)
             label = "image_crossfade", // Good practice to label animations for debugging
-        ) { _ ->
+        ) { t ->
             // 3. The actual image. Apply the modifier directly here so
             // sizing behaves exactly like a standard Image component.
             // 4. Overlay your custom Composables based on the state read

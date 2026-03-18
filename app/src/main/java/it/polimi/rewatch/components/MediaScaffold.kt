@@ -1,11 +1,7 @@
 package it.polimi.rewatch.components
 
 import androidx.activity.compose.PredictiveBackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollableState
@@ -34,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,10 +51,8 @@ fun MediaScaffold(
     onNavigateBack: () -> Unit,
     scrollState: ScrollableState,
     modifier: Modifier = Modifier,
-    content: @Composable (PaddingValues, (String?) -> Modifier) -> Unit,
+    content: @Composable (PaddingValues) -> Unit,
 ) {
-    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
-    var isOverlayVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -69,23 +62,6 @@ fun MediaScaffold(
     ) { padding ->
         content.invoke(
             padding,
-        ) {
-            Modifier.clickable {
-                fullScreenImageUrl = it
-                isOverlayVisible = true
-            }
-        }
-    }
-    val animationSpec = tween<Float>(durationMillis = 300)
-    AnimatedVisibility(
-        visible = isOverlayVisible,
-        enter = fadeIn(animationSpec = animationSpec),
-        exit = fadeOut(animationSpec = animationSpec),
-    ) {
-        // Use lastSeenImageUrl instead of fullScreenImageUrl here!
-        FullScreenImageOverlay(
-            imageUrl = fullScreenImageUrl.orEmpty(),
-            onDismiss = { isOverlayVisible = false },
         )
     }
 }
