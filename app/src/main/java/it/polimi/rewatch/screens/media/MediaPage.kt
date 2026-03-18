@@ -829,7 +829,7 @@ fun LazyItemScope.ReviewItem(review: TmdbReview?) {
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                 )
-                review?.authorDetails?.rating?.toDouble()?.let { rating ->
+                review?.authorDetails?.rating?.let { rating ->
                     StarRating(rating)
                 }
             }

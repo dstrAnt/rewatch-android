@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.SkeletonPart
-import it.polimi.rewatch.common.layoutEvade
 
 @Composable
 fun TrackingSkeleton(modifier: Modifier = Modifier) {
@@ -30,28 +28,23 @@ fun TrackingSkeleton(modifier: Modifier = Modifier) {
             .padding(horizontal = 7.dp),
         userScrollEnabled = false,
     ) {
-        // TabRow
+        // Chips Row
         item(
-            key = "TabsSkeleton",
+            key = "ChipsSkeleton",
             span = { GridItemSpan(maxLineSpan) },
         ) {
-            Column(Modifier.layoutEvade()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                repeat(3) {
                     SkeletonPart(
-                        width = 100.dp,
-                        height = 32.dp,
-                        shape = CircleShape,
-                    )
-                    SkeletonPart(
-                        width = 85.dp,
-                        height = 32.dp,
-                        shape = CircleShape,
+                        width = 60.dp,
+                        height = 25.dp,
+                        shape = RoundedCornerShape(5.dp),
                     )
                 }
             }

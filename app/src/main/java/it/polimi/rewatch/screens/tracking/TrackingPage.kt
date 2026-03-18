@@ -1,7 +1,10 @@
 package it.polimi.rewatch.screens.tracking
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -12,13 +15,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
@@ -35,14 +43,25 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
-import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.screens.home.HomeViewModel
+import java.time.LocalDate
 
+enum class SortOption(val label: String) {
+    POPULARITY("Popularity"),
+    RATING("Rating"),
+    ALPHABETICAL("A-Z"),
+    DATE("Date")
+}
+
+enum class WatchTabItem(val title: String) {
+    WATCHLIST("Watchlist"), WATCHED("Watched")
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackingPage(
-    viewModel: HomeViewModel = hiltViewModel(),
+    viewModel: TrackingViewModel = hiltViewModel(),
     type: MediaType,
     onNavigateBack: () -> Unit,
 ) {
@@ -50,6 +69,8 @@ fun TrackingPage(
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
     var selectedTab by remember { mutableStateOf(tabs.first()) }
+    var watchlistOrder by remember { mutableStateOf(SortOption.POPULARITY) }
+    var watchedOrder by remember { mutableStateOf(SortOption.DATE) }
 
     Scaffold(
         topBar = {
@@ -69,25 +90,102 @@ fun TrackingPage(
             loadingContent = ::TrackingSkeleton,
         ) { data ->
             CustomLazyGrid {
-                val items = when (selectedTab) {
-                    WatchTabItem.WATCHLIST -> data.trending.map(::Media)
-                    WatchTabItem.WATCHED -> data.popular.map(::Media)
+
+                // 1. CHIPS DI ORDINAMENTO (Span completo)
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    if (selectedTab == WatchTabItem.WATCHLIST) {
+                        SortFilterChips(
+                            options = listOf(SortOption.POPULARITY, SortOption.RATING, SortOption.ALPHABETICAL),
+                            selectedSort = watchlistOrder,
+                            onSortSelected = { watchlistOrder = it },
+                        )
+                    } else {
+                        SortFilterChips(
+                            options = listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
+                            selectedSort = watchedOrder,
+                            onSortSelected = { watchedOrder = it },
+                        )
+                    }
                 }
 
-                items(key = { "${it.id}" }, items = items) {
-                    Column(
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.spacedBy(3.dp),
-                    ) {
-                        PosterItem(it, Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null))
-                        StarRating(rating = 9.0, starSize = 10.dp)
+                // 2. ORDINAMENTO E RAGGRUPPAMENTO
+                // Usiamo groupBy per ottenere un Map<String, List<Media>>
+                val groupedItems = when (selectedTab) {
+                    WatchTabItem.WATCHLIST -> {
+                        when (watchlistOrder) {
+                            SortOption.POPULARITY -> data.watchlist
+                                .sortedByDescending { it.mediaData.popularity }
+                                .groupBy { getPopularityHeader(it.mediaData.popularity) }
+
+                            SortOption.RATING -> data.watchlist
+                                .sortedByDescending { it.mediaData.rating }
+                                .groupBy { getRatingHeader(it.mediaData.rating) }
+
+                            SortOption.ALPHABETICAL -> data.watchlist
+                                .sortedBy { it.mediaData.title }
+                                .groupBy { getAlphabeticalHeader(it.mediaData.title) }
+
+                            else -> emptyMap()
+                        }
+                    }
+
+                    WatchTabItem.WATCHED -> {
+                        when (watchedOrder) {
+                            SortOption.DATE -> data.watched
+                                .sortedByDescending { it.date }
+                                .groupBy { getDateHeader(it.date) }
+
+                            SortOption.RATING -> data.watched
+                                .sortedByDescending { it.rating }
+                                .groupBy { getRatingHeader(it.rating) }
+
+                            SortOption.ALPHABETICAL -> data.watched
+                                .sortedBy { it.mediaData.title }
+                                .groupBy { getAlphabeticalHeader(it.mediaData.title) }
+
+                            else -> emptyMap()
+                        }
+                    }
+                }
+
+                // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
+                groupedItems.forEach { (header, items) ->
+                    // Titolo della sezione (span completo)
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            text = header,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
+                        )
+                    }
+
+                    // Elementi della sezione
+                    items(key = { "${it.id}" }, items = items) { media ->
+                        Column(
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.spacedBy(3.dp),
+                            modifier = Modifier.animateItem(),
+                        ) {
+                            PosterItem(
+                                media.id.toString(),
+                                media.mediaData.posterPath,
+                                media.mediaData.title,
+                                media.type,
+                            )
+                            val rating = when (media) {
+                                is WatchlistMedia -> media.mediaData.rating
+                                is WatchedMedia -> media.rating
+                                else -> 0.0f
+                            }
+                            StarRating(rating = rating ?: 0.0f, starSize = 10.dp)
+                        }
                     }
                 }
             }
         }
     }
 }
-
 @Composable
 private fun TopTabBar(
     icon: Int,
@@ -129,6 +227,72 @@ private fun TopTabBar(
     }
 }
 
-enum class WatchTabItem(val title: String) {
-    WATCHLIST("Watchlist"), WATCHED("Watched")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SortFilterChips(
+    options: List<SortOption>,
+    selectedSort: SortOption,
+    onSortSelected: (SortOption) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        options.forEach { sort ->
+            CompositionLocalProvider(
+                LocalMinimumInteractiveComponentSize provides 0.dp,
+            ) {
+                FilterChip(
+                    modifier = Modifier.height(28.dp),
+                    selected = selectedSort == sort,
+                    onClick = { onSortSelected(sort) },
+                    label = {
+                        Text(
+                            text = sort.label,
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                    },
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                )
+            }
+        }
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun getDateHeader(date: LocalDate?): String {
+    if (date == null) return "No Date"
+    val today = LocalDate.now()
+    return when {
+        date.year == today.year && date.month == today.month -> "This Month"
+        date.year == today.year -> date.month.name.lowercase().replaceFirstChar { it.uppercase() }
+        else -> "${date.year}"
+    }
+}
+
+fun getRatingHeader(rating: Float?): String {
+    val r = rating ?: 0f
+    return when {
+        r == 0f -> "Unrated"
+        r >= 8.5f -> "Masterpiece"
+        r >= 7.0f -> "Great"
+        r >= 5.0f -> "Average"
+        else -> "Below Average"
+    }
+}
+
+fun getPopularityHeader(popularity: Float?): String {
+    val pop = popularity ?: 0f
+    return when {
+        pop >= 1000f -> "Trending Worldwide"
+        pop >= 300f -> "Very Popular"
+        pop >= 50f -> "Well Known"
+        else -> "Niche"
+    }
+}
+
+fun getAlphabeticalHeader(title: String?): String {
+    if (title.isNullOrBlank()) return "#"
+    val firstChar = title.first().uppercaseChar()
+    return if (firstChar.isLetter()) firstChar.toString() else "#"
 }

@@ -2,11 +2,13 @@ package it.polimi.rewatch.model
 
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.model.TmdbMovie
+import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbPerson
 import app.moviebase.tmdb.model.TmdbPersonCredit
 import app.moviebase.tmdb.model.TmdbPersonCredit.Movie
 import app.moviebase.tmdb.model.TmdbPersonCredit.Show
 import app.moviebase.tmdb.model.TmdbShow
+import app.moviebase.tmdb.model.TmdbShowDetail
 import kotlinx.datetime.LocalDate
 
 // Used to show results of search, person
@@ -18,6 +20,7 @@ data class Media(
     val title: String?,
     val type: MediaType,
     val popularity: Float,
+    val rating: Float,
 ) {
     // Constructor for Movie Data
     constructor(movie: TmdbMovie) : this(
@@ -28,6 +31,7 @@ data class Media(
         title = movie.title,
         type = MediaType.MOVIE,
         popularity = movie.popularity,
+        rating = movie.voteAverage,
     )
 
     constructor(movie: TmdbShow) : this(
@@ -38,6 +42,7 @@ data class Media(
         title = movie.name,
         type = MediaType.TV_SHOW,
         popularity = movie.popularity,
+        rating = movie.voteAverage,
     )
 
     constructor(credit: TmdbPersonCredit) : this(
@@ -60,6 +65,7 @@ data class Media(
             is Show -> MediaType.TV_SHOW
         },
         popularity = credit.popularity ?: 0.0f,
+        rating = credit.voteAverage ?: 0.0f,
     )
 
     constructor(movie: TmdbPerson) : this(
@@ -70,5 +76,40 @@ data class Media(
         title = movie.name,
         type = MediaType.TV_SHOW,
         popularity = movie.popularity,
+        rating = 0.0f,
+    )
+
+    constructor(movie: TmdbMovieDetail) : this(
+        id = movie.id,
+        posterImage = movie.posterImage,
+        posterPath = movie.posterPath,
+        releaseDate = null,
+        title = movie.title,
+        type = MediaType.MOVIE,
+        popularity = movie.popularity,
+        rating = movie.voteAverage,
+    )
+
+    constructor(movie: TmdbShowDetail) : this(
+        id = movie.id,
+        posterImage = movie.posterImage,
+        posterPath = movie.posterPath,
+        releaseDate = null,
+        title = movie.name,
+        type = MediaType.TV_SHOW,
+        popularity = movie.popularity,
+        rating = movie.voteAverage ?: 0.0f,
+    )
+
+    // empty media
+    constructor(type: MediaType) : this(
+        id = 0,
+        posterImage = null,
+        posterPath = "",
+        releaseDate = null,
+        title = "",
+        type = type,
+        popularity = 0.0f,
+        rating = 0.0f,
     )
 }

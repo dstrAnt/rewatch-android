@@ -23,14 +23,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun StarRating(
-    rating: Double,
+    rating: Float,
     maxRating: Int = 5,
     starSize: Dp = 15.dp,
 ) {
     // Convertiamo il voto da base 10 a base 5
-    val starRating = (rating / 2).coerceIn(0.0, 5.0)
+    val starRating = (rating / 2).coerceIn(0.0f, 5.0f)
     val fullStars = starRating.toInt()
-    val partialStarFill = (starRating - fullStars).toFloat()
+    val partialStarFill = (starRating - fullStars)
     val emptyStars =
         maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
     Row(verticalAlignment = Alignment.CenterVertically) {

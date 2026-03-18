@@ -10,14 +10,20 @@ import app.moviebase.tmdb.model.TmdbDiscoverTimeRange
 import app.moviebase.tmdb.model.TmdbTimeWindow
 import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomeData
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.search.SearchType
+import it.polimi.rewatch.screens.tracking.TrackingData
+import it.polimi.rewatch.screens.tracking.fakeWatched
+import it.polimi.rewatch.screens.tracking.fakeWatchlist
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
@@ -130,6 +136,45 @@ class TmdbRepository @Inject constructor(
             showCredits = showCreditsDeferred.await(),
         )
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    suspend fun getTrackingData(): TrackingData = coroutineScope {
+        // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
+        val rawWatchlist = fakeWatchlist()
+        val rawWatched = fakeWatched()
+
+        // 2. Lanciamo le chiamate API in parallelo per la Watchlist
+        val watchlistDeferred = rawWatchlist.map { item ->
+            async(Dispatchers.IO) {
+                val details = when (item.type) {
+                    MediaType.MOVIE -> tmdb.movies.getDetails(item.id).let(::Media)
+                    MediaType.TV_SHOW -> tmdb.show.getDetails(item.id).let(::Media)
+                    else -> item.mediaData
+                }
+                // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
+                item.copy(mediaData = details)
+            }
+        }
+
+        // 3. Facciamo lo stesso per i Watched
+        val watchedDeferred = rawWatched.map { item ->
+            async(Dispatchers.IO) {
+                val details = when (item.type) {
+                    MediaType.MOVIE -> tmdb.movies.getDetails(item.id).let(::Media)
+                    MediaType.TV_SHOW -> tmdb.show.getDetails(item.id).let(::Media)
+                    else -> item.mediaData
+                }
+                item.copy(mediaData = details) // copy mantiene gli altri campi
+            }
+        }
+
+        // 4. Attendiamo che tutte le chiamate finiscano e restituiamo il risultato
+        TrackingData(
+            watchlist = watchlistDeferred.awaitAll(),
+            watched = watchedDeferred.awaitAll(),
+        )
+    }
+
 
     suspend fun searchMedia(
         query: String,
