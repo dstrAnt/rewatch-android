@@ -41,8 +41,8 @@ import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
+import it.polimi.rewatch.model.PosterMedia
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,27 +97,21 @@ fun HomeContent(
 
 
     CustomLazyGrid {
-        movieSection(
-            "Trending", data.trending,
-            expandedSectionIds = expandedSectionIds,
-            onToggleSection = handleToggle,
-            actions.onNavigateToMedia,
+        listOf(
+            Pair("Trending", data.trending),
+            Pair("Top Rated", data.popular),
+            Pair("Recent", data.recent),
         )
-        movieSection(
-            "Top Rated", data.popular,
-            expandedSectionIds = expandedSectionIds,
-            onToggleSection = handleToggle,
-            actions.onNavigateToMedia,
-        )
-        movieSection(
-            "Recent", data.recent,
-            expandedSectionIds = expandedSectionIds,
-            onToggleSection = handleToggle,
-            actions.onNavigateToMedia,
-        )
+            .forEach { (title, data) ->
+                movieSection(
+                    title, data,
+                    expandedSectionIds = expandedSectionIds,
+                    onToggleSection = handleToggle,
+                    actions,
+                )
+            }
+        //BottomOverlayStretchExample()
     }
-    //BottomOverlayStretchExample()
-
 }
 
 fun LazyGridScope.movieSection(
@@ -125,7 +119,7 @@ fun LazyGridScope.movieSection(
     movies: List<TmdbMovie>,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
-    onNavigateToMovie: (MediaId) -> Unit,
+    actions: NavigationActions,
 ) {
     val isExpanded = expandedSectionIds.contains(title)
     val displayedMovies = if (isExpanded) movies else movies.take(12)
@@ -148,7 +142,8 @@ fun LazyGridScope.movieSection(
         PosterItem(
             it.posterPath, it.title,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
-            { onNavigateToMovie(MovieId(it.id)) },
+            { actions.onNavigateToMedia(MovieId(it.id)) },
+            { actions.onBottomSheet(PosterMedia(it)) },
         )
     }
     // --- Pulsante Dinamico ---

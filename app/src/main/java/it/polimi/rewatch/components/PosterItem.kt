@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -132,9 +133,10 @@ fun PosterItem(
     media: PosterMedia,
     onNavigateToMedia: () -> Unit,
     modifier: Modifier = Modifier,
+    onLong: (() -> Unit)? = null,
 ) = PosterItem(
     posterPath = media.posterPath, title = media.title, modifier = modifier,
-    onNavigateToMedia,
+    onNavigateToMedia, onLong = onLong,
 )
 
 @Composable
@@ -145,14 +147,15 @@ fun PosterItem(
 ) = PosterItem(
     posterPath = media.mediaData.posterPath, title = media.mediaData.title, modifier = modifier,
     onNavigateToMedia,
-    )
+)
 
 @Composable
 fun PosterItem(
     posterPath: String?,
     title: String?,
     modifier: Modifier = Modifier,
-    onNavigateToMedia: () -> Unit,
+    onClick: () -> Unit,
+    onLong: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(5.dp)
     val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit = {
@@ -173,7 +176,7 @@ fun PosterItem(
             .aspectRatio(2f / 3f)
             .clip(shape)
             .border(1.dp, Color.Gray, shape)
-            .clickable(onClick = onNavigateToMedia),
+            .combinedClickable(onClick = onClick, onLongClick = onLong),
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots

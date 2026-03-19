@@ -53,9 +53,11 @@ import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.common.AnimatedNavDisplay
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.components.FullScreenImageOverlay
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
@@ -71,9 +73,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(
-                scrim = Color.TRANSPARENT,
-            ),
+            statusBarStyle = SystemBarStyle.dark(scrim = Color.TRANSPARENT),
         )
         setContent {
             RewatchTheme {
@@ -91,7 +91,7 @@ fun RewatchApp() {
     val backStack = rememberNavBackStack(Home)
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
     var isOverlayVisible by remember { mutableStateOf(false) }
-
+    var bottomSheetMedia by remember { mutableStateOf<PosterMedia?>(null) }
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToProfile = { id -> backStack.add(PersonPage(id)) },
@@ -103,6 +103,7 @@ fun RewatchApp() {
                     isOverlayVisible = true
                 }
             },
+            onBottomSheet = { bottomSheetMedia = it },
         )
     }
 
@@ -177,6 +178,9 @@ fun RewatchApp() {
         // Add your movie details route here just like before
         // composable("movie_page/{movieId}") { ... }
     }
+    bottomSheetMedia?.let {
+        BottomSheet(it, { bottomSheetMedia = null })
+    }
     val animationSpec = tween<Float>(durationMillis = 300)
     AnimatedVisibility(
         visible = isOverlayVisible,
@@ -241,6 +245,7 @@ private fun BottomBar(
         }
     }
 }
+
 sealed interface TopLevelTab : NavKey
 
 @Serializable

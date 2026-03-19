@@ -69,6 +69,7 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -347,6 +348,7 @@ class NavigationActions(
     val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
     val onFullscreenImage: (String?) -> Modifier,
+    val onBottomSheet: (PosterMedia) -> Unit,
 )
 
 @Composable
