@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.PosterMedia
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -36,7 +36,7 @@ class SearchViewModel @Inject constructor(
 
     // Automatically reacts to query changes, debounces, and fetches movies
     @OptIn(ExperimentalCoroutinesApi::class)
-    val media: StateFlow<List<Media>> = combine(
+    val media: StateFlow<List<PosterMedia>> = combine(
         _query,
         _mediaType,
     ) { currentQuery, currentMediaType ->

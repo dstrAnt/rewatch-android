@@ -102,13 +102,13 @@ fun SearchPage(
                         },
                         leadingContent = {
                             PosterItem(
-                                it, actions.onNavigateToMedia, modifier = Modifier.size(60.dp, 90.dp),
+                                it, { it.id.onClick(actions) }, modifier = Modifier.size(60.dp, 90.dp),
                             )
                         },
                         modifier = Modifier.clickable {
                             // 2. Trigger callback with the movie ID
                             focusManager.clearFocus()
-                            actions.onNavigateToMedia(it.id.toString(), it.type)
+                            it.id.onClick(actions)
                         },
                     )
 

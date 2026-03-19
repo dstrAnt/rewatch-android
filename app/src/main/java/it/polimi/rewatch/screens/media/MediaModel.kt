@@ -8,26 +8,24 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaDetail
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.MediaId
+import it.polimi.rewatch.model.PosterMedia
 
 data class MovieData(
-    var movie: MediaDetail, var similar: List<Media>,
+    var movie: MediaDetail, var similar: List<PosterMedia>,
 )
 
 @HiltViewModel(assistedFactory = MediaViewModel.Factory::class)
 class MediaViewModel @AssistedInject constructor(
-    @Assisted("mediaId") private val mediaId: String,
-    @Assisted("mediaType") private val mediaType: MediaType,
+    @Assisted("mediaId") private val mediaId: MediaId,
     private val repository: TmdbRepository,
 ) : BaseViewModel<MovieData>() { // <-- Changed to your unified MediaDetail class
     @AssistedFactory
     interface Factory {
         // Factory now requires both ID and Type
         fun create(
-            @Assisted("mediaId") mediaId: String,
-            @Assisted("mediaType") mediaType: MediaType,
+            @Assisted("mediaId") mediaId: MediaId,
         ): MediaViewModel
     }
 
@@ -36,12 +34,5 @@ class MediaViewModel @AssistedInject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun fetchData() =
-        // Switch the repository call based on the media type
-        when (mediaType) {
-            MediaType.MOVIE -> repository.movieData(mediaId.toInt())
-            MediaType.TV_SHOW -> repository.tvData(mediaId.toInt())
-            MediaType.SEASON -> repository.seasonData(mediaId)
-            MediaType.EPISODE -> repository.episodeData(mediaId)
-        }
+    override suspend fun fetchData() = mediaId.getData(repository)
 }

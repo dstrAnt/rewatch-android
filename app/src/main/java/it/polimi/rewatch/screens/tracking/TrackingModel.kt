@@ -5,39 +5,12 @@ import androidx.annotation.RequiresApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.Media
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.MovieId
+import it.polimi.rewatch.model.TvId
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import java.time.LocalDate
-
-interface BaseMedia {
-    val id: Int
-    val type: MediaType
-    val mediaData: Media
-    val rating: Float? get() = null
-    val title: String? get() = null
-    val popularity: Float? get() = null // Only Watchlist has this
-    val date: LocalDate? get() = null         // Only Watched has this
-}
-
-data class WatchedMedia(
-    override val id: Int,
-    override val type: MediaType,
-    override val mediaData: Media = Media(type),
-    override val rating: Float?,
-    override val date: LocalDate,
-) : BaseMedia {
-    override val title get() = mediaData.title
-}
-data class WatchlistMedia(
-    override val id: Int,
-    override val type: MediaType,
-    override val mediaData: Media = Media(type),
-) : BaseMedia {
-    override val rating: Float get() = mediaData.rating
-    override val title get() = mediaData.title
-    override val popularity get() = mediaData.popularity
-}
 
 data class TrackingData(
     val watchlist: List<WatchlistMedia>,
@@ -58,82 +31,62 @@ class TrackingViewModel @Inject constructor(
 }
 
 // fake list builders
-fun fakeWatchlist(): List<WatchlistMedia> {
-    return buildList {
-        add(
-            WatchlistMedia(
-                id = 550,
-                type = MediaType.MOVIE,
-            ),
-        )
-        add(
-            WatchlistMedia(
-                id = 83533,
-                type = MediaType.MOVIE,
-            ),
-        )
-        add(
-            WatchlistMedia(
-                id = 1317288,
-                type = MediaType.MOVIE,
-            ),
-        )
-    }
-}
+fun fakeWatchlist(): List<WatchlistMedia> = listOf(
+    WatchlistMedia(
+        id = MovieId(550),
+    ),
+    WatchlistMedia(
+        id = MovieId(83533),
+    ),
+    WatchlistMedia(
+        id = MovieId(1317288),
+    ),
+)
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun fakeWatched(): List<WatchedMedia> = listOf(
     WatchedMedia(
-        id = 1390,
-        type = MediaType.TV_SHOW,
+        id = TvId(1390),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),
     WatchedMedia(
-        id = 1399,
-        type = MediaType.TV_SHOW,
+        id = TvId(1399),
         rating = 8.5f,
         date = LocalDate.of(2023, 3, 23),
     ),
     WatchedMedia(
-        id = 1393,
-        type = MediaType.TV_SHOW,
+        id = TvId(1393),
         rating = 8.5f,
         date = LocalDate.of(2024, 3, 23),
     ),
     WatchedMedia(
-        id = 1398,
-        type = MediaType.TV_SHOW,
+        id = TvId(1398),
         rating = 8.5f,
         date = LocalDate.of(2026, 4, 23),
     ),
     WatchedMedia(
-        id = 1394,
-        type = MediaType.TV_SHOW,
+        id = TvId(1394),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),
     WatchedMedia(
-        id = 1319,
-        type = MediaType.TV_SHOW,
+        id = TvId(1319),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),
     WatchedMedia(
-        id = 1395,
-        type = MediaType.TV_SHOW,
+        id = TvId(1395),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),
     WatchedMedia(
-        id = 1349,
-        type = MediaType.TV_SHOW,
+        id = TvId(1349),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),
     WatchedMedia(
-        id = 1329,
-        type = MediaType.TV_SHOW,
+        id = TvId(1329),
         rating = 8.5f,
         date = LocalDate.of(2026, 3, 23),
     ),

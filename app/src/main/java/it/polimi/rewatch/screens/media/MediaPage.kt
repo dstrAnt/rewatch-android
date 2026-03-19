@@ -82,9 +82,12 @@ import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.SeasonId
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 
@@ -99,11 +102,10 @@ fun isDetailsAvailable(details: MediaDetail): Boolean {
 
 @Composable
 fun MediaPage(
-    movieId: String,
-    mediaType: MediaType,
+    mediaId: MediaId,
     viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
-        key = movieId,
-        creationCallback = { it.create(movieId, mediaType) },
+        key = mediaId.toString(),
+        creationCallback = { it.create(mediaId) },
     ),
     outerPadding: PaddingValues,
     actions: NavigationActions,
@@ -114,9 +116,8 @@ fun MediaPage(
     ) { data ->
         MediaContent(
             data = data,
-            mediaType = mediaType,
             padding = outerPadding,
-            mediaId = movieId,
+            mediaId = mediaId,
             actions = actions,
         )
     }
@@ -131,8 +132,7 @@ fun MediaContent(
     actions: NavigationActions,
     padding: PaddingValues,
     data: MovieData,
-    mediaType: MediaType,
-    mediaId: String,
+    mediaId: MediaId,
 ) {
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
@@ -144,7 +144,7 @@ fun MediaContent(
     }
     val tabs: List<TabItem> = remember(
         expandedSectionIds,
-        buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad, actions),
+        buildTabs(movie, expandedSectionIds, handleToggle, mediaId, pad, actions),
     )
     MediaScaffold(
         scrollState = scrollState,
@@ -233,7 +233,7 @@ fun MediaContent(
             ) {
                 item {
                     SimilarSection(data.similar.take(7)) {
-                        PosterItem(it, actions.onNavigateToMedia)
+                        PosterItem(it, { it.id.onClick(actions) })
                     }
                     Spacer(Modifier.height(pad))
                 }
@@ -251,8 +251,7 @@ private fun buildTabs(
     movie: MediaDetail,
     expandedSectionIds: Set<String>,
     handleToggle: (String) -> Unit,
-    mediaType: MediaType,
-    mediaId: String,
+    mediaId: MediaId,
     pad: Dp,
     actions: NavigationActions,
 ): () -> List<TabItem> = {
@@ -278,7 +277,7 @@ private fun buildTabs(
             ),
         )
         // ... TV SHOW: Seasons tab ...
-        if (mediaType == MediaType.TV_SHOW) add(
+        if (mediaId.type == MediaType.TV_SHOW) add(
             TabItem.expandable(
                 title = "Seasons",
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
@@ -292,15 +291,13 @@ private fun buildTabs(
                         name = it?.name,
                         date = it?.airDate,
                         count = it?.episodeCount?.let { "${it} episodes" }.orEmpty(),
-                        mediaType = MediaType.SEASON,
-                        mediaId,
-                        actions.onNavigateToMedia,
+                        { SeasonId(mediaId.parentId, it.seasonNumber).onClick(actions) },
                     )
                 },
             ),
         )
         // ... SEASON: Episodes tab ...
-        if (mediaType == MediaType.SEASON) add(
+        if (mediaId.type == MediaType.SEASON) add(
             TabItem.expandable(
                 title = "Episodes",
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
@@ -314,9 +311,7 @@ private fun buildTabs(
                         name = it?.name,
                         date = it?.airDate,
                         count = it?.runtime?.let { "${it} min" }.orEmpty(),
-                        mediaType = MediaType.EPISODE,
-                        mediaId,
-                        actions.onNavigateToMedia,
+                        { EpisodeId(mediaId.parentId, it.seasonNumber, it.episodeNumber).onClick(actions) },
                     )
                 },
             ),
@@ -907,9 +902,7 @@ fun EpisodeItem(
     name: String?,
     date: LocalDate?,
     count: String,
-    mediaType: MediaType,
-    showId: String,
-    onNavigateToMedia: (String, MediaType) -> Unit,
+    onNavigateToMedia: () -> Unit,
 ) = ListItem(
     leadingContent = {
         Text(
@@ -940,7 +933,5 @@ fun EpisodeItem(
             )
     },
     modifier =
-        Modifier.clickable {
-            onNavigateToMedia(showId + "_" + number, mediaType)
-        },
+        Modifier.clickable(onClick = onNavigateToMedia),
 )

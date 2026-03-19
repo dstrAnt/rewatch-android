@@ -67,6 +67,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
@@ -343,7 +344,7 @@ fun getDeviceCornerRadius(): Dp {
 
 class NavigationActions(
     val onNavigateToProfile: (Int) -> Unit,
-    val onNavigateToMedia: (String, MediaType) -> Unit,
+    val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
     val onFullscreenImage: (String?) -> Modifier,
 )

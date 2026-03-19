@@ -33,9 +33,9 @@ import coil3.compose.SubcomposeAsyncImageScope
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import it.polimi.rewatch.model.Media
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.screens.tracking.BaseMedia
+import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.TrackingMedia
 
 @Composable
 fun PosterItem3(
@@ -129,27 +129,23 @@ fun PosterItem2(
 
 @Composable
 fun PosterItem(
-    media: Media,
-    onNavigateToMedia: (String, MediaType) -> Unit,
+    media: PosterMedia,
+    onNavigateToMedia: () -> Unit,
     modifier: Modifier = Modifier,
 ) = PosterItem(
     posterPath = media.posterPath, title = media.title, modifier = modifier,
-    {
-        onNavigateToMedia(media.id.toString(), media.type)
-    },
+    onNavigateToMedia,
 )
 
 @Composable
 fun PosterItem(
-    media: BaseMedia,
-    onNavigateToMedia: (String, MediaType) -> Unit,
+    media: TrackingMedia,
+    onNavigateToMedia: () -> Unit,
     modifier: Modifier = Modifier,
 ) = PosterItem(
     posterPath = media.mediaData.posterPath, title = media.mediaData.title, modifier = modifier,
-    {
-        onNavigateToMedia(media.id.toString(), media.type)
-    },
-)
+    onNavigateToMedia,
+    )
 
 @Composable
 fun PosterItem(

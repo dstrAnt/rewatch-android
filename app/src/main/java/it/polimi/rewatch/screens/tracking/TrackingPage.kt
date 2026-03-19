@@ -47,6 +47,7 @@ import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.TrackingMedia
 import java.time.LocalDate
 
 enum class SortOption(val label: String) {
@@ -149,7 +150,7 @@ fun TrackingPage(
                     }
                     // Elementi della sezione
                     items(key = { "${it.id}" }, items = items) { media ->
-                        PosterStarsItem(media, actions.onNavigateToMedia)
+                        PosterStarsItem(media, { media.id.onClick(actions) })
                     }
                 }
             }
@@ -159,8 +160,8 @@ fun TrackingPage(
 
 @Composable
 private fun LazyGridItemScope.PosterStarsItem(
-    media: BaseMedia,
-    onNavigateToMedia: (String, MediaType) -> Unit,
+    media: TrackingMedia,
+    onNavigateToMedia: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.Start,

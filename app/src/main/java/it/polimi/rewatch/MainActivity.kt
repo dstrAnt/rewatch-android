@@ -54,6 +54,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.common.AnimatedNavDisplay
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.FullScreenImageOverlay
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
@@ -90,10 +91,11 @@ fun RewatchApp() {
     val backStack = rememberNavBackStack(Home)
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
     var isOverlayVisible by remember { mutableStateOf(false) }
+
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToProfile = { id -> backStack.add(PersonPage(id)) },
-            onNavigateToMedia = { id, type -> backStack.add(MediaPage(id, type)) },
+            onNavigateToMedia = { id -> backStack.add(MediaPage(id)) },
             onNavigateBack = { backStack.removeLastOrNull() },
             onFullscreenImage = {
                 Modifier.clickable {
@@ -122,9 +124,7 @@ fun RewatchApp() {
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
-                entry<Home>(
-                    metadata = noAnimationMetadata(),
-                ) {
+                entry<Home>(metadata = noAnimationMetadata()) {
                     // Update HomePage to accept lambdas instead of navController
                     HomePage(
                         actions = navActions,
@@ -159,8 +159,7 @@ fun RewatchApp() {
                     ) {
                         MediaPage(
                             actions = navActions,
-                            movieId = key.mediaId, // Type-safe property
-                            mediaType = key.mediaType,
+                            mediaId = key.mediaId, // Type-safe property
                             outerPadding = outerPadding,
                         )
                     }
@@ -254,7 +253,7 @@ data object Search : TopLevelTab
 data class TrackingPage(val type: MediaType) : TopLevelTab
 
 @Serializable
-data class MediaPage(val mediaId: String, val mediaType: MediaType) : NavKey
+data class MediaPage(val mediaId: MediaId) : NavKey
 
 @Serializable
 data class PersonPage(val personId: Int) : NavKey

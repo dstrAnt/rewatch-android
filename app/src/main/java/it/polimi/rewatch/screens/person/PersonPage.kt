@@ -54,7 +54,7 @@ import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.PosterMedia
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
@@ -141,8 +141,8 @@ fun PersonContent(
         }
 
         combinedSequence
-            .map(::Media)
-            .distinctBy { it.id to it.type }
+            .map(::PosterMedia)
+            .distinctBy { it.id }
             .toList()
     }
 
@@ -150,7 +150,7 @@ fun PersonContent(
     val displayList = remember(baseList, selectedSort) {
         when (selectedSort) {
             SortOrder.DATE -> baseList.sortedWith(
-                compareBy<Media> { it.releaseDate?.toString().isNullOrBlank() }
+                compareBy<PosterMedia> { it.releaseDate?.toString().isNullOrBlank() }
                     .thenByDescending { it.releaseDate?.toString() },
             )
 
@@ -232,9 +232,9 @@ fun PersonContent(
 
             items(
                 items = displayList,
-                key = { "${it.id}_${it.type.name}" },
+                key = { "${it.id}" },
             ) {
-                PosterItem(it, actions.onNavigateToMedia, Modifier.animateItem())
+                PosterItem(it, { it.id.onClick(actions) }, Modifier.animateItem())
             }
         }
     }

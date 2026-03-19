@@ -41,7 +41,8 @@ import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.MediaId
+import it.polimi.rewatch.model.MovieId
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,6 +95,7 @@ fun HomeContent(
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
 
+
     CustomLazyGrid {
         movieSection(
             "Trending", data.trending,
@@ -114,6 +116,8 @@ fun HomeContent(
             actions.onNavigateToMedia,
         )
     }
+    //BottomOverlayStretchExample()
+
 }
 
 fun LazyGridScope.movieSection(
@@ -121,7 +125,7 @@ fun LazyGridScope.movieSection(
     movies: List<TmdbMovie>,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
-    onNavigateToMovie: (String, MediaType) -> Unit,
+    onNavigateToMovie: (MediaId) -> Unit,
 ) {
     val isExpanded = expandedSectionIds.contains(title)
     val displayedMovies = if (isExpanded) movies else movies.take(12)
@@ -144,7 +148,7 @@ fun LazyGridScope.movieSection(
         PosterItem(
             it.posterPath, it.title,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
-            { onNavigateToMovie(it.id.toString(), MediaType.MOVIE) },
+            { onNavigateToMovie(MovieId(it.id)) },
         )
     }
     // --- Pulsante Dinamico ---

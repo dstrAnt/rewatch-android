@@ -8,9 +8,10 @@ import app.moviebase.tmdb.model.TmdbDiscover
 import app.moviebase.tmdb.model.TmdbDiscoverMovieSortBy
 import app.moviebase.tmdb.model.TmdbDiscoverTimeRange
 import app.moviebase.tmdb.model.TmdbTimeWindow
-import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.screens.home.HomeData
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
@@ -63,7 +64,7 @@ class TmdbRepository @Inject constructor(
                 AppendResponse.WATCH_PROVIDERS,
             ),
         )
-        val similar = tmdb.movies.getSimilar(movieId = movieId).results.map(::Media)
+        val similar = tmdb.movies.getSimilar(movieId = movieId).results.map(::PosterMedia)
 
         MovieData(
             MediaDetail(details),
@@ -82,7 +83,7 @@ class TmdbRepository @Inject constructor(
                 AppendResponse.WATCH_PROVIDERS,
             ),
         )
-        val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
+        val similar = tmdb.show.getSimilar(showId = showId).results.map(::PosterMedia)
 
         MovieData(
             MediaDetail(details),
@@ -90,16 +91,15 @@ class TmdbRepository @Inject constructor(
         )
     }
 
-    suspend fun seasonData(seasonId: String): MovieData = withContext(Dispatchers.IO) {
-        val (showId, seasonNumber) = seasonId.split("_").map { it.toInt() }
+    suspend fun seasonData(id: SeasonId): MovieData = withContext(Dispatchers.IO) {
         val details = tmdb.showSeasons.getDetails(
-            showId = showId,
-            seasonNumber = seasonNumber,
+            showId = id.parentId,
+            seasonNumber = id.seasonId,
             appendResponses = listOf(
                 AppendResponse.CREDITS,
             ),
         )
-        val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
+        val similar = tmdb.show.getSimilar(showId = id.parentId).results.map(::PosterMedia)
 
         MovieData(
             MediaDetail(details),
@@ -107,17 +107,16 @@ class TmdbRepository @Inject constructor(
         )
     }
 
-    suspend fun episodeData(episodeId: String): MovieData = withContext(Dispatchers.IO) {
-        val (showId, seasonNumber, episodeNumber) = episodeId.split("_").map { it.toInt() }
+    suspend fun episodeData(id: EpisodeId): MovieData = withContext(Dispatchers.IO) {
         val details = tmdb.showEpisodes.getDetails(
-            showId = showId,
-            seasonNumber = seasonNumber,
-            episodeNumber = episodeNumber,
+            showId = id.parentId,
+            seasonNumber = id.seasonId,
+            episodeNumber = id.episodeId,
             appendResponses = listOf(
                 AppendResponse.CREDITS,
             ),
         )
-        val similar = tmdb.show.getSimilar(showId = showId).results.map(::Media)
+        val similar = tmdb.show.getSimilar(showId = id.parentId).results.map(::PosterMedia)
 
         MovieData(
             MediaDetail(details),
@@ -136,38 +135,30 @@ class TmdbRepository @Inject constructor(
             showCredits = showCreditsDeferred.await(),
         )
     }
+    suspend fun movieDetails(id: Int): PosterMedia = tmdb.movies.getDetails(id).let(::PosterMedia)
+    suspend fun showDetails(id: Int): PosterMedia = tmdb.show.getDetails(id).let(::PosterMedia)
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getTrackingData(): TrackingData = coroutineScope {
         // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
         val rawWatchlist = fakeWatchlist()
         val rawWatched = fakeWatched()
-
         // 2. Lanciamo le chiamate API in parallelo per la Watchlist
         val watchlistDeferred = rawWatchlist.map { item ->
             async(Dispatchers.IO) {
-                val details = when (item.type) {
-                    MediaType.MOVIE -> tmdb.movies.getDetails(item.id).let(::Media)
-                    MediaType.TV_SHOW -> tmdb.show.getDetails(item.id).let(::Media)
-                    else -> item.mediaData
-                }
+                val details = item.id.getDetails(this@TmdbRepository)
                 // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
-                item.copy(mediaData = details)
+                item.copy(mediaData = details!!) // copy mantiene gli altri campi
             }
         }
-
         // 3. Facciamo lo stesso per i Watched
         val watchedDeferred = rawWatched.map { item ->
             async(Dispatchers.IO) {
-                val details = when (item.type) {
-                    MediaType.MOVIE -> tmdb.movies.getDetails(item.id).let(::Media)
-                    MediaType.TV_SHOW -> tmdb.show.getDetails(item.id).let(::Media)
-                    else -> item.mediaData
-                }
-                item.copy(mediaData = details) // copy mantiene gli altri campi
+                val details = item.id.getDetails(this@TmdbRepository)
+                item.copy(mediaData = details!!) // copy mantiene gli altri campi
             }
         }
-
         // 4. Attendiamo che tutte le chiamate finiscano e restituiamo il risultato
         TrackingData(
             watchlist = watchlistDeferred.awaitAll(),
@@ -175,11 +166,10 @@ class TmdbRepository @Inject constructor(
         )
     }
 
-
     suspend fun searchMedia(
         query: String,
         searchType: SearchType,
-    ): List<Media> {
+    ): List<PosterMedia> {
         if (query.isBlank()) {
             return emptyList()
         }
@@ -189,7 +179,7 @@ class TmdbRepository @Inject constructor(
                 SearchType.MOVIES -> {
                     tmdb.search.findMovies(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
-                        .map(::Media) // Maps TmdbMovie to your Media class
+                        .map(::PosterMedia) // Maps TmdbMovie to your Media class
                 }
 
                 SearchType.TV -> {
@@ -197,11 +187,11 @@ class TmdbRepository @Inject constructor(
                     // it might be findTv(), searchTv(), or findTvShows()
                     tmdb.search.findShows(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
-                        .map(::Media) // Maps TmdbTvShow to your Media class
+                        .map(::PosterMedia) // Maps TmdbTvShow to your Media class
                 }
 //
                 SearchType.CAST -> {
-                    tmdb.search.findPeople(query = query, page = 1).results.map(::Media) // Maps TmdbTvShow to your Media class
+                    tmdb.search.findPeople(query = query, page = 1).results.map(::PosterMedia) // Maps TmdbTvShow to your Media class
                 }
 
                 else -> emptyList()
