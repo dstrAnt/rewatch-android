@@ -17,8 +17,6 @@ import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.search.SearchType
 import it.polimi.rewatch.screens.tracking.TrackingData
-import it.polimi.rewatch.screens.tracking.fakeWatched
-import it.polimi.rewatch.screens.tracking.fakeWatchlist
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +29,7 @@ import java.time.LocalDate
 @Singleton // Tells Hilt to only make one of these for the whole app
 class TmdbRepository @Inject constructor(
     private val tmdb: Tmdb3, // Hilt delivers your API client here!
+    private val fakeRepo: FakeRepository,
 ) {
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getHomeData(): HomeData = withContext(Dispatchers.IO) {
@@ -142,8 +141,8 @@ class TmdbRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getTrackingData(): TrackingData = coroutineScope {
         // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
-        val rawWatchlist = fakeWatchlist()
-        val rawWatched = fakeWatched()
+        val rawWatchlist = fakeRepo.getWatchlist()
+        val rawWatched = fakeRepo.getWatched()
         // 2. Lanciamo le chiamate API in parallelo per la Watchlist
         val watchlistDeferred = rawWatchlist.map { item ->
             async(Dispatchers.IO) {

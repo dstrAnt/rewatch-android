@@ -2,20 +2,20 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:top="16dp"
-        android:bottom="16dp"
-        android:left="16dp"
-        android:right="16dp">
+        android:top="36dp"
+        android:bottom="36dp"
+        android:left="36dp"
+        android:right="36dp">
         <shape android:shape="oval">
             <solid android:color="#FFFFFF" />
         </shape>
     </item>
 
     <item
-        android:drawable="@drawable/ic_launcher_foreground"
-        android:top="0dp"
-        android:bottom="0dp"
-        android:left="0dp"
-        android:right="0dp" />
+        android:drawable="@drawable/splash"
+        android:top="50dp"
+        android:bottom="50dp"
+        android:left="50dp"
+        android:right="50dp" />
 
 </layer-list>

@@ -13,9 +13,9 @@ interface TrackingMedia {
 
 data class WatchedMedia(
     override val id: MediaId,
-    override val mediaData: PosterMedia = PosterMedia(id),
     override val rating: Float?,
     override val date: LocalDate,
+    override val mediaData: PosterMedia = PosterMedia(id),
 ) : TrackingMedia {
     override val title get() = mediaData.title
 }
