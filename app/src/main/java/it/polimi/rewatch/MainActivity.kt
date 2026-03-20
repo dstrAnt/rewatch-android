@@ -5,6 +5,7 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
@@ -106,6 +107,15 @@ fun RewatchApp() {
             onBottomSheet = { bottomSheetMedia = it },
         )
     }
+    val currentScreen = backStack.lastOrNull()
+
+    BackHandler(enabled = currentScreen is TopLevelTab && currentScreen != Home) {
+        // Snap the user back to the Home tab atomically
+        bottomBarState = AppDestinations.HOME
+
+        backStack.clear()
+        backStack.add(Home)
+    }
 
     Scaffold(
         bottomBar = {
@@ -133,18 +143,14 @@ fun RewatchApp() {
                     )
                 }
 
-                entry<Search>(
-                    metadata = noAnimationMetadata(),
-                ) {
+                entry<Search>(metadata = noAnimationMetadata()) {
                     SearchPage(
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
 
-                entry<TrackingPage>(
-                    metadata = noAnimationMetadata(),
-                ) { key ->
+                entry<TrackingPage>(metadata = noAnimationMetadata()) { key ->
                     TrackingPage(
                         actions = navActions,
                         type = key.type,
