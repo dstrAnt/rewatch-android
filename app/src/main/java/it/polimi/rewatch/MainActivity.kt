@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -290,7 +290,7 @@ enum class AppDestinations(
         navKey = TrackingPage(MediaType.TV_SHOW),
     ),
     PROFILE(
-        "Profile", Icons.Default.AccountBox,
+        "Profile", Icons.Default.Settings,
         navKey = PersonPage(31),
     ),
 }

@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -102,7 +102,7 @@ fun BottomSheet(media: PosterMedia, onDismiss: () -> Unit) {
                     modifier = Modifier.size(60.dp),
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Default.RemoveRedEye,
                         contentDescription = "Share",
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(37.dp),
