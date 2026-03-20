@@ -117,8 +117,8 @@ fun TrackingPage(
                 }
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
-                    WatchTabItem.WATCHLIST -> data.watchlist
-                    WatchTabItem.WATCHED -> data.watched
+                    WatchTabItem.WATCHLIST -> data.watchlist.filter { it.id.type == type }
+                    WatchTabItem.WATCHED -> data.watched.filter { it.id.type == type }
                 }
 // 2. Sort and group the unified data structure
                 val groupedItems = items.run {

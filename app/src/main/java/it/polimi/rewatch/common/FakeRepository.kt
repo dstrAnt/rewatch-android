@@ -19,6 +19,15 @@ class FakeRepository
             id = MovieId(550),
         ),
         WatchlistMedia(
+            id = TvId(1399),
+        ),
+        WatchlistMedia(
+            id = TvId(1393),
+        ),
+        WatchlistMedia(
+            id = TvId(1395),
+        ),
+        WatchlistMedia(
             id = MovieId(83533),
         ),
         WatchlistMedia(
@@ -57,7 +66,17 @@ class FakeRepository
             date = LocalDate.of(2024, 3, 23),
         ),
         WatchedMedia(
-            id = TvId(1398),
+            id = MovieId(549),
+            rating = 8.5f,
+            date = LocalDate.of(2026, 4, 23),
+        ),
+        WatchedMedia(
+            id = MovieId(83538),
+            rating = 8.5f,
+            date = LocalDate.of(2026, 4, 23),
+        ),
+        WatchedMedia(
+            id = MovieId(83540),
             rating = 8.5f,
             date = LocalDate.of(2026, 4, 23),
         ),
