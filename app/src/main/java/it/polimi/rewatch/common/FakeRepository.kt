@@ -9,12 +9,16 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
 @Singleton
+@RequiresApi(Build.VERSION_CODES.O)
 class FakeRepository
 @Inject constructor() {
-    private val watchlist: MutableList<WatchlistMedia> = mutableListOf(
+    private val fakeWatchlist = listOf(
         WatchlistMedia(
             id = MovieId(550),
         ),
@@ -46,10 +50,7 @@ class FakeRepository
             id = MovieId(83532),
         ),
     )
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private val watched: MutableList<WatchedMedia> = mutableListOf(
-
+    private val fakeWatch = listOf(
         WatchedMedia(
             id = TvId(1390),
             rating = 8.5f,
@@ -106,36 +107,20 @@ class FakeRepository
             date = LocalDate.of(2026, 3, 23),
         ),
     )
-
-    fun getWatchlist() = watchlist
+    private val _watchlist = MutableStateFlow(fakeWatchlist)
+    val watchlist = _watchlist.asStateFlow()
+    private val _watchedList = MutableStateFlow(fakeWatch)
+    val watchedList = _watchedList.asStateFlow()
     fun addToWatchlist(id: MediaId) {
-        watchlist.add(WatchlistMedia(id))
+        _watchlist.update { currentList ->
+            currentList + WatchlistMedia(id) // Creates and returns a new list!
+        }
     }
 
     fun removeFromWatchlist(id: MediaId) {
-        watchlist.removeAll { it.id == id }
+        _watchlist.update { currentList ->
+            currentList.filter { it != WatchlistMedia(id) } // Creates and returns a new list!
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun getWatched() = watched
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun addToWatched(id: MediaId, rating: Float = 0.0f, date: LocalDate) {
-        watched.add(WatchedMedia(id, rating, date))
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun changeWatchedRating(id: MediaId, rating: Float) {
-        watched.find { it.id == id }?.rating = rating
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun changeWatchedDate(id: MediaId, date: LocalDate) {
-        watched.find { it.id == id }?.date = date
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun removeFromWatched(id: MediaId) {
-        watched.removeAll { it.id == id }
-    }
 }

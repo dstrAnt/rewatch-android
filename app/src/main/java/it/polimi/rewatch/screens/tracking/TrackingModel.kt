@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
+import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
@@ -17,6 +18,7 @@ data class TrackingData(
 @HiltViewModel
 class TrackingViewModel @Inject constructor(
     private val repository: TmdbRepository,
+    private val fakeRepo: FakeRepository,
 ) : BaseViewModel<TrackingData>() {
 
     init {
@@ -24,5 +26,19 @@ class TrackingViewModel @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun fetchData() = repository.getTrackingData()
+    override suspend fun fetchData() = repository.getTrackingData(fakeRepo)
+}
+
+@HiltViewModel
+class BottomSheetViewModel @Inject constructor(
+    private val repository: TmdbRepository,
+    private val fakeRepo: FakeRepository,
+) : BaseViewModel<TrackingData>() {
+
+    init {
+        executeFetch()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override suspend fun fetchData() = repository.getTrackingData(fakeRepo)
 }
