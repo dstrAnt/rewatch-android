@@ -1,5 +1,7 @@
 package it.polimi.rewatch.model
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.time.LocalDate
 
 interface TrackingMedia {
@@ -13,16 +15,18 @@ interface TrackingMedia {
 
 data class WatchedMedia(
     override val id: MediaId,
-    override var rating: Float,
-    override var date: LocalDate,
+    override val rating: Float,
+    override val date: LocalDate,
     override val mediaData: PosterMedia = PosterMedia(id),
 ) : TrackingMedia {
     override val title get() = mediaData.title
 }
 
-data class WatchlistMedia(
+data class WatchlistMedia @RequiresApi(Build.VERSION_CODES.O) constructor(
     override val id: MediaId,
     override val mediaData: PosterMedia = PosterMedia(id),
+    @RequiresApi(Build.VERSION_CODES.O)
+    override val date: LocalDate = LocalDate.now(),
 ) : TrackingMedia {
     override val rating: Float get() = mediaData.rating
     override val title get() = mediaData.title

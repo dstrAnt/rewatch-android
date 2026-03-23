@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -81,10 +82,12 @@ fun TrackingPage(
         )
     }
     val availableSortOptions = mapOf(
-        WatchTabItem.WATCHLIST to listOf(SortOption.POPULARITY, SortOption.RATING, SortOption.ALPHABETICAL),
+        WatchTabItem.WATCHLIST to listOf(SortOption.DATE, SortOption.POPULARITY, SortOption.RATING, SortOption.ALPHABETICAL),
         WatchTabItem.WATCHED to listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
     )
     val activeOrder = tabSortOrders.getValue(selectedTab)
+    val watchlist by viewModel.watchlist.collectAsState()
+    val watched by viewModel.watchedList.collectAsState()
 
     Scaffold(
         topBar = {
@@ -115,10 +118,11 @@ fun TrackingPage(
                         },
                     )
                 }
+
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
-                    WatchTabItem.WATCHLIST -> data.watchlist.filter { it.id.type == type }
-                    WatchTabItem.WATCHED -> data.watched.filter { it.id.type == type }
+                    WatchTabItem.WATCHLIST -> watchlist.filter { it.id.type == type }
+                    WatchTabItem.WATCHED -> watched.filter { it.id.type == type }
                 }
 // 2. Sort and group the unified data structure
                 val groupedItems = items.run {
@@ -131,12 +135,10 @@ fun TrackingPage(
 
                         SortOption.ALPHABETICAL -> sortedBy { it.title }
                             .groupBy { getAlphabeticalHeader(it.title) }
-
-                        SortOption.DATE -> sortedByDescending { it.date }
+                        SortOption.DATE -> sortedBy { it.date }
                             .groupBy { getDateHeader(it.date) }
                     }
                 }
-
                 // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
                 groupedItems.forEach { (header, items) ->
                     // Titolo della sezione (span completo)

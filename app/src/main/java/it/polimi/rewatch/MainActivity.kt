@@ -185,7 +185,7 @@ fun RewatchApp() {
         // composable("movie_page/{movieId}") { ... }
     }
     bottomSheetMedia?.let {
-        BottomSheet(it, { bottomSheetMedia = null })
+        BottomSheet(media = it, onDismiss = { bottomSheetMedia = null })
     }
     val animationSpec = tween<Float>(durationMillis = 300)
     AnimatedVisibility(

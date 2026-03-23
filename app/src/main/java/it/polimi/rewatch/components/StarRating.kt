@@ -26,6 +26,7 @@ fun StarRating(
     rating: Float,
     maxRating: Int = 5,
     starSize: Dp = 15.dp,
+    modifier: Modifier = Modifier,
 ) {
     // Convertiamo il voto da base 10 a base 5
     val starRating = (rating / 2).coerceIn(0.0f, 5.0f)
@@ -33,7 +34,7 @@ fun StarRating(
     val partialStarFill = (starRating - fullStars)
     val emptyStars =
         maxRating - fullStars - (if (partialStarFill > 0) 1 else 0)
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
         // 1. Stelle Piene
         repeat(fullStars) {
             Icon(

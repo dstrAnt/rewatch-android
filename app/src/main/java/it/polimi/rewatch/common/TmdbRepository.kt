@@ -12,6 +12,8 @@ import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.model.SeasonId
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import it.polimi.rewatch.screens.home.HomeData
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
@@ -133,15 +135,15 @@ class TmdbRepository @Inject constructor(
             showCredits = showCreditsDeferred.await(),
         )
     }
+
     suspend fun movieDetails(id: Int): PosterMedia = tmdb.movies.getDetails(id).let(::PosterMedia)
     suspend fun showDetails(id: Int): PosterMedia = tmdb.show.getDetails(id).let(::PosterMedia)
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getTrackingData(fakeRepo: FakeRepository): TrackingData = coroutineScope {
         // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
         val rawWatchlist = fakeRepo.watchlist.value
-        val rawWatched = fakeRepo.watchedList.value
+        val rawWatched = fakeRepo.watchedlist.value
         // 2. Lanciamo le chiamate API in parallelo per la Watchlist
         val watchlistDeferred = rawWatchlist.map { item ->
             async(Dispatchers.IO) {
@@ -162,6 +164,18 @@ class TmdbRepository @Inject constructor(
             watchlist = watchlistDeferred.awaitAll(),
             watched = watchedDeferred.awaitAll(),
         )
+    }
+
+    suspend fun enrichWatched(item: WatchlistMedia) = withContext(Dispatchers.IO) {
+        val details = item.id.getDetails(this@TmdbRepository)
+        // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
+        item.copy(mediaData = details!!) // copy mantiene gli altri campi
+    }
+
+    suspend fun enrichWatched(item: WatchedMedia) = withContext(Dispatchers.IO) {
+        val details = item.id.getDetails(this@TmdbRepository)
+        // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
+        item.copy(mediaData = details!!) // copy mantiene gli altri campi
     }
 
     suspend fun searchMedia(
