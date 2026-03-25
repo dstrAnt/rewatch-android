@@ -63,9 +63,9 @@ fun SearchPage(
     val focusRequester = remember { FocusRequester() }
     // Intercept the back button BEFORE the SearchBar catches it,
     // and forcefully navigate back out of the page.
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
+//    LaunchedEffect(Unit) {
+//        focusRequester.requestFocus()
+//    }
 
     Scaffold { padding ->
         Column(
