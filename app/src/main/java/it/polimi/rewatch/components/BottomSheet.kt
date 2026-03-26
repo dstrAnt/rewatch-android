@@ -176,10 +176,16 @@ fun BottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
+                val currentRating = watchedItem?.rating ?: 0.0f
                 StarRating(
-                    watchedItem?.rating ?: 0.0f,
+                    currentRating,
                     starSize = iconSize,
-                    modifier = Modifier.clickable { viewModel.fakeRepo.setRating(media.id as MediaId, 7.0f) },
+                    modifier = Modifier.clickable {
+                        viewModel.fakeRepo.setRating(
+                            media.id as MediaId,
+                            if (currentRating == 7.0f) 0.0f else 7.0f,
+                        )
+                    },
                 )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))

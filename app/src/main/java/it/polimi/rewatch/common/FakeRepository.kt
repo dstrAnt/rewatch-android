@@ -170,16 +170,14 @@ class FakeRepository
         // if element already present, remove it
         if (_watchlist.value.any { it.id == id }) removeFromWatchlist(id)
 
-        // if element not present, add it and remove it from other list
-        else {
-            addToWatchlist(id)
-            removeFromWatchedList(id)
-        }
+        // if element not present, add it
+        else addToWatchlist(id)
     }
 
     fun toggleWatchedList(id: MediaId) {
-        // if element already present, remove it
-        if (_watchedList.value.any { it.id == id }) removeFromWatchedList(id)
+        // if element already present, remove it only if not rated
+        if (_watchedList.value.any { it.id == id && it.rating == 0.0f }) removeFromWatchedList(id)
+        else if (_watchedList.value.any { it.id == id }) return
 
         // if element not present, add it and remove it from other list
         else {
