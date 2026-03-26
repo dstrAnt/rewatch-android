@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AccessTimeFilled
-import androidx.compose.material.icons.filled.PanoramaFishEye
-import androidx.compose.material.icons.filled.RemoveRedEye
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,13 +37,13 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterMedia
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
 
 @HiltViewModel(assistedFactory = BottomSheetViewModel.Factory::class)
 class BottomSheetViewModel @AssistedInject constructor(
@@ -58,7 +58,7 @@ class BottomSheetViewModel @AssistedInject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    val watchedItem = fakeRepo.watchedlist
+    val watchedItem = fakeRepo.watchedList
         .map { list -> list.find { it.id == id } }
         .stateIn(
             scope = viewModelScope,
@@ -139,7 +139,7 @@ fun BottomSheet(
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    media.releaseDate.toString(),
+                    media.releaseDate.toString().formatDate("YYYY"),
                 )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
@@ -148,23 +148,23 @@ fun BottomSheet(
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 IconButton(
+                    onClick = { viewModel.fakeRepo.toggleWatchedList(media.id as MediaId) },
                     modifier = Modifier.size(60.dp),
-                    onClick = { viewModel.fakeRepo.addToWatchlist(media.id as MediaId) },
                 ) {
                     Icon(
-                        imageVector = watchlistItem?.let { Icons.Default.AccessTimeFilled } ?: Icons.Default.AccessTime,
-                        contentDescription = "Share",
+                        imageVector = watchedItem?.let { Icons.Filled.Visibility } ?: Icons.Outlined.Visibility,
+                        contentDescription = "Watched",
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(37.dp),
                     )
                 }
                 IconButton(
-                    onClick = { viewModel.fakeRepo.addToWatchedlist(media.id as MediaId, 0f, LocalDate.now()) },
                     modifier = Modifier.size(60.dp),
+                    onClick = { viewModel.fakeRepo.toggleWatchlist(media.id as MediaId) },
                 ) {
                     Icon(
-                        imageVector = watchedItem?.let { Icons.Default.RemoveRedEye } ?: Icons.Default.PanoramaFishEye,
-                        contentDescription = "Share",
+                        imageVector = watchlistItem?.let { Icons.Default.AccessTimeFilled } ?: Icons.Default.AccessTime,
+                        contentDescription = "Watchlist",
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(37.dp),
                     )
@@ -177,9 +177,9 @@ fun BottomSheet(
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 StarRating(
-                    4.0f,
+                    watchedItem?.rating ?: 0.0f,
                     starSize = iconSize,
-                    modifier = Modifier.clickable { viewModel.fakeRepo.addToWatchlist(media.id as MediaId) },
+                    modifier = Modifier.clickable { viewModel.fakeRepo.setRating(media.id as MediaId, 7.0f) },
                 )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))

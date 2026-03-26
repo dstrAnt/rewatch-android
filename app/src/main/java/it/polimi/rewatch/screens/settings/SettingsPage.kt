@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,9 +41,7 @@ fun SettingsPage(
 ) {
     Scaffold(
         topBar = {
-            SettingsTopBar(
-                Icons.Default.Settings,
-            )
+            SettingsTopBar()
         },
     ) { paddingValues ->
         Box(
@@ -105,9 +102,7 @@ fun SettingsPage(
 }
 
 @Composable
-private fun SettingsTopBar(
-    icon: ImageVector,
-) {
+private fun SettingsTopBar() {
     Column(
         Modifier
             .fillMaxWidth()
@@ -122,7 +117,7 @@ private fun SettingsTopBar(
             horizontalArrangement = Arrangement.Start,
         ) {
             Icon(
-                imageVector = icon,
+                imageVector = Icons.Default.Settings,
                 contentDescription = null,
                 tint = Color.White,
                 modifier = Modifier.size(20.dp),

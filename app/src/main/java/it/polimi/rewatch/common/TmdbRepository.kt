@@ -143,7 +143,7 @@ class TmdbRepository @Inject constructor(
     suspend fun getTrackingData(fakeRepo: FakeRepository): TrackingData = coroutineScope {
         // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
         val rawWatchlist = fakeRepo.watchlist.value
-        val rawWatched = fakeRepo.watchedlist.value
+        val rawWatched = fakeRepo.watchedList.value
         // 2. Lanciamo le chiamate API in parallelo per la Watchlist
         val watchlistDeferred = rawWatchlist.map { item ->
             async(Dispatchers.IO) {

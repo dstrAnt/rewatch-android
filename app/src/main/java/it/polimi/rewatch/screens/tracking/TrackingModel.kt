@@ -32,7 +32,7 @@ class TrackingViewModel @Inject constructor(
             started = SharingStarted.Lazily,
             initialValue = emptyList(),
         )
-    val watchedList = fakeRepo.watchedlist
+    val watchedList = fakeRepo.watchedList
         .map { list -> list.map { tmdbRepo.enrichWatched(it) } }
         .stateIn(
             scope = viewModelScope,

@@ -113,29 +113,79 @@ class FakeRepository
 @Inject constructor() {
     private val _watchlist = MutableStateFlow(fakeWatchlist)
     val watchlist = _watchlist.asStateFlow()
-    private val _watchedlist = MutableStateFlow(fakeWatch)
-    val watchedlist = _watchedlist.asStateFlow()
+    private val _watchedList = MutableStateFlow(fakeWatch)
+    val watchedList = _watchedList.asStateFlow()
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addToWatchlist(id: MediaId) {
         _watchlist.update { currentList ->
-            currentList + WatchlistMedia(id) // Creates and returns a new list!
+            currentList + WatchlistMedia(id)
         }
     }
-//
-//    fun removeFromWatchlist(id: MediaId) {
-//        _watchlist.update { currentList ->
-//            currentList.filter { it != WatchlistMedia(id) } // Creates and returns a new list!
-//        }
-//    }
-    fun addToWatchedlist(id: MediaId, rating: Float, date: LocalDate) {
-        _watchedlist.update { currentList ->
-            currentList + WatchedMedia(id, rating, date) // Creates and returns a new list!
+
+    fun removeFromWatchlist(id: MediaId) {
+        _watchlist.update { currentList ->
+            currentList.filter { it.id != id }
         }
     }
-//    fun removeFromWatchedlist(id: MediaId) {
-//        _watchlist.update { currentList ->
-//            currentList.filter { it != WatchlistMedia(id) } // Creates and returns a new list!
-//        }
-//    }
+
+    fun addToWatchedList(id: MediaId, rating: Float, date: LocalDate) {
+        _watchedList.update { currentList ->
+            currentList + WatchedMedia(id, rating, date)
+        }
+    }
+
+    fun removeFromWatchedList(id: MediaId) {
+        _watchedList.update { currentList ->
+            currentList.filter { it.id != id }
+        }
+    }
+
+    fun setRating(id: MediaId, rating: Float) {
+        // if media is not present, add it to watched
+        if (_watchedList.value.none { it.id == id }) {
+            addToWatchedList(id, rating, LocalDate.now())
+        } else { // if already present, update the existing entry
+            _watchedList.update { currentList ->
+                currentList.map {
+                    if (it.id != id) it
+                    else it.copy(rating = rating)
+                }
+            }
+        }
+        // if media present in watchlist, remove it
+        removeFromWatchlist(id)
+    }
+
+    fun setWatchDate(id: MediaId, newDate: LocalDate) {
+        _watchedList.update { currentList ->
+            currentList.map {
+                if (it.id != id) it
+                else it.copy(date = newDate)
+            }
+        }
+    }
+
+    fun toggleWatchlist(id: MediaId) {
+        // if element already present, remove it
+        if (_watchlist.value.any { it.id == id }) removeFromWatchlist(id)
+
+        // if element not present, add it and remove it from other list
+        else {
+            addToWatchlist(id)
+            removeFromWatchedList(id)
+        }
+    }
+
+    fun toggleWatchedList(id: MediaId) {
+        // if element already present, remove it
+        if (_watchedList.value.any { it.id == id }) removeFromWatchedList(id)
+
+        // if element not present, add it and remove it from other list
+        else {
+            addToWatchedList(id, 0.0f, LocalDate.now())
+            removeFromWatchlist(id)
+        }
+    }
+
 }
