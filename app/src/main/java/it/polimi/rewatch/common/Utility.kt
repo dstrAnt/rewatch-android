@@ -3,11 +3,13 @@ package it.polimi.rewatch.common
 import android.content.Intent
 import android.os.Build
 import android.view.RoundedCorner
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -18,9 +20,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
@@ -38,9 +44,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
@@ -48,6 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,22 +67,30 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import coil3.compose.AsyncImage
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.abs
 
 fun String.formatDate(format: String): String {
     return try {
@@ -258,22 +276,44 @@ data class TabItem(
 @Composable
 fun ExpandableText(
     text: String,
-    modifier: Modifier = Modifier,
     maxLines: Int = 3,
+    modifier: Modifier = Modifier,
+    style: TextStyle = LocalTextStyle.current, // Pass style down to ensure measurement matches rendering
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier
-            .animateContentSize() // 1. Internal: Handle animation first
-            .clickable { isExpanded = !isExpanded } // 2. Internal: Handle click logic
-            .then(modifier), // 3. Argument: Apply user modifiers (padding, background, etc.) last    )
-    ) {
+    val textMeasurer = rememberTextMeasurer()
+    // BoxWithConstraints lets us know the exact width we have available to draw the text
+    BoxWithConstraints {
+        // 1. Measure the text in the background based on the available width
+        val textLayoutResult = remember(text, constraints.maxWidth) {
+            textMeasurer.measure(
+                text = text,
+                style = style,
+                constraints = Constraints(
+                    maxWidth = if (constraints.hasBoundedWidth) constraints.maxWidth else Constraints.Infinity,
+                ),
+            )
+        }
+        // 2. Apply your rule: Clickable/Expandable ONLY if it exceeds maxLines + 1
+        val canExpand = textLayoutResult.lineCount > maxLines + 1
+        val currentMaxLines = when {
+            !canExpand -> Int.MAX_VALUE // If it's maxLines + 1 or less, just show it all
+            isExpanded -> Int.MAX_VALUE // If the user clicked to expand, show it all
+            else -> maxLines            // Otherwise, clip it at maxLines
+        }
+        // 3. Render the text. It knows exactly what to do on Frame 1.
         Text(
             text = text,
-            // When expanded, we set maxLines to Int.MAX_VALUE
-            maxLines = if (isExpanded) Int.MAX_VALUE else maxLines,
-            overflow = TextOverflow.Ellipsis,
+            style = style,
+            maxLines = currentMaxLines,
+            overflow = if (canExpand && !isExpanded) TextOverflow.Ellipsis else TextOverflow.Clip,
+            modifier = Modifier
+                .animateContentSize()
+                .then(
+                    if (canExpand) Modifier.clickable { isExpanded = !isExpanded }
+                    else Modifier,
+                )
+                .then(modifier),
         )
     }
 }
@@ -415,11 +455,76 @@ fun <T : Any> AnimatedNavDisplay(
     entryProvider = entryProvider,
 )
 
-fun getRawNavKey(state: Any?): String {
-    return when (state) {
-        // Digs into the Scene wrapper and grabs our overridden contentKey
-        is Scene<*> -> state.entries.lastOrNull()?.contentKey
-        is NavEntry<*> -> state
-        else -> state
-    }.toString().substringAfterLast(".").substringBefore("(")
+@Composable
+fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
+    var offsetY by remember { mutableFloatStateOf(0f) }
+    var backProgress by remember { mutableFloatStateOf(0f) }
+    val animatedOffsetY by animateFloatAsState(targetValue = offsetY, label = "offsetY")
+    val scale = 1f - (backProgress * 0.15f)
+    val animatedScale by animateFloatAsState(targetValue = scale, label = "scale")
+
+    PredictiveBackHandler { progressFlow ->
+        try {
+            progressFlow.collect { backEvent ->
+                backProgress = backEvent.progress
+            }
+            onDismiss()
+        } catch (e: CancellationException) {
+            backProgress = 0f
+        }
+    }
+
+    Box(
+        // 1. Center the image inside the Box now that it doesn't fillMaxSize
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.8f))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onDismiss, // This handles clicks on the gray background
+            ),
+    ) {
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = "Full Screen",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                // 2. Removed .fillMaxSize() so the gesture bounds strictly match the scaled image
+                .fillMaxWidth()
+                .graphicsLayer {
+                    translationY = animatedOffsetY
+                    scaleX = animatedScale
+                    scaleY = animatedScale
+                }
+                .clip(RoundedCornerShape(5.dp)) // Set the corner radius
+                .pointerInput(Unit) {
+                    // 3. Swallow taps on the image so they don't trigger the Box's dismiss click
+                    detectTapGestures(onTap = { /* Do nothing */ })
+                }
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures(
+                        onDragEnd = {
+                            if (abs(offsetY) > 300f) onDismiss() else offsetY = 0f
+                        },
+                        onDragCancel = { offsetY = 0f },
+                        onVerticalDrag = { change, dragAmount ->
+                            change.consume()
+                            offsetY += dragAmount
+                        },
+                    )
+                },
+        )
+
+        IconButton(
+            onClick = onDismiss,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(16.dp),
+        ) {
+            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+        }
+    }
 }

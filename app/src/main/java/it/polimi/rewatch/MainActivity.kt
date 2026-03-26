@@ -54,9 +54,9 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.common.AnimatedNavDisplay
+import it.polimi.rewatch.common.FullScreenImageOverlay
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.BottomSheet
-import it.polimi.rewatch.components.FullScreenImageOverlay
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterMedia

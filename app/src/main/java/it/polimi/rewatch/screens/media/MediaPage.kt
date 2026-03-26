@@ -42,6 +42,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,9 +93,11 @@ import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 
@@ -108,8 +111,8 @@ fun isDetailsAvailable(details: MediaDetail): Boolean {
 }
 
 data class TrackingItems(
-    val watchlistItem: WatchlistMedia?,
-    val watchedListItem: WatchedMedia?,
+    val watchlistItem: StateFlow<WatchlistMedia?>,
+    val watchedListItem: StateFlow<WatchedMedia?>,
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -123,8 +126,7 @@ fun MediaPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
 ) {
-
-    val trackingItems = TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
+    TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
     AnimatedUiState(
         state = viewModel.uiState,
         loadingContent = ::MovieSkeleton,
@@ -134,11 +136,12 @@ fun MediaPage(
             padding = outerPadding,
             mediaId = mediaId,
             actions = actions,
-            trackingItems = trackingItems,
+            vm = viewModel,
         )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @OptIn(
@@ -149,13 +152,14 @@ fun MediaContent(
     padding: PaddingValues,
     data: MovieData,
     mediaId: MediaId,
-    trackingItems: TrackingItems,
+    vm: MediaViewModel,
+    // trackingItems: TrackingItems,
 ) {
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
-    val watchlistItem = trackingItems.watchlistItem
-    val watchedListItem = trackingItems.watchedListItem
+    val watchlistItem by vm.watchlistItem.collectAsState()
+    val watchedListItem by vm.watchedListItem.collectAsState()
     var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -211,7 +215,7 @@ fun MediaContent(
                     voteAverage = movie.voteAverage,
                 )
 
-                TrackingInfo(watchlistItem, watchedListItem)
+                TrackingInfo(watchlistItem, watchedListItem, Modifier.clickable { actions.onBottomSheet(PosterMedia(movie, mediaId)) })
 
             }
 //            println(movie.crew)
@@ -273,11 +277,12 @@ fun MediaContent(
 private fun TrackingInfo(
     watchlistItem: WatchlistMedia?,
     watchedListItem: WatchedMedia?,
+    modifier: Modifier = Modifier,
 ) {
     if (watchlistItem != null || watchedListItem != null) {
         HorizontalDivider()
         Column(
-            Modifier
+            modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
                 .padding(vertical = 10.dp)

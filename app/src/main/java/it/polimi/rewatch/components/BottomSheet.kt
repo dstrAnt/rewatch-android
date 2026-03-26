@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.overscroll
+import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AccessTimeFilled
@@ -95,8 +98,9 @@ fun BottomSheet(
 ) {
     val watchlistItem by viewModel.watchlistItem.collectAsState()
     val watchedItem by viewModel.watchedItem.collectAsState()
-
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true, // Locks the sheet to its exact content height
+    )
     val scope = rememberCoroutineScope()
 
     val navigateAndClose: (MediaId) -> Unit = { id ->
@@ -115,75 +119,79 @@ fun BottomSheet(
         scrimColor = Color.Black.copy(alpha = 0.8f),
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        //contentColor = MaterialTheme.colorScheme.surface,
+        //dragHandle = {  },
     ) {
-        val iconSize = 45.dp
+        // 1. Extract repeated casts and conditions into local variables
+        val mediaId = media.id as MediaId
+        val isWatched = watchedItem != null
+        val isWatchlisted = watchlistItem != null
+        val overscrollEffect = rememberOverscrollEffect()
+
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                // 2. Add the verticalScroll modifier to your content
-                //verticalScroll(scrollState)
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 70.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            //horizontalAlignment = Alignment.CenterHorizontally
+                .overscroll(overscrollEffect)
+                .padding(start = 16.dp, end = 16.dp), // 2. Combine paddings
+            verticalArrangement = Arrangement.spacedBy(15.dp),
         ) {
+            // Header
             Column {
                 Text(
-                    media.title.orEmpty(),
+                    text = media.title.orEmpty(),
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable { navigateAndClose(media.id as MediaId) },
+                    modifier = Modifier.clickable { navigateAndClose(mediaId) },
                 )
-                Text(
-                    media.releaseDate.toString().formatDate("MMM YYYY"),
-                )
+                Text(text = media.releaseDate.toString().formatDate("MMM YYYY"))
             }
+
             HorizontalDivider(Modifier.layoutEvade(16.dp))
+            // Action Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 SheetIconButton(
-                    { viewModel.fakeRepo.toggleWatchedList(media.id as MediaId) },
-                    if (watchedItem != null) Icons.Filled.Visibility else Icons.Outlined.Visibility,
-                    "Watched",
+                    onClick = { viewModel.fakeRepo.toggleWatchedList(mediaId) },
+                    icon = if (isWatched) Icons.Filled.Visibility else Icons.Outlined.Visibility,
+                    label = "Watched",
                 )
-
                 SheetIconButton(
-                    { viewModel.fakeRepo.toggleWatchlist(media.id as MediaId) },
-                    if (watchlistItem != null) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
-                    "Watchlist",
+                    onClick = { viewModel.fakeRepo.toggleWatchlist(mediaId) },
+                    icon = if (isWatchlisted) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
+                    label = "Watchlist",
                 )
             }
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-            ) {
-                val currentRating = watchedItem?.rating ?: 0.0f
-                StarRating(
-                    currentRating / 2,
-                    starSize = iconSize,
-                    onRatingChanged = {
-                        viewModel.fakeRepo.setRating(
-                            media.id as MediaId,
-                            it * 2,
-                        )
-                    },
-                )
-            }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
-            if (watchedItem != null)
-                Text("Content watched on ${watchedItem?.date.toString().formatDate("d MMM YYYY")}")
-            else
-                Text("You haven't watched this content yet")
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
-            Text(
-                "Open content page",
-                modifier = Modifier.clickable { navigateAndClose(media.id as MediaId) },
+            // Rating
+            StarRating(
+                rating = (watchedItem?.rating ?: 0f) / 2,
+                starSize = 45.dp, // 3. Inlined the single-use variable
+                onRatingChanged = { viewModel.fakeRepo.setRating(mediaId, it * 2) },
+                // 4. Center the rating without needing an extra wrapper Row
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(),
             )
 
+            HorizontalDivider(Modifier.layoutEvade(16.dp))
+            // Watch Status
+            Text(
+                text = if (isWatched) {
+                    // Safely format assuming watchedItem.date handles nulls cleanly with your extension
+                    "Content watched on ${watchedItem?.date.toString().formatDate("d MMM YYYY")}"
+                } else {
+                    "You haven't watched this content yet"
+                },
+            )
+
+            HorizontalDivider(Modifier.layoutEvade(16.dp))
+            // Open Page Action
+            Text(
+                text = "Open content page",
+                modifier = Modifier.clickable { navigateAndClose(mediaId) },
+            )
 
             Spacer(modifier = Modifier.navigationBarsPadding())
         }
@@ -193,8 +201,8 @@ fun BottomSheet(
 @Composable
 private fun SheetIconButton(
     onClick: () -> Unit,
-    imageVector: ImageVector,
-    text: String,
+    icon: ImageVector,
+    label: String,
 ) {
     Column {
         IconButton(
@@ -202,12 +210,12 @@ private fun SheetIconButton(
             onClick = onClick,
         ) {
             Icon(
-                imageVector = imageVector,
-                contentDescription = text,
+                imageVector = icon,
+                contentDescription = label,
                 tint = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.size(37.dp),
             )
         }
-        Text(text)
+        Text(label)
     }
 }

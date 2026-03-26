@@ -60,8 +60,8 @@ data class PosterMedia(
             is Movie -> credit.title
             is Show -> credit.name
         },
-        popularity = credit.popularity ?: 0.0f,
-        rating = credit.voteAverage ?: 0.0f,
+        popularity = credit.popularity ?: 0f,
+        rating = credit.voteAverage ?: 0f,
     )
 
     constructor(person: TmdbPerson) : this(
@@ -91,7 +91,17 @@ data class PosterMedia(
         releaseDate = movie.firstAirDate,
         title = movie.name,
         popularity = movie.popularity,
-        rating = movie.voteAverage ?: 0.0f,
+        rating = movie.voteAverage ?: 0f,
+    )
+
+    constructor(movie: MediaDetail, id: MediaId) : this(
+        id = id,
+        posterImage = movie.posterImage,
+        posterPath = movie.posterPath,
+        releaseDate = movie.releaseDate,
+        title = movie.title,
+        popularity = 0f,
+        rating = movie.voteAverage ?: 0f,
     )
 
     // empty media
@@ -101,7 +111,7 @@ data class PosterMedia(
         posterPath = "",
         releaseDate = null,
         title = "",
-        popularity = 0.0f,
-        rating = 0.0f,
+        popularity = 0f,
+        rating = 0f,
     )
 }
