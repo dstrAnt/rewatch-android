@@ -66,7 +66,6 @@ fun SearchPage(
 //    LaunchedEffect(Unit) {
 //        focusRequester.requestFocus()
 //    }
-
     Scaffold { padding ->
         Column(
             Modifier
@@ -101,9 +100,7 @@ fun SearchPage(
                             Text(it.title.orEmpty() + it.releaseDate?.let { ", ${it.year}" }.orEmpty())
                         },
                         leadingContent = {
-                            PosterItem(
-                                it, { it.id.onClick(actions) }, modifier = Modifier.size(60.dp, 90.dp),
-                            )
+                            PosterItem(it, actions, modifier = Modifier.size(60.dp, 90.dp))
                         },
                         modifier = Modifier.clickable {
                             // 2. Trigger callback with the movie ID

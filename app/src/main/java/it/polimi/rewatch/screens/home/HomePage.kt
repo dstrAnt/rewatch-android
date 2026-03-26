@@ -36,12 +36,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import app.moviebase.tmdb.model.TmdbMovie
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.PosterMedia
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -116,7 +114,7 @@ fun HomeContent(
 
 fun LazyGridScope.movieSection(
     title: String,
-    movies: List<TmdbMovie>,
+    movies: List<PosterMedia>,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
     actions: NavigationActions,
@@ -140,10 +138,9 @@ fun LazyGridScope.movieSection(
         key = { "${title}_${it.id}" },
     ) { // CRUCIAL: Compose needs this to track which items are new) {
         PosterItem(
-            it.posterPath, it.title,
+            it,
+            actions,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
-            { actions.onNavigateToMedia(MovieId(it.id)) },
-            { actions.onBottomSheet(PosterMedia(it)) },
         )
     }
     // --- Pulsante Dinamico ---

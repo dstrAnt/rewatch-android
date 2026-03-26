@@ -2,17 +2,17 @@ package it.polimi.rewatch.screens.home
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import app.moviebase.tmdb.model.TmdbMovie
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.model.PosterMedia
 import jakarta.inject.Inject
 
 // Dati che compongono la nostra Homepage
 data class HomeData(
-    val trending: List<TmdbMovie>,
-    val popular: List<TmdbMovie>,
-    val recent: List<TmdbMovie>,
+    val trending: List<PosterMedia>,
+    val popular: List<PosterMedia>,
+    val recent: List<PosterMedia>,
 )
 
 @RequiresApi(Build.VERSION_CODES.O)

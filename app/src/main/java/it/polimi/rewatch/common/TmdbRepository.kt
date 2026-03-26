@@ -35,15 +35,15 @@ class TmdbRepository @Inject constructor(
     @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getHomeData(): HomeData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
-        val trendingDeferred = async { tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, 1).results }
-        val topDeferred = async { tmdb.movies.getTopRated().results }
+        val trendingDeferred = async { tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, 1).results.map(::PosterMedia) }
+        val topDeferred = async { tmdb.movies.getTopRated().results.map(::PosterMedia) }
         val recentDeferred = async {
             val discoverParams = TmdbDiscover.Movie(
                 sortBy = TmdbDiscoverMovieSortBy.POPULARITY,
                 releaseDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
                 voteCountGte = 50,
             )
-            tmdb.discover.discoverMovie(page = 1, discover = discoverParams).results
+            tmdb.discover.discoverMovie(page = 1, discover = discoverParams).results.map(::PosterMedia)
         }
 
         HomeData(

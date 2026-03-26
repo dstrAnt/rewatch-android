@@ -115,7 +115,7 @@ fun RewatchApp() {
     BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeTabs) {
         // Snap the user back to the Home tab atomically
         scope.launch {
-            pagerState.animateScrollToPage(0)
+            pagerState.scrollToPage(0)
         }
 //        bottomBarState = AppDestinations.HOME
 //
@@ -129,7 +129,7 @@ fun RewatchApp() {
                 AppDestinations.entries[pagerState.currentPage],
                 {
                     scope.launch {
-                        pagerState.animateScrollToPage(AppDestinations.entries.indexOf(it))
+                        pagerState.scrollToPage(AppDestinations.entries.indexOf(it))
                     }
 //                    bottomBarState = it
 //

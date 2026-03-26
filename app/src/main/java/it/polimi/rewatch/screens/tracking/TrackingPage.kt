@@ -152,7 +152,7 @@ fun TrackingPage(
                     }
                     // Elementi della sezione
                     items(key = { "${it.id}" }, items = items) { media ->
-                        PosterStarsItem(media, { media.id.onClick(actions) })
+                        PosterStarsItem(media, actions)
                     }
                 }
             }
@@ -163,14 +163,14 @@ fun TrackingPage(
 @Composable
 private fun LazyGridItemScope.PosterStarsItem(
     media: TrackingMedia,
-    onNavigateToMedia: () -> Unit,
+    actions: NavigationActions,
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(3.dp),
         modifier = Modifier.animateItem(),
     ) {
-        PosterItem(media, onNavigateToMedia)
+        PosterItem(media.mediaData, actions)
         val rating = media.rating ?: 0.0f
 
         StarRating(rating = rating, starSize = 10.dp)

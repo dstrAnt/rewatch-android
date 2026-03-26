@@ -69,7 +69,7 @@ fun SettingsPage(
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
-                        Column() {
+                        Column {
                             Text(
                                 "Your Profile",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
@@ -93,7 +93,7 @@ fun SettingsPage(
                         lineHeight = 14.sp,
                         textAlign = TextAlign.Center,
                     )
-                    Text("Created by Ciccio, Pippo, Pluto", style = bottomStyle)
+                    Text("Rewatch-Android v0.9b", style = bottomStyle)
                     Text("Politecnico di Milano © 2026", style = bottomStyle)
                 }
             }

@@ -233,7 +233,7 @@ fun MediaContent(
             ) {
                 item {
                     SimilarSection(data.similar.take(7)) {
-                        PosterItem(it, { it.id.onClick(actions) })
+                        PosterItem(it, actions)
                     }
                     Spacer(Modifier.height(pad))
                 }

@@ -103,22 +103,18 @@ fun PersonContent(
 ) {
     val details = data.details
     val scrollState = rememberLazyGridState()
-
     val availableTabs = remember(data) { computeAvailableTabs(data) }
     var currentTab by remember { mutableStateOf(availableTabs.firstOrNull() ?: "") }
     var selectedSort by remember { mutableStateOf(SortOrder.POPULARITY) }
-
     val knownFor = remember(details) {
         details.knownForDepartment?.toString()?.replace("_", " ") ?: "Acting"
     }
     val isActingPrimary = remember(knownFor) {
         knownFor.equals("Acting", ignoreCase = true)
     }
-
     // 2. Base list popolata in base alla nuova logica di divisione delle tab
     val baseList = remember(currentTab, data, knownFor, isActingPrimary) {
         if (currentTab.isBlank()) return@remember emptyList()
-
         val combinedSequence = when (currentTab) {
             "Movies" -> {
                 if (isActingPrimary) data.movieCredits.cast.asSequence()
@@ -145,7 +141,6 @@ fun PersonContent(
             .distinctBy { it.id }
             .toList()
     }
-
     // 3. Ordinamento dinamico per Data o Popolarità
     val displayList = remember(baseList, selectedSort) {
         when (selectedSort) {
@@ -204,7 +199,6 @@ fun PersonContent(
                             )
                         }
                     }
-
                     // Sezione Filtri di Ordinamento
                     Row(
                         modifier = Modifier
@@ -219,7 +213,6 @@ fun PersonContent(
                         } else {
                             Spacer(Modifier.weight(1f))
                         }
-
                         val listSize = displayList.size
                         Text(
                             text = "$listSize Title${if (listSize > 1) "s" else ""}",
@@ -234,7 +227,7 @@ fun PersonContent(
                 items = displayList,
                 key = { "${it.id}" },
             ) {
-                PosterItem(it, { it.id.onClick(actions) }, Modifier.animateItem())
+                PosterItem(it, actions, Modifier.animateItem())
             }
         }
     }
@@ -253,7 +246,6 @@ private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
             data.movieCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
         }
         if (hasPrimaryMovies) add("Movies")
-
         // Tab "Shows" per il dipartimento principale
         val hasPrimaryShows = if (isActingPrimary) {
             data.showCredits.cast.isNotEmpty()
@@ -261,12 +253,10 @@ private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
             data.showCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
         }
         if (hasPrimaryShows) add("Shows")
-
         // Se non è primariamente un attore ma ha crediti recitativi, crea una tab "Acting" secondaria
         if (!isActingPrimary && (data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty())) {
             add("Acting")
         }
-
         // Aggiungi tutti gli altri dipartimenti (escludendo quello principale che ora è in Movies/Shows)
         sequenceOf(data.movieCredits.crew, data.showCredits.crew)
             .flatten()

@@ -34,9 +34,10 @@ import coil3.compose.SubcomposeAsyncImageScope
 import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterMedia
-import it.polimi.rewatch.model.TrackingMedia
 
 @Composable
 fun PosterItem3(
@@ -131,26 +132,32 @@ fun PosterItem2(
 @Composable
 fun PosterItem(
     media: PosterMedia,
+    actions: NavigationActions,
+    modifier: Modifier = Modifier,
+) = PosterItem(
+    posterPath = media.posterPath,
+    title = media.title,
+    modifier = modifier,
+    { actions.onNavigateToMedia(media.id as MediaId) },
+    { actions.onBottomSheet(media) },
+)
+
+@Composable
+private fun PosterItem(
+    media: PosterMedia,
     onNavigateToMedia: () -> Unit,
     modifier: Modifier = Modifier,
     onLong: (() -> Unit)? = null,
 ) = PosterItem(
-    posterPath = media.posterPath, title = media.title, modifier = modifier,
-    onNavigateToMedia, onLong = onLong,
-)
-
-@Composable
-fun PosterItem(
-    media: TrackingMedia,
-    onNavigateToMedia: () -> Unit,
-    modifier: Modifier = Modifier,
-) = PosterItem(
-    posterPath = media.mediaData.posterPath, title = media.mediaData.title, modifier = modifier,
+    posterPath = media.posterPath,
+    title = media.title,
+    modifier = modifier,
     onNavigateToMedia,
+    onLong = onLong,
 )
 
 @Composable
-fun PosterItem(
+private fun PosterItem(
     posterPath: String?,
     title: String?,
     modifier: Modifier = Modifier,
