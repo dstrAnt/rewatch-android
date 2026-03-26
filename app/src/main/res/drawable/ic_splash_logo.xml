@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:gravity="center">
+    <item
+        android:top="16dp"
+        android:bottom="16dp"
+        android:left="16dp"
+        android:right="16dp">
         <shape android:shape="oval">
             <solid android:color="#FFFFFF" />
-            <size
-                android:width="200dp"
-                android:height="200dp" />
         </shape>
     </item>
 
     <item
         android:drawable="@drawable/splash"
-        android:top="55dp"
-        android:bottom="55dp"
-        android:left="55dp"
-        android:right="55dp" />
+        android:top="0dp"
+        android:bottom="0dp"
+        android:left="0dp"
+        android:right="0dp" />
 
 </layer-list>
