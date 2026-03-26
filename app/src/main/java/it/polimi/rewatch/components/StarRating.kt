@@ -34,10 +34,10 @@ import kotlin.math.roundToInt
 @Composable
 fun StarRating(
     rating: Float,
+    modifier: Modifier = Modifier,
     onRatingChanged: ((Float) -> Unit)? = null,
     maxRating: Int = 5,
-    starSize: Dp = 32.dp,
-    modifier: Modifier = Modifier,
+    starSize: Dp = 15.dp,
 ) {
     var rowWidth by remember { mutableFloatStateOf(0f) }
     // 1. Safely remember the latest callback so we don't restart gestures on recomposition

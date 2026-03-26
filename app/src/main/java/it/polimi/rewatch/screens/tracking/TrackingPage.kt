@@ -173,7 +173,7 @@ private fun LazyGridItemScope.PosterStarsItem(
         PosterItem(media.mediaData, actions)
         val rating = media.rating ?: 0.0f
 
-        StarRating(rating = rating, starSize = 10.dp)
+        StarRating(rating = rating / 2, starSize = 10.dp)
     }
 }
 

@@ -2,6 +2,7 @@ package it.polimi.rewatch.components
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,9 +23,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,6 +40,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
@@ -44,6 +48,7 @@ import it.polimi.rewatch.model.PosterMedia
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = BottomSheetViewModel.Factory::class)
 class BottomSheetViewModel @AssistedInject constructor(
@@ -85,15 +90,30 @@ fun BottomSheet(
         key = media.id.toString(),
         creationCallback = { it.create(media.id as MediaId) },
     ),
+    actions: NavigationActions,
     onDismiss: () -> Unit,
 ) {
     val watchlistItem by viewModel.watchlistItem.collectAsState()
     val watchedItem by viewModel.watchedItem.collectAsState()
 
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+
+    val navigateAndClose: (MediaId) -> Unit = { id ->
+        scope.launch {
+            sheetState.hide()
+        }.invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                onDismiss()
+                actions.onNavigateToMedia(id)
+            }
+        }
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         scrimColor = Color.Black.copy(alpha = 0.8f),
-        //sheetState = sheetState,
+        sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         //contentColor = MaterialTheme.colorScheme.surface,
     ) {
@@ -112,9 +132,10 @@ fun BottomSheet(
                 Text(
                     media.title.orEmpty(),
                     style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.clickable { navigateAndClose(media.id as MediaId) },
                 )
                 Text(
-                    media.releaseDate.toString().formatDate("YYYY"),
+                    media.releaseDate.toString().formatDate("MMM YYYY"),
                 )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
@@ -142,23 +163,25 @@ fun BottomSheet(
             ) {
                 val currentRating = watchedItem?.rating ?: 0.0f
                 StarRating(
-                    currentRating,
+                    currentRating / 2,
                     starSize = iconSize,
                     onRatingChanged = {
                         viewModel.fakeRepo.setRating(
                             media.id as MediaId,
-                            it,
+                            it * 2,
                         )
                     },
                 )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
-            Text(
-                "Movie was watched",
-            )
+            if (watchedItem != null)
+                Text("Content watched on ${watchedItem?.date.toString().formatDate("d MMM YYYY")}")
+            else
+                Text("You haven't watched this content yet")
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             Text(
-                "Open Movie",
+                "Open content page",
+                modifier = Modifier.clickable { navigateAndClose(media.id as MediaId) },
             )
 
 

@@ -1,6 +1,8 @@
 package it.polimi.rewatch.screens.media
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -29,7 +31,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -88,6 +93,8 @@ import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.SeasonId
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 
@@ -100,6 +107,12 @@ fun isDetailsAvailable(details: MediaDetail): Boolean {
             !movie.productionCompanies.isNullOrEmpty())
 }
 
+data class TrackingItems(
+    val watchlistItem: WatchlistMedia?,
+    val watchedListItem: WatchedMedia?,
+)
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MediaPage(
     mediaId: MediaId,
@@ -110,6 +123,8 @@ fun MediaPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
 ) {
+
+    val trackingItems = TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
     AnimatedUiState(
         state = viewModel.uiState,
         loadingContent = ::MovieSkeleton,
@@ -119,6 +134,7 @@ fun MediaPage(
             padding = outerPadding,
             mediaId = mediaId,
             actions = actions,
+            trackingItems = trackingItems,
         )
     }
 }
@@ -133,10 +149,13 @@ fun MediaContent(
     padding: PaddingValues,
     data: MovieData,
     mediaId: MediaId,
+    trackingItems: TrackingItems,
 ) {
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
+    val watchlistItem = trackingItems.watchlistItem
+    val watchedListItem = trackingItems.watchedListItem
     var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -150,7 +169,7 @@ fun MediaContent(
         scrollState = scrollState,
         title = movie.title,
         onNavigateBack = actions.onNavigateBack,
-    ) { innerPadding ->
+    ) { _ ->
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -172,6 +191,7 @@ fun MediaContent(
                     backdropImage = movie.backdropImage,
                     posterImage = movie.posterImage,
                     director = movie.director,
+                    directorId = movie.crew.find { it.job == "Director" }?.id,
                     title = movie.title,
                     runtime = movie.runtime,
                     releaseDate = movie.releaseDate,
@@ -179,17 +199,20 @@ fun MediaContent(
                     modifier = actions.onFullscreenImage(
                         movie.posterImage?.let { build(it, width = 500, height = 500) },
                     ),
+                    actions = actions,
                 )
 
                 TaglineAndOverview(
                     pad, overview = movie.overview, tagline = movie.tagline,
                 )
 
-                HorizontalDivider()
                 TmdbRatings(
                     voteCount = movie.voteCount,
                     voteAverage = movie.voteAverage,
                 )
+
+                TrackingInfo(watchlistItem, watchedListItem)
+
             }
 //            println(movie.crew)
             tabbedSection(
@@ -247,6 +270,52 @@ fun MediaContent(
 }
 
 @Composable
+private fun TrackingInfo(
+    watchlistItem: WatchlistMedia?,
+    watchedListItem: WatchedMedia?,
+) {
+    if (watchlistItem != null || watchedListItem != null) {
+        HorizontalDivider()
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 10.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(DividerDefaults.color),
+        ) {
+            Spacer(Modifier.height(10.dp))
+            watchedListItem?.let {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                ) {
+                    Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
+                    if (watchedListItem.rating == 0.0f) Text("You watched this content")
+                    else {
+                        Text("You rated this content")
+                        StarRating(watchedListItem.rating / 2)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+            watchlistItem?.let {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
+                    Text("This content is in your watchlist")
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+        }
+    }
+}
+
+@Composable
 private fun buildTabs(
     movie: MediaDetail,
     expandedSectionIds: Set<String>,
@@ -263,7 +332,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it, { actions.onNavigateToProfile(it.id) }) },
+                itemContent = { PersonItem(it) { actions.onNavigateToProfile(it.id) } },
             ),
         )
         add(
@@ -285,14 +354,13 @@ private fun buildTabs(
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
                 showDividers = true,
-                itemContent = {
+                itemContent = { season ->
                     EpisodeItem(
-                        number = it?.seasonNumber,
-                        name = it?.name,
-                        date = it?.airDate,
-                        count = it?.episodeCount?.let { "${it} episodes" }.orEmpty(),
-                        { SeasonId(mediaId.parentId, it.seasonNumber).onClick(actions) },
-                    )
+                        number = season.seasonNumber,
+                        name = season.name,
+                        date = season.airDate,
+                        count = season.episodeCount?.let { "$it episodes" }.orEmpty(),
+                    ) { SeasonId(mediaId.parentId, season.seasonNumber).onClick(actions) }
                 },
             ),
         )
@@ -305,14 +373,13 @@ private fun buildTabs(
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
                 showDividers = true,
-                itemContent = {
+                itemContent = { episode ->
                     EpisodeItem(
-                        number = it?.episodeNumber,
-                        name = it?.name,
-                        date = it?.airDate,
-                        count = it?.runtime?.let { "${it} min" }.orEmpty(),
-                        { EpisodeId(mediaId.parentId, it.seasonNumber, it.episodeNumber).onClick(actions) },
-                    )
+                        number = episode.episodeNumber,
+                        name = episode.name,
+                        date = episode.airDate,
+                        count = episode.runtime?.let { "$it min" }.orEmpty(),
+                    ) { EpisodeId(mediaId.parentId, episode.seasonNumber, episode.episodeNumber).onClick(actions) }
                 },
             ),
         )
@@ -434,7 +501,7 @@ fun TmdbRatings(
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
+            .padding(bottom = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -547,6 +614,8 @@ fun TitleAndInfoSection(
     releaseDate: LocalDate?,
     certification: String?,
     modifier: Modifier = Modifier,
+    actions: NavigationActions,
+    directorId: Int?,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -594,8 +663,8 @@ fun TitleAndInfoSection(
                 }
             }
 //            Spacer(Modifier.height(3.dp))
-            if (director != null) {
-                Text("Directed by $director")
+            if (directorId != null) {
+                Text("Directed by $director", Modifier.clickable { actions.onNavigateToProfile(directorId) })
             }
         }
 
