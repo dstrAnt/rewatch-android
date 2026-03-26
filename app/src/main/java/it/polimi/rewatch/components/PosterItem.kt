@@ -138,7 +138,11 @@ fun PosterItem(
     posterPath = media.posterPath,
     title = media.title,
     modifier = modifier,
-    { actions.onNavigateToMedia(media.id as MediaId) },
+    onClick = {
+        if (media.id is MediaId) {
+            actions.onNavigateToMedia(media.id)
+        }
+    },
     { actions.onBottomSheet(media) },
 )
 

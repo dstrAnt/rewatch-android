@@ -2,7 +2,6 @@ package it.polimi.rewatch.components
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -89,15 +89,7 @@ fun BottomSheet(
 ) {
     val watchlistItem by viewModel.watchlistItem.collectAsState()
     val watchedItem by viewModel.watchedItem.collectAsState()
-    //var showBottomSheet by remember { mutableStateOf(false) }
-    //val sheetState = rememberModalBottomSheetState()
-    // 1. Create a scroll state
-    // val scrollState = rememberScrollState()
-//    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-//        Button(onClick = { showBottomSheet = true }) {
-//            Text("Show Stretchy Overlay")
-//        }
-//    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         scrimColor = Color.Black.copy(alpha = 0.8f),
@@ -116,23 +108,6 @@ fun BottomSheet(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             //horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // I'm adding a few extra rows here so you can easily
-            // test the drag and stretch effect.
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-//                    modifier = Modifier.padding(vertical = 12.dp),
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Info,
-//                        contentDescription = "Info Icon",
-//                    )
-//                    Text(
-//                        text = "Scroll and pull me to see the stretch effect!",
-//                        style = MaterialTheme.typography.bodyLarge,
-//                    )
-//                }
-            //PosterItem(media,{}, Modifier.size(90.dp, 110.dp))
             Column {
                 Text(
                     media.title.orEmpty(),
@@ -147,28 +122,17 @@ fun BottomSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
-                IconButton(
-                    onClick = { viewModel.fakeRepo.toggleWatchedList(media.id as MediaId) },
-                    modifier = Modifier.size(60.dp),
-                ) {
-                    Icon(
-                        imageVector = watchedItem?.let { Icons.Filled.Visibility } ?: Icons.Outlined.Visibility,
-                        contentDescription = "Watched",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(37.dp),
-                    )
-                }
-                IconButton(
-                    modifier = Modifier.size(60.dp),
-                    onClick = { viewModel.fakeRepo.toggleWatchlist(media.id as MediaId) },
-                ) {
-                    Icon(
-                        imageVector = watchlistItem?.let { Icons.Default.AccessTimeFilled } ?: Icons.Default.AccessTime,
-                        contentDescription = "Watchlist",
-                        tint = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.size(37.dp),
-                    )
-                }
+                SheetIconButton(
+                    { viewModel.fakeRepo.toggleWatchedList(media.id as MediaId) },
+                    if (watchedItem != null) Icons.Filled.Visibility else Icons.Outlined.Visibility,
+                    "Watched",
+                )
+
+                SheetIconButton(
+                    { viewModel.fakeRepo.toggleWatchlist(media.id as MediaId) },
+                    if (watchlistItem != null) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
+                    "Watchlist",
+                )
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
 
@@ -180,10 +144,10 @@ fun BottomSheet(
                 StarRating(
                     currentRating,
                     starSize = iconSize,
-                    modifier = Modifier.clickable {
+                    onRatingChanged = {
                         viewModel.fakeRepo.setRating(
                             media.id as MediaId,
-                            if (currentRating == 7.0f) 0.0f else 7.0f,
+                            it,
                         )
                     },
                 )
@@ -200,5 +164,27 @@ fun BottomSheet(
 
             Spacer(modifier = Modifier.navigationBarsPadding())
         }
+    }
+}
+
+@Composable
+private fun SheetIconButton(
+    onClick: () -> Unit,
+    imageVector: ImageVector,
+    text: String,
+) {
+    Column {
+        IconButton(
+            modifier = Modifier.size(60.dp),
+            onClick = onClick,
+        ) {
+            Icon(
+                imageVector = imageVector,
+                contentDescription = text,
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(37.dp),
+            )
+        }
+        Text(text)
     }
 }

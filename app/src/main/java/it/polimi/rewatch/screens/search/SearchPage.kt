@@ -2,6 +2,7 @@ package it.polimi.rewatch.screens.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -57,20 +59,45 @@ fun SearchPage(
     viewModel: SearchViewModel = viewModel(),
     actions: NavigationActions,
     outerPadding: PaddingValues,
+    pagerState: PagerState,
 ) {
     val query by viewModel.query.collectAsState()
     val movies by viewModel.media.collectAsState()
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
     // Intercept the back button BEFORE the SearchBar catches it,
     // and forcefully navigate back out of the page.
 //    LaunchedEffect(Unit) {
 //        focusRequester.requestFocus()
 //    }
+    // 1. Clear focus when the Pager starts moving
+    LaunchedEffect(pagerState.isScrollInProgress) {
+        if (pagerState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
     Scaffold { padding ->
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding()),
+                .padding(top = padding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding())
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = {
+                            focusManager.clearFocus()
+                        },
+                    )
+                }
+                .pointerInput(Unit) {
+                    detectVerticalDragGestures { change, dragAmount ->
+                        // dragAmount > 0 means the user is swiping DOWN.
+                        // We use a small threshold (e.g., 10f) so a tiny jitter
+                        // doesn't accidentally trigger the keyboard.
+                        if (dragAmount > 10f) {
+                            focusRequester.requestFocus()
+                        }
+                    }
+                },
         ) {
             CustomExpandedSearchBar(
                 placeholder = "Search movies...",

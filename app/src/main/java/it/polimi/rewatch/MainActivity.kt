@@ -105,7 +105,9 @@ fun RewatchApp() {
                     isOverlayVisible = true
                 }
             },
-            onBottomSheet = { bottomSheetMedia = it },
+            onBottomSheet = {
+                if (it.id is MediaId) bottomSheetMedia = it
+            },
         )
     }
     val pagerState = rememberPagerState(pageCount = { AppDestinations.entries.size })
@@ -159,6 +161,7 @@ fun RewatchApp() {
                             AppDestinations.SEARCH -> SearchPage(
                                 actions = navActions,
                                 outerPadding = outerPadding,
+                                pagerState = pagerState,
                             )
 
                             AppDestinations.MOVIE -> TrackingPage(
