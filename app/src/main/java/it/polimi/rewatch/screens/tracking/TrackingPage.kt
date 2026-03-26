@@ -193,9 +193,10 @@ private fun TopTabBar(
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(55.dp), // Standard M3 SearchBar height
+                .height(55.dp) // Standard M3 SearchBar height
+                .padding(start = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Start,
         ) {
             Icon(
                 painter = painterResource(icon),

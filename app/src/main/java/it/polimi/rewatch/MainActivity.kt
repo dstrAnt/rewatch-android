@@ -64,6 +64,7 @@ import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.settings.SettingsPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.launch
@@ -172,11 +173,7 @@ fun RewatchApp() {
                                 outerPadding = outerPadding,
                             )
 
-                            AppDestinations.PROFILE -> PersonPage(
-                                actions = navActions,
-                                personId = 31,
-                                outerPadding = outerPadding,
-                            )
+                            AppDestinations.SETTINGS -> SettingsPage(outerPadding)
                         }
                     }
                 }
@@ -300,7 +297,7 @@ enum class AppDestinations(
         "Tv Shows",
         intIcon = R.drawable.tv,
     ),
-    PROFILE(
-        "Profile", Icons.Default.Settings,
+    SETTINGS(
+        "Settings", Icons.Default.Settings,
     ),
 }

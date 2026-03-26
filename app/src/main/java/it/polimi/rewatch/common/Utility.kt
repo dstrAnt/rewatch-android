@@ -285,7 +285,7 @@ fun <T> CustomTabRow(
     title: (T) -> String,
     tabState: T?,
 ) = PrimaryScrollableTabRow(
-    edgePadding = 8.dp,
+    edgePadding = 0.dp,
     selectedTabIndex = availableTabs.indexOf(
         tabState,
     ),

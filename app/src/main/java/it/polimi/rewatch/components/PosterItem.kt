@@ -186,6 +186,7 @@ fun PosterItem(
                 .crossfade(true)
                 .build(),
             contentDescription = title,
+            contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize(),
             loading = fallbackContent,
             error = fallbackContent,
