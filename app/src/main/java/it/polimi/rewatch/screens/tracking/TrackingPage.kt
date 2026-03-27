@@ -20,9 +20,13 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -77,11 +81,12 @@ fun TrackingPage(
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
+    var isAscending by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf(tabs.first()) }
     val tabSortOrders = remember {
         mutableStateMapOf(
-            WatchTabItem.WATCHLIST to SortOption.POPULARITY, // Default for Watchlist
-            WatchTabItem.WATCHED to SortOption.DATE,          // Default for Watched
+            WatchTabItem.WATCHLIST to SortOption.DATE, // Default for Watchlist
+            WatchTabItem.WATCHED to SortOption.DATE,   // Default for Watched
         )
     }
     val availableSortOptions = mapOf(
@@ -122,14 +127,31 @@ fun TrackingPage(
             CustomLazyGrid {
                 // 1. CHIPS DI ORDINAMENTO (Span completo)
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SortFilterChips(
-                        options = availableSortOptions.getValue(selectedTab),
-                        selectedSort = activeOrder,
-                        onSortSelected = { newSort ->
-                            // Update the map for the currently active tab
-                            tabSortOrders[selectedTab] = newSort
-                        },
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SortFilterChips(
+                            options = availableSortOptions.getValue(selectedTab),
+                            selectedSort = activeOrder,
+                            onSortSelected = { newSort ->
+                                // Update the map for the currently active tab
+                                tabSortOrders[selectedTab] = newSort
+                            },
+                        )
+                        CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                            IconButton(
+                                onClick = { isAscending = !isAscending },
+                                modifier = Modifier.size(24.dp),
+                            ) {
+                                Icon(
+                                    imageVector = if (isAscending) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                    contentDescription = "sort_order",
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
+                    }
                 }
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
@@ -139,17 +161,21 @@ fun TrackingPage(
 // 2. Sort and group the unified data structure
                 val groupedItems = items.run {
                     when (activeOrder) {
-                        SortOption.POPULARITY -> sortedByDescending { it.popularity }
-                            .groupBy { getPopularityHeader(it.popularity) }
+                        SortOption.POPULARITY ->
+                            sortedByDirection(isAscending) { it.popularity }
+                                .groupBy { getPopularityHeader(it.popularity) }
 
-                        SortOption.RATING -> sortedByDescending { it.rating }
-                            .groupBy { getRatingHeader(it.rating) }
+                        SortOption.RATING ->
+                            sortedByDirection(isAscending) { it.rating }
+                                .groupBy { getRatingHeader(it.rating) }
 
-                        SortOption.ALPHABETICAL -> sortedBy { it.title }
-                            .groupBy { getAlphabeticalHeader(it.title) }
+                        SortOption.ALPHABETICAL ->
+                            sortedByDirection(!isAscending) { it.title }
+                                .groupBy { getAlphabeticalHeader(it.title) }
 
-                        SortOption.DATE -> sortedBy { it.date }
-                            .groupBy { getDateHeader(it.date) }
+                        SortOption.DATE ->
+                            sortedByDirection(isAscending) { it.date }
+                                .groupBy { getDateHeader(it.date) }
                     }
                 }
                 // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
@@ -171,6 +197,13 @@ fun TrackingPage(
             }
         }
     }
+}
+
+fun <T, R : Comparable<R>> Iterable<T>.sortedByDirection(
+    ascending: Boolean,
+    selector: (T) -> R?,
+): List<T> {
+    return if (ascending) sortedBy(selector) else sortedByDescending(selector)
 }
 
 @Composable

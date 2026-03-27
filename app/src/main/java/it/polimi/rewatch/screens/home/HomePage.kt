@@ -159,7 +159,7 @@ fun LazyGridScope.movieSection(
     }
     // --- Pulsante Dinamico ---
     item(key = "button_$title", span = { GridItemSpan(maxLineSpan) }) {
-        if (movies.size > cellsPerRow * 2) {
+        if (movies.size > cellsPerRow * 3) {
             HomeButton(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,

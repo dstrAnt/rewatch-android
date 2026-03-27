@@ -221,7 +221,7 @@ fun MediaContent(
                     voteAverage = movie.voteAverage,
                 )
 
-                TrackingInfo(watchlistItem, watchedListItem, Modifier.clickable { actions.onBottomSheet(PosterMedia(movie, mediaId)) })
+                TrackingInfo(watchlistItem, watchedListItem) { actions.onBottomSheet(PosterMedia(movie, mediaId)) }
             }
 //            println(movie.crew)
             tabbedSection(
@@ -282,19 +282,20 @@ fun MediaContent(
 private fun TrackingInfo(
     watchlistItem: WatchlistMedia?,
     watchedListItem: WatchedMedia?,
-    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
 ) {
-    if (watchlistItem != null || watchedListItem != null) {
-        HorizontalDivider()
-        Column(
-            modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 10.dp)
-                .clip(RoundedCornerShape(20.dp))
-                .background(DividerDefaults.color),
-        ) {
-            Spacer(Modifier.height(10.dp))
+    HorizontalDivider()
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 10.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(DividerDefaults.color)
+            .clickable(onClick = onClick),
+    ) {
+        Spacer(Modifier.height(10.dp))
+        if (watchlistItem != null || watchedListItem != null) {
             watchedListItem?.let {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -314,6 +315,7 @@ private fun TrackingInfo(
             watchlistItem?.let {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 16.dp),
                 ) {
                     Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
@@ -321,6 +323,16 @@ private fun TrackingInfo(
                 }
                 Spacer(Modifier.height(10.dp))
             }
+        } else {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Icon(painterResource(R.drawable.popcorn), contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                Text("Add this content to your lists")
+            }
+            Spacer(Modifier.height(10.dp))
         }
     }
 }
@@ -826,7 +838,7 @@ fun <T> SimilarSection(
 ) {
     BoxWithConstraints {
         // 1. Define your adaptive minimum size
-        val minCellSize = 100.dp
+        val minCellSize = 90.dp
         // 2. Calculate the columns (Available Width / Min Cell Size)
         // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
         val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
