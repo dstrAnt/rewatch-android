@@ -189,7 +189,7 @@ fun BottomSheet(
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             // Open Page Action
             Text(
-                text = "Open content page",
+                text = "See content page",
                 modifier = Modifier.clickable { navigateAndClose(mediaId) },
             )
 

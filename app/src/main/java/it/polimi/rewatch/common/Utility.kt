@@ -354,7 +354,7 @@ fun CustomLazyGrid(
     content: LazyGridScope.(Int) -> Unit,
 ) = BoxWithConstraints {
     // 1. Define your adaptive minimum size
-    val minCellSize = 100.dp
+    val minCellSize = 90.dp
     // 2. Calculate the columns (Available Width / Min Cell Size)
     // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
     val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
@@ -398,6 +398,7 @@ class NavigationActions(
     val onNavigateBack: () -> Unit,
     val onFullscreenImage: (String?) -> Modifier,
     val onBottomSheet: (PosterMedia) -> Unit,
+    val onNavigateToLogin: () -> Unit,
 )
 
 @Composable
