@@ -64,6 +64,7 @@ import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.settings.LoginPage
 import it.polimi.rewatch.screens.settings.SettingsPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
@@ -107,6 +108,9 @@ fun RewatchApp() {
             },
             onBottomSheet = {
                 if (it.id is MediaId) bottomSheetMedia = it
+            },
+            onNavigateToLogin = {
+                backStack.add(LoginPage)
             },
         )
     }
@@ -176,7 +180,7 @@ fun RewatchApp() {
                                 outerPadding = outerPadding,
                             )
 
-                            AppDestinations.SETTINGS -> SettingsPage(outerPadding)
+                            AppDestinations.SETTINGS -> SettingsPage(outerPadding, navActions)
                         }
                     }
                 }
@@ -199,6 +203,12 @@ fun RewatchApp() {
                     PersonPage(
                         actions = navActions,
                         personId = key.personId,
+                        outerPadding = outerPadding,
+                    )
+                }
+                entry<LoginPage> { key ->
+                    LoginPage(
+                        actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
@@ -277,6 +287,9 @@ private fun BottomBar(
 
 @Serializable
 data object HomeTabs : NavKey
+
+@Serializable
+data object LoginPage : NavKey
 
 @Serializable
 data class MediaPage(val mediaId: MediaId) : NavKey

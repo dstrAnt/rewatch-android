@@ -34,11 +34,13 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.polimi.rewatch.common.BorderBox
+import it.polimi.rewatch.common.NavigationActions
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsPage(
     outerPadding: PaddingValues,
+    actions: NavigationActions,
 ) {
     Scaffold(
         topBar = {
@@ -64,7 +66,9 @@ fun SettingsPage(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
-                BorderBox {
+                BorderBox(
+                    onClick = actions.onNavigateToLogin,
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(15.dp),
