@@ -6,6 +6,8 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
@@ -80,7 +83,12 @@ fun SearchPage(
         Column(
             Modifier
                 .fillMaxSize()
-                .padding(top = padding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding())
+                .padding(
+                    top = padding.calculateTopPadding(),
+                    bottom = outerPadding.calculateBottomPadding(),
+                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                )
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onTap = {

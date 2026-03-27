@@ -11,10 +11,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -61,6 +64,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.image.TmdbImage
@@ -82,6 +86,7 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
+import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
@@ -100,6 +105,7 @@ import it.polimi.rewatch.model.WatchlistMedia
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 import java.util.Locale
+import kotlin.math.max
 
 fun isDetailsAvailable(details: MediaDetail): Boolean {
     if (details.specificDetails !is MediaSpecificDetails.Movie) return false
@@ -177,10 +183,10 @@ fun MediaContent(
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
-//            contentPadding = PaddingValues(
-//                start = padding.calculateStartPadding(LayoutDirection.Ltr),
-//                end = padding.calculateEndPadding(LayoutDirection.Ltr),
-//            ),
+            contentPadding = PaddingValues(
+                start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                end = padding.calculateEndPadding(LayoutDirection.Ltr),
+            ),
         ) {
             item {
                 BackdropImage(
@@ -216,7 +222,6 @@ fun MediaContent(
                 )
 
                 TrackingInfo(watchlistItem, watchedListItem, Modifier.clickable { actions.onBottomSheet(PosterMedia(movie, mediaId)) })
-
             }
 //            println(movie.crew)
             tabbedSection(
@@ -259,7 +264,7 @@ fun MediaContent(
                 pad = pad,
             ) {
                 item {
-                    SimilarSection(data.similar.take(7)) {
+                    SimilarSection(data.similar) {
                         PosterItem(it, actions)
                     }
                     Spacer(Modifier.height(pad))
@@ -588,7 +593,10 @@ fun BackdropImage(
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxWidth()
-                    .height(210.dp),
+                    .height(210.dp)
+                    .layoutEvade(
+                        padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
+                    ),
             )
             Box(
                 modifier = Modifier
@@ -816,16 +824,24 @@ fun <T> SimilarSection(
     similar: List<T>,
     content: @Composable (LazyItemScope.(T) -> Unit),
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.height(150.dp),
-    ) {
-        // Leading spacer
-        item { Spacer(Modifier.width(5.dp)) }
-        // Movie items
-        items(items = similar, itemContent = content)
-        item { Spacer(Modifier.width(5.dp)) }
+    BoxWithConstraints {
+        // 1. Define your adaptive minimum size
+        val minCellSize = 100.dp
+        // 2. Calculate the columns (Available Width / Min Cell Size)
+        // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
+        val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
+        // Now you have the exact integer to use however you want!
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(150.dp),
+        ) {
+            // Leading spacer
+            item { Spacer(Modifier.width(5.dp)) }
+            // Movie items
+            items(items = similar.take(calculatedColumnCount), itemContent = content)
+            item { Spacer(Modifier.width(5.dp)) }
+        }
     }
 }
 

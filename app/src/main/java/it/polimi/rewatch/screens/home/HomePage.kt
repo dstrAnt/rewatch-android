@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.common.CustomLazyGrid
@@ -72,7 +75,16 @@ fun HomePage(
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding()),
+            //            contentPadding = PaddingValues(
+//                start = padding.calculateStartPadding(LayoutDirection.Ltr),
+//                end = padding.calculateEndPadding(LayoutDirection.Ltr),
+//            ),
+            modifier = Modifier.padding(
+                top = paddingValues.calculateTopPadding(),
+                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                bottom = outerPadding.calculateBottomPadding(),
+            ),
             loadingContent = ::HomeSkeleton,
         ) { data ->
             HomeContent(
@@ -103,6 +115,7 @@ fun HomeContent(
             .forEach { (title, data) ->
                 movieSection(
                     title, data,
+                    cellsPerRow = it,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
                     actions,
@@ -115,14 +128,15 @@ fun HomeContent(
 fun LazyGridScope.movieSection(
     title: String,
     movies: List<PosterMedia>,
+    cellsPerRow: Int,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
     actions: NavigationActions,
 ) {
     val isExpanded = expandedSectionIds.contains(title)
-    val displayedMovies = if (isExpanded) movies else movies.take(12)
+    val displayedMovies = if (isExpanded) movies else movies.take(cellsPerRow * 3)
 
-    item(key = "header_$title", span = { GridItemSpan(4) }) {
+    item(key = "header_$title", span = { GridItemSpan(maxLineSpan) }) {
         Text(
             text = title,
             color = Color.White,
@@ -144,8 +158,8 @@ fun LazyGridScope.movieSection(
         )
     }
     // --- Pulsante Dinamico ---
-    item(key = "button_$title", span = { GridItemSpan(4) }) {
-        if (movies.size > 8) {
+    item(key = "button_$title", span = { GridItemSpan(maxLineSpan) }) {
+        if (movies.size > cellsPerRow * 2) {
             HomeButton(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,

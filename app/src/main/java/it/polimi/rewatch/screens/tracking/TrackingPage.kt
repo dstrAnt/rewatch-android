@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
@@ -97,13 +100,23 @@ fun TrackingPage(
                 tabs,
                 selectedTab,
                 { selectedTab = it },
+                modifier = Modifier.padding(
+                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
             )
         },
+
     ) { paddingValues ->
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            modifier = Modifier.padding(top = paddingValues.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding()),
+            modifier = Modifier.padding(
+                top = paddingValues.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding(),
+                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
             loadingContent = ::TrackingSkeleton,
         ) { data ->
             CustomLazyGrid {
@@ -118,7 +131,6 @@ fun TrackingPage(
                         },
                     )
                 }
-
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
                     WatchTabItem.WATCHLIST -> watchlist.filter { it.id.type == type }
@@ -135,6 +147,7 @@ fun TrackingPage(
 
                         SortOption.ALPHABETICAL -> sortedBy { it.title }
                             .groupBy { getAlphabeticalHeader(it.title) }
+
                         SortOption.DATE -> sortedBy { it.date }
                             .groupBy { getDateHeader(it.date) }
                     }
@@ -184,9 +197,10 @@ private fun TopTabBar(
     tabs: List<WatchTabItem>,
     selectedTab: WatchTabItem,
     onClick: (WatchTabItem) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        Modifier
+        modifier
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {

@@ -3,6 +3,7 @@ package it.polimi.rewatch.model
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.screens.media.MovieData
+import kotlinx.serialization.Serializable
 
 enum class MediaType {
     MOVIE, TV_SHOW, EPISODE, SEASON
@@ -17,13 +18,15 @@ data class PersonId(
     override fun onClick(actions: NavigationActions) = actions.onNavigateToProfile(id)
 }
 
-interface MediaId : ItemId {
+@Serializable
+sealed interface MediaId : ItemId {
     val parentId: Int
     val type: MediaType
     suspend fun getData(repo: TmdbRepository): MovieData
     suspend fun getDetails(repo: TmdbRepository): PosterMedia?
 }
 
+@Serializable
 data class MovieId(
     override val parentId: Int,
     override val type: MediaType = MediaType.MOVIE,
@@ -33,6 +36,7 @@ data class MovieId(
     override fun onClick(actions: NavigationActions) = actions.onNavigateToMedia(this)
 }
 
+@Serializable
 data class TvId(
     override val parentId: Int,
     override val type: MediaType = MediaType.TV_SHOW,
@@ -42,6 +46,7 @@ data class TvId(
     override fun onClick(actions: NavigationActions) = actions.onNavigateToMedia(this)
 }
 
+@Serializable
 data class EpisodeId(
     override val parentId: Int,
     val seasonId: Int,
@@ -53,6 +58,7 @@ data class EpisodeId(
     override fun onClick(actions: NavigationActions) = actions.onNavigateToMedia(this)
 }
 
+@Serializable
 data class SeasonId(
     override val parentId: Int,
     val seasonId: Int,

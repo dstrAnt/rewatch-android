@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -164,8 +167,10 @@ fun PersonContent(
         CustomLazyGrid(
             state = scrollState,
             contentPadding = PaddingValues(
-                top = outerPadding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding() + 5.dp,
-                start = 5.dp, end = 5.dp,
+                top = outerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding() + 5.dp,
+                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
         ) {
             item(span = { GridItemSpan(maxLineSpan) }) {

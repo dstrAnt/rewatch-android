@@ -91,6 +91,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
+import kotlin.math.max
 
 fun String.formatDate(format: String): String {
     return try {
@@ -167,7 +168,6 @@ fun BorderBox(
     }
 }
 
-
 fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
     val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
     val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
@@ -179,6 +179,7 @@ fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
 
     return Pair(mediaId, mediaType)
 }
+
 fun onMediaClickNav(
     mediaId: String,
     navController: NavHostController,
@@ -350,19 +351,27 @@ fun <T> CustomTabRow(
 fun CustomLazyGrid(
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
-    content: LazyGridScope.() -> Unit,
-) = LazyVerticalGrid(
-    columns = Fixed(4),
-    state = state,
-    horizontalArrangement = Arrangement.spacedBy(7.dp),
-    verticalArrangement = Arrangement.spacedBy(7.dp),
-    contentPadding = contentPadding,
-    modifier = Modifier
-        .fillMaxSize()
-        .animateContentSize()
-        .padding(horizontal = 7.dp),
-    content = content,
-)
+    content: LazyGridScope.(Int) -> Unit,
+) = BoxWithConstraints {
+    // 1. Define your adaptive minimum size
+    val minCellSize = 100.dp
+    // 2. Calculate the columns (Available Width / Min Cell Size)
+    // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
+    val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
+    // Now you have the exact integer to use however you want!
+    LazyVerticalGrid(
+        columns = Fixed(calculatedColumnCount),
+        state = state,
+        horizontalArrangement = Arrangement.spacedBy(7.dp),
+        verticalArrangement = Arrangement.spacedBy(7.dp),
+        contentPadding = contentPadding,
+        modifier = Modifier
+            .fillMaxSize()
+            .animateContentSize()
+            .padding(horizontal = 7.dp),
+        content = { content.invoke(this, calculatedColumnCount) },
+    )
+}
 
 @Composable
 fun getDeviceCornerRadius(): Dp {

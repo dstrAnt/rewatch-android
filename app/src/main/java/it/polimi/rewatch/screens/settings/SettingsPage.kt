@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,9 +29,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.polimi.rewatch.common.BorderBox
@@ -43,10 +44,18 @@ fun SettingsPage(
         topBar = {
             SettingsTopBar()
         },
+        modifier = Modifier
+            .padding(
+                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+            ),
     ) { paddingValues ->
         Box(
             Modifier
-                .padding(top = paddingValues.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding())
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    bottom = outerPadding.calculateBottomPadding(),
+                )
                 .fillMaxWidth(),
         ) {
             Column(
@@ -83,18 +92,11 @@ fun SettingsPage(
                     }
                 }
                 Column(
-                    Modifier
-                        .fillMaxWidth(),
+                    Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    val bottomStyle = TextStyle(
-                        color = Color.Gray,
-                        fontSize = 10.sp,
-                        lineHeight = 14.sp,
-                        textAlign = TextAlign.Center,
-                    )
-                    Text("Rewatch-Android v0.9b", style = bottomStyle)
-                    Text("Politecnico di Milano © 2026", style = bottomStyle)
+                    Text("Rewatch-Android v0.9b", style = MaterialTheme.typography.bodySmall)
+                    Text("Politecnico di Milano © 2026", style = MaterialTheme.typography.bodySmall)
                 }
             }
         }
