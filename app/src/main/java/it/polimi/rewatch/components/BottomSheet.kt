@@ -19,20 +19,29 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -53,6 +62,24 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+
+// Da LocalDate a Long (Milliseconds UTC)
+@RequiresApi(Build.VERSION_CODES.O)
+fun LocalDate.toMillis(): Long {
+    return this.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+}
+
+// Da Long (Milliseconds UTC) a LocalDate
+@RequiresApi(Build.VERSION_CODES.O)
+fun Long.toLocalDate(): LocalDate {
+    return Instant.ofEpochMilli(this)
+        .atZone(ZoneId.of("UTC"))
+        .toLocalDate()
+}
 
 @HiltViewModel(assistedFactory = BottomSheetViewModel.Factory::class)
 class BottomSheetViewModel @AssistedInject constructor(
@@ -108,6 +135,30 @@ fun BottomSheet(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true, // Locks the sheet to its exact content height
     )
+    var showDatePicker by remember { mutableStateOf(false) }
+    val tomorrowMillis = LocalDate.now()
+        .plusDays(1)
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
+
+    val selectableDates = remember {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+//                val minDate = viewModel.media?.releaseDate?.toJavaLocalDate()?.toMillis() ?: 0
+                return utcTimeMillis < tomorrowMillis //&& utcTimeMillis > minDate
+            }
+
+            override fun isSelectableYear(year: Int): Boolean {
+                return year <= LocalDate.now().year + 1
+            }
+        }
+    }
+    val datePickerState = rememberDatePickerState(
+        selectableDates = selectableDates,
+        initialSelectedDateMillis = LocalDate.now().toMillis(), // funzione extension definita prima
+    )
+
     val scope = rememberCoroutineScope()
     val navigateAndClose: (MediaId) -> Unit = { id ->
         scope.launch {
@@ -172,9 +223,8 @@ fun BottomSheet(
             // Rating
             StarRating(
                 rating = (watchedItem?.rating ?: 0f) / 2,
-                starSize = 45.dp, // 3. Inlined the single-use variable
+                starSize = 45.dp,
                 onRatingChanged = { viewModel.fakeRepo.setRating(mediaId, it * 2) },
-                // 4. Center the rating without needing an extra wrapper Row
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentWidth(),
@@ -182,15 +232,44 @@ fun BottomSheet(
 
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             // Watch Status
-            Text(
-                text = if (isWatched) {
-                    // Safely format assuming watchedItem.date handles nulls cleanly with your extension
-                    "Content watched on ${watchedItem?.date.toString().formatDate("d MMM YYYY")}"
-                } else {
-                    "You haven't watched this content yet"
-                },
-            )
-
+            if (isWatched) {
+                Row {
+                    Text("Content watched on ")
+                    Text(
+                        watchedItem?.date.toString().formatDate("d MMM YYYY"),
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable {
+                            showDatePicker = true
+                        },
+                    )
+                }
+            } else {
+                Text("You haven't watched this content yet")
+            }
+            if (showDatePicker) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let { selectedMillis ->
+                                    viewModel.fakeRepo.setWatchDate(mediaId, selectedMillis.toLocalDate())
+                                }
+                                showDatePicker = false
+                            },
+                        ) {
+                            Text("Select")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Dismiss")
+                        }
+                    },
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             // Open Page Action
             Text(
