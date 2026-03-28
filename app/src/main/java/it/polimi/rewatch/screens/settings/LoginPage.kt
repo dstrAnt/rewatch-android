@@ -8,17 +8,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,9 +37,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import it.polimi.rewatch.R
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 
@@ -56,6 +66,7 @@ fun LoginPage(
 ) {
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
     var text by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     fun isLogin() = loginState == LoginState.LOGIN
 
@@ -65,15 +76,18 @@ fun LoginPage(
             if (text.isValidEmail()) {
                 isError = false
                 loginState = LoginState.CODE
+                email = text
                 fakeRepo.generateCode()
                 text = ""
             } else isError = true
         } else {
             if (fakeRepo.isValidCode(text)) {
                 isError = false
-                // TODO: real login logic
+                fakeRepo.login(email)
                 loginState = LoginState.LOGIN
                 text = ""
+                email = ""
+                actions.onClearAndNavigateToSettings()
             } else isError = true
         }
     }
@@ -103,6 +117,45 @@ fun LoginPage(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_launcher_monochrome), contentDescription = null,
+                    )
+                    Text(
+                        "Rewatch",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    )
+
+                }
+                if (isLogin())
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
+                        Text(
+                            "Sign in to synchronize your data on all your devices",
+                            style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+                        )
+                    }
+                else
+                    Column(
+                        Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
+                        Text(
+                            "Check your email and enter here your verification code",
+                            style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+                        )
+                    }
+
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
@@ -110,16 +163,36 @@ fun LoginPage(
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = loginState.kb),
                     singleLine = true,
+                    isError = isError,
+                    supportingText = {
+                        if (isError) {
+                            Text(
+                                text = loginState.error,
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.error, // Usa il rosso del tema
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        if (isError) {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = "Errore",
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
                 )
 
                 Button(
                     onClick = ::handleLogin,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    shape = RoundedCornerShape(5.dp),
                 ) {
                     Text(loginState.button)
                 }
 
-                if (isError) Text(loginState.error, color = Color.Red)
             }
         }
     }

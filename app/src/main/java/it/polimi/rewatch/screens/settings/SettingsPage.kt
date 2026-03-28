@@ -1,6 +1,8 @@
 package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,13 +36,16 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import it.polimi.rewatch.common.BorderBox
+import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
+    fakeRepo: FakeRepository = FakeRepository(),
 ) {
     Scaffold(
         topBar = {
@@ -84,14 +89,22 @@ fun SettingsPage(
                         )
                         Column {
                             Text(
-                                "Your Profile",
+                                if (fakeRepo.isLogged()) "${fakeRepo.email}" else "Your Profile",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+//                                overflow = TextOverflow.Ellipsis,
                             )
-                            Text(
-                                "Sign in to synchronize your watchlist and watched contents",
-                                color = Color.Gray,
-                                lineHeight = 16.sp,
-                            )
+                            if (fakeRepo.isLogged())
+                                Text(
+                                    "Click here to log out",
+                                    color = MaterialTheme.colorScheme.error,
+                                    lineHeight = 16.sp,
+                                )
+                            else
+                                Text(
+                                    "Sign in to synchronize your watchlist and watched contents",
+                                    color = Color.Gray,
+                                    lineHeight = 16.sp,
+                                )
                         }
                     }
                 }

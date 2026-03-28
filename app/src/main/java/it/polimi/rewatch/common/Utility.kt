@@ -401,6 +401,7 @@ class NavigationActions(
     val onFullscreenImage: (String?) -> Modifier,
     val onBottomSheet: (PosterMedia) -> Unit,
     val onNavigateToLogin: () -> Unit,
+    val onClearAndNavigateToSettings: () -> Unit,
 )
 
 @Composable

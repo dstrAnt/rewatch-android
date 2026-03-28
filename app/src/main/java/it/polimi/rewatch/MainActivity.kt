@@ -114,6 +114,10 @@ fun RewatchApp() {
             onNavigateToLogin = {
                 backStack.add(LoginPage)
             },
+            onClearAndNavigateToSettings = {
+                backStack.clear()
+                backStack.add(SettingsPage)
+            },
         )
     }
     val pagerState = rememberPagerState(pageCount = { AppDestinations.entries.size })
@@ -218,6 +222,12 @@ fun RewatchApp() {
                         outerPadding = outerPadding,
                     )
                 }
+                entry<SettingsPage> { key ->
+                    SettingsPage(
+                        actions = navActions,
+                        outerPadding = outerPadding,
+                    )
+                }
             },
         )
         // Add your movie details route here just like before
@@ -296,6 +306,9 @@ data object HomeTabs : NavKey
 
 @Serializable
 data object LoginPage : NavKey
+
+@Serializable
+data object SettingsPage : NavKey
 
 @Serializable
 data class MediaPage(val mediaId: MediaId) : NavKey

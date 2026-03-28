@@ -128,10 +128,21 @@ class FakeRepository
     val watchedList = _watchedList.asStateFlow()
 
     private val _code = MutableStateFlow("")
-
     fun generateCode() {
         _code.update { generateVerificationCode() }
     }
+
+    private val _email = MutableStateFlow("")
+    val email = _email.asStateFlow()
+    fun login(email: String) {
+        _email.update { email }
+    }
+
+    fun logout() {
+        _email.update { "" }
+    }
+
+    fun isLogged() = _email.value != ""
 
     fun isValidCode(code: String) = code.isValidSixDigitCode() && code == _code.value
 
