@@ -214,11 +214,9 @@ fun RewatchApp() {
                 }
             },
         )
+        BottomSheet(bottomSheetMedia, onDismiss = { bottomSheetMedia = null }, actions = navActions)
         // Add your movie details route here just like before
         // composable("movie_page/{movieId}") { ... }
-    }
-    bottomSheetMedia?.let {
-        BottomSheet(media = it, onDismiss = { bottomSheetMedia = null }, actions = navActions)
     }
     val animationSpec = tween<Float>(durationMillis = 300)
     AnimatedVisibility(

@@ -34,6 +34,9 @@ data class MovieId(
     override suspend fun getData(repo: TmdbRepository) = repo.movieData(parentId)
     override suspend fun getDetails(repo: TmdbRepository) = repo.movieDetails(parentId)
     override fun onClick(actions: NavigationActions) = actions.onNavigateToMedia(this)
+    override fun toString(): String {
+        return parentId.toString()
+    }
 }
 
 @Serializable
