@@ -3,12 +3,7 @@ package it.polimi.rewatch.screens.media
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,7 +18,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,7 +45,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -96,6 +89,7 @@ import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
+import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
@@ -132,26 +126,20 @@ data class TrackingItems(
 @Composable
 fun MediaPage(
     mediaId: MediaId,
-    viewModel: MediaViewModel = hiltViewModel(key = mediaId.toString()),
+    viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
+        key = mediaId.toString(),
+        creationCallback = { it.create(mediaId) },
+    ),
     outerPadding: PaddingValues,
     actions: NavigationActions,
 ) {
-    LaunchedEffect(mediaId) {
-        viewModel.loadMedia(mediaId)
-    }
-    val data by viewModel.data.collectAsStateWithLifecycle()
-
-    AnimatedContent(
-        targetState = data,
-        transitionSpec = {
-            fadeIn(tween(1000)) togetherWith fadeOut()
-        },
-        modifier = Modifier.fillMaxSize(),
-        label = "uiStateTransition",
-    ) { targetState ->
-        if (targetState == null) MovieSkeleton()
-        else MediaContent(
-            data = targetState,
+    TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
+    AnimatedUiState(
+        state = viewModel.uiState,
+        loadingContent = ::MovieSkeleton,
+    ) { data ->
+        MediaContent(
+            data = data,
             padding = outerPadding,
             mediaId = mediaId,
             actions = actions,
