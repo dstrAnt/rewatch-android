@@ -20,16 +20,12 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,6 +54,7 @@ import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.screens.tracking.SortFilterChips
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
@@ -214,7 +211,7 @@ fun PersonContent(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (displayList.isNotEmpty()) {
-                            SortFilterChips(selectedSort, onSortSelected = { selectedSort = it })
+                            SortFilterChips(SortOrder.entries, selectedSort, onSortSelected = { selectedSort = it }, true, SortOrder::label)
                         } else {
                             Spacer(Modifier.weight(1f))
                         }
@@ -387,36 +384,5 @@ fun calculatePersonAge(birthday: String?): String {
         "$age years"
     } catch (_: DateTimeParseException) {
         "Wrong date format"
-    }
-}
-
-// 5. Componente dei Chip aggiornato per l'ordinamento
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SortFilterChips(
-    selectedSort: SortOrder,
-    onSortSelected: (SortOrder) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SortOrder.entries.forEach { sort ->
-            CompositionLocalProvider(
-                LocalMinimumInteractiveComponentSize provides 0.dp,
-            ) {
-                FilterChip(
-                    modifier = Modifier.height(28.dp),
-                    selected = selectedSort == sort,
-                    onClick = { onSortSelected(sort) },
-                    label = {
-                        Text(sort.label, style = MaterialTheme.typography.labelMedium)
-                    },
-                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
-                )
-            }
-        }
     }
 }

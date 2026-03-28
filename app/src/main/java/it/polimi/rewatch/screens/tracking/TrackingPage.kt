@@ -142,6 +142,7 @@ fun TrackingPage(
                                 }
                             },
                             isAscending = isAscending,
+                            label = SortOption::label,
                         )
                     }
                 }
@@ -209,7 +210,7 @@ private fun LazyGridItemScope.PosterStarsItem(
         modifier = Modifier.animateItem(),
     ) {
         PosterItem(media.mediaData, actions)
-        val rating = media.rating ?: 0.0f
+        val rating = media.rating
 
         StarRating(rating = rating / 2, starSize = 10.dp)
     }
@@ -260,11 +261,12 @@ private fun TopTabBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SortFilterChips(
-    options: List<SortOption>,
-    selectedSort: SortOption,
-    onSortSelected: (SortOption) -> Unit,
+fun <T> SortFilterChips(
+    options: List<T>,
+    selectedSort: T,
+    onSortSelected: (T) -> Unit,
     isAscending: Boolean,
+    label: (T) -> String,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -280,7 +282,7 @@ fun SortFilterChips(
                     onClick = { onSortSelected(sort) },
                     label = {
                         Text(
-                            text = sort.label,
+                            text = label(sort),
                             style = MaterialTheme.typography.labelMedium,
                         )
                     },
