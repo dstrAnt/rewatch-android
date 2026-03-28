@@ -36,7 +36,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +50,10 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
@@ -64,8 +67,8 @@ fun SearchPage(
     outerPadding: PaddingValues,
     pagerState: PagerState,
 ) {
-    val query by viewModel.query.collectAsState()
-    val movies by viewModel.media.collectAsState()
+    val query by viewModel.query.collectAsStateWithLifecycle()
+    val movies by viewModel.media.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     // Intercept the back button BEFORE the SearchBar catches it,
@@ -74,6 +77,14 @@ fun SearchPage(
 //        focusRequester.requestFocus()
 //    }
     // 1. Clear focus when the Pager starts moving
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.reset()
+        }
+    }
+
     LaunchedEffect(pagerState.isScrollInProgress) {
         if (pagerState.isScrollInProgress) {
             focusManager.clearFocus()

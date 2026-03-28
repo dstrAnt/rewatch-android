@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.metadata
@@ -64,6 +65,7 @@ import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.search.SearchViewModel
 import it.polimi.rewatch.screens.settings.LoginPage
 import it.polimi.rewatch.screens.settings.SettingsPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -161,12 +163,16 @@ fun RewatchApp() {
                                 actions = navActions,
                                 outerPadding = outerPadding,
                             )
-
-                            AppDestinations.SEARCH -> SearchPage(
-                                actions = navActions,
-                                outerPadding = outerPadding,
-                                pagerState = pagerState,
-                            )
+                            AppDestinations.SEARCH -> {
+                                val viewModel = hiltViewModel<SearchViewModel>()
+                                viewModel.reset()
+                                SearchPage(
+                                    actions = navActions,
+                                    outerPadding = outerPadding,
+                                    pagerState = pagerState,
+                                    viewModel = viewModel,
+                                )
+                            }
 
                             AppDestinations.MOVIE -> TrackingPage(
                                 actions = navActions,

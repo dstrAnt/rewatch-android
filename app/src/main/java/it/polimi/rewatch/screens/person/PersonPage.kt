@@ -412,10 +412,7 @@ fun SortFilterChips(
                     selected = selectedSort == sort,
                     onClick = { onSortSelected(sort) },
                     label = {
-                        Text(
-                            text = sort.label,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
+                        Text(sort.label, style = MaterialTheme.typography.labelMedium)
                     },
                     contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
                 )

@@ -553,7 +553,7 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             secondary,
             contentDescription = null,
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.CenterStart)
                 .size(20.dp),
             tint = Color.Gray,
         )
@@ -562,7 +562,7 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             main,
             contentDescription = null,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.CenterEnd)
                 .size(20.dp),
             tint = Color.White,
         )

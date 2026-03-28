@@ -35,17 +35,20 @@ class SearchViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val media = combine(_query, _mediaType, transform = ::Pair)
         .mapLatest { (currentQuery, currentMediaType) ->
-        // 2. mapLatest receives the updated Pair.
-        // It will cancel the previous search if a new query or type comes in quickly!
-        repository.searchMedia(currentQuery, currentMediaType)
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = emptyList(),
-    )
+            // 2. mapLatest receives the updated Pair.
+            // It will cancel the previous search if a new query or type comes in quickly!
+            repository.searchMedia(currentQuery, currentMediaType)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList(),
+        )
 
     // Called from the UI when the user types
     fun onQueryChange(newQuery: String) {
         _query.value = newQuery
+    }
+    fun reset() {
+        _query.value = ""
     }
 }

@@ -312,7 +312,6 @@ private fun TrackingInfo(
                 }
             }
             Spacer(Modifier.height(10.dp))
-
         } else if (watchlistItem != null) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -323,7 +322,6 @@ private fun TrackingInfo(
                 Text("This content is in your watchlist")
             }
             Spacer(Modifier.height(10.dp))
-
         } else {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -879,11 +877,13 @@ fun PersonItem(person: TmdbAnyPerson?, function: () -> Unit) = ListItem(
         )
     },
     supportingContent = {
-        Text(
-            text = ((person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job).orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-        )
+        val text = ((person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job).orEmpty()
+        if (text.isNotBlank())
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+            )
     },
     trailingContent = {
         Icon(
