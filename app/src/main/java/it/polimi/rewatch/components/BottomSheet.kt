@@ -106,7 +106,10 @@ fun BottomSheet(
 
     viewModel.media?.let { media ->
         ModalBottomSheet(
-            onDismissRequest = onDismiss,
+            onDismissRequest = {
+                onDismiss()
+                viewModel.media = null
+            },
             scrimColor = Color.Black.copy(alpha = 0.8f),
             sheetState = sheetState,
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
