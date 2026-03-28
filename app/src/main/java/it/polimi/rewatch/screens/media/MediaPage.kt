@@ -45,7 +45,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,6 +66,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
@@ -83,6 +83,7 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandBtn
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.OverlapIcon
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
@@ -164,8 +165,8 @@ fun MediaContent(
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
-    val watchlistItem by vm.watchlistItem.collectAsState()
-    val watchedListItem by vm.watchedListItem.collectAsState()
+    val watchlistItem by vm.watchlistItem.collectAsStateWithLifecycle()
+    val watchedListItem by vm.watchedListItem.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -295,34 +296,34 @@ private fun TrackingInfo(
             .clickable(onClick = onClick),
     ) {
         Spacer(Modifier.height(10.dp))
-        if (watchlistItem != null || watchedListItem != null) {
-            watchedListItem?.let {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                ) {
-                    Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
-                    if (watchedListItem.rating == 0.0f) Text("You watched this content")
-                    else {
-                        Text("You rated this content")
-                        StarRating(watchedListItem.rating / 2)
-                    }
+        if (watchedListItem != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(horizontal = 16.dp),
+            ) {
+                if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
+                else Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
+                if (watchedListItem.rating == 0.0f) Text("You watched this content")
+                else {
+                    Text("You rated this content")
+                    StarRating(watchedListItem.rating / 2)
                 }
-                Spacer(Modifier.height(10.dp))
             }
-            watchlistItem?.let {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                ) {
-                    Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
-                    Text("This content is in your watchlist")
-                }
-                Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(10.dp))
+
+        } else if (watchlistItem != null) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
+                Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
+                Text("This content is in your watchlist")
             }
+            Spacer(Modifier.height(10.dp))
+
         } else {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),

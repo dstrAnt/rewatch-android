@@ -107,6 +107,17 @@ val fakeWatch = listOf(
     ),
 )
 
+fun generateVerificationCode(): String {
+    val code = (100000..999999).random().toString()
+    println(code)
+    return code
+}
+
+fun String.isValidSixDigitCode(): Boolean {
+    val codeRegex = "^[0-9]{6}$".toRegex()
+    return this.matches(codeRegex)
+}
+
 @Singleton
 @RequiresApi(Build.VERSION_CODES.O)
 class FakeRepository
@@ -115,6 +126,14 @@ class FakeRepository
     val watchlist = _watchlist.asStateFlow()
     private val _watchedList = MutableStateFlow(fakeWatch)
     val watchedList = _watchedList.asStateFlow()
+
+    private val _code = MutableStateFlow("")
+
+    fun generateCode() {
+        _code.update { generateVerificationCode() }
+    }
+
+    fun isValidCode(code: String) = code.isValidSixDigitCode() && code == _code.value
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun addToWatchlist(id: MediaId) {

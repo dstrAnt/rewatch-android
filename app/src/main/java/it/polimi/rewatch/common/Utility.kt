@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -68,6 +69,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
@@ -536,5 +538,33 @@ fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
         }
+    }
+}
+
+@Composable
+fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
+    Box(
+        modifier = Modifier
+            .width(35.dp)
+            .height(30.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            secondary,
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .size(20.dp),
+            tint = Color.Gray,
+        )
+
+        Icon(
+            main,
+            contentDescription = null,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(20.dp),
+            tint = Color.White,
+        )
     }
 }

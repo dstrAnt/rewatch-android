@@ -1,6 +1,9 @@
 package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
+import android.os.Build
+import android.util.Patterns
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,21 +34,49 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 
-enum class LoginState(val label: String) {
-    LOGIN("Email"),
-    CODE("Verification Code")
+enum class LoginState(val label: String, val kb: KeyboardType, val button: String, val error: String) {
+    LOGIN("Email", KeyboardType.Email, "Next", "Insert a valid email address"),
+    CODE("Verification Code", KeyboardType.Number, "Log in", "Code is not valid")
 }
 
+fun String.isValidEmail(): Boolean {
+    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
+    fakeRepo: FakeRepository = FakeRepository(),
 ) {
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
     var text by remember { mutableStateOf("") }
+    var isError by remember { mutableStateOf(false) }
+    fun isLogin() = loginState == LoginState.LOGIN
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun handleLogin() {
+        if (isLogin()) {
+            if (text.isValidEmail()) {
+                isError = false
+                loginState = LoginState.CODE
+                fakeRepo.generateCode()
+                text = ""
+            } else isError = true
+        } else {
+            if (fakeRepo.isValidCode(text)) {
+                isError = false
+                // TODO: real login logic
+                loginState = LoginState.LOGIN
+                text = ""
+            } else isError = true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,30 +108,23 @@ fun LoginPage(
                     onValueChange = { text = it },
                     label = { Text(loginState.label) },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    keyboardOptions = KeyboardOptions(keyboardType = loginState.kb),
                     singleLine = true,
                 )
 
                 Button(
-                    onClick = {
-                        loginState = when (loginState) {
-                            LoginState.LOGIN -> {
-                                LoginState.CODE
-                            }
-
-                            LoginState.CODE -> {
-                                LoginState.LOGIN
-                            }
-                        }
-                        text = ""
-                    },
+                    onClick = ::handleLogin,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    Text(if (loginState == LoginState.LOGIN) "Next" else "Log in")
+                    Text(loginState.button)
                 }
+
+                if (isError) Text(loginState.error, color = Color.Red)
             }
         }
     }
+
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

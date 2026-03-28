@@ -142,7 +142,7 @@ fun BottomSheet(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.clickable { navigateAndClose(mediaId) },
                 )
-                Text(text = media.releaseDate.toString().formatDate("MMM YYYY"))
+                if (media.releaseDate != null) Text(text = media.releaseDate.toString().formatDate("MMM YYYY"))
             }
 
             HorizontalDivider(Modifier.layoutEvade(16.dp))
