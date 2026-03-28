@@ -108,8 +108,9 @@ val fakeWatch = listOf(
 )
 
 fun generateVerificationCode(): String {
-    val code = (100000..999999).random().toString()
-    println(code)
+    val code = "111111"
+//    val code = (100000..999999).random().toString()
+//    println(code)
     return code
 }
 

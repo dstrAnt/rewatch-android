@@ -28,6 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,18 +36,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
+import jakarta.inject.Inject
 
+
+@RequiresApi(Build.VERSION_CODES.O)
+@HiltViewModel // Tells Hilt to manage this ViewModel
+class SettingsViewModel @Inject constructor(
+    repository: FakeRepository,
+) : ViewModel() {
+    val fakeRepo = repository
+}
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
-    fakeRepo: FakeRepository = FakeRepository(),
+    vm: SettingsViewModel = hiltViewModel(),
 ) {
+    val fr = vm.fakeRepo
+    val email = fr.email.collectAsState().value
+
+    fun handleLogout() {
+        fr.logout()
+    }
     Scaffold(
         topBar = {
             SettingsTopBar()
@@ -72,7 +91,7 @@ fun SettingsPage(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 BorderBox(
-                    onClick = actions.onNavigateToLogin,
+                    onClick = if (fr.isLogged()) ::handleLogout else actions.onNavigateToLogin,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -89,11 +108,11 @@ fun SettingsPage(
                         )
                         Column {
                             Text(
-                                if (fakeRepo.isLogged()) "${fakeRepo.email}" else "Your Profile",
+                                if (fr.isLogged()) email else "Your Profile",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
-                            if (fakeRepo.isLogged())
+                            if (fr.isLogged())
                                 Text(
                                     "Click here to log out",
                                     color = MaterialTheme.colorScheme.error,

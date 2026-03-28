@@ -9,11 +9,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -43,9 +44,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
+import jakarta.inject.Inject
 
 enum class LoginState(val label: String, val kb: KeyboardType, val button: String, val error: String) {
     LOGIN("Email", KeyboardType.Email, "Next", "Insert a valid email address"),
@@ -56,14 +61,23 @@ fun String.isValidEmail(): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
+@HiltViewModel // Tells Hilt to manage this ViewModel
+class LoginViewModel @Inject constructor(
+    repository: FakeRepository,
+) : ViewModel() {
+    val fakeRepo = repository
+}
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginPage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
-    fakeRepo: FakeRepository = FakeRepository(),
+    vm: LoginViewModel = hiltViewModel(),
 ) {
+    val fr = vm.fakeRepo
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
     var text by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -77,13 +91,13 @@ fun LoginPage(
                 isError = false
                 loginState = LoginState.CODE
                 email = text
-                fakeRepo.generateCode()
+                fr.generateCode()
                 text = ""
             } else isError = true
         } else {
-            if (fakeRepo.isValidCode(text)) {
+            if (fr.isValidCode(text)) {
                 isError = false
-                fakeRepo.login(email)
+                fr.login(email)
                 loginState = LoginState.LOGIN
                 text = ""
                 email = ""
@@ -114,7 +128,6 @@ fun LoginPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
@@ -156,6 +169,8 @@ fun LoginPage(
                         )
                     }
 
+                Spacer(Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
@@ -188,7 +203,6 @@ fun LoginPage(
                     onClick = ::handleLogin,
                     modifier = Modifier
                         .fillMaxWidth(),
-                    shape = RoundedCornerShape(5.dp),
                 ) {
                     Text(loginState.button)
                 }
