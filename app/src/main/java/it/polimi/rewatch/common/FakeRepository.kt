@@ -12,7 +12,7 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 val fakeWatchlist = listOf(
@@ -53,57 +53,57 @@ val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1390),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1399),
         rating = 8.5f,
-        date = LocalDate.of(2023, 3, 23),
+        date = LocalDateTime.of(2023, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1393),
         rating = 8.5f,
-        date = LocalDate.of(2024, 3, 23),
+        date = LocalDateTime.of(2024, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(549),
         rating = 8.5f,
-        date = LocalDate.of(2026, 4, 23),
+        date = LocalDateTime.of(2026, 4, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(83541),
         rating = 8.5f,
-        date = LocalDate.of(2026, 2, 23),
+        date = LocalDateTime.of(2026, 2, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(83540),
         rating = 8.5f,
-        date = LocalDate.of(2026, 4, 23),
+        date = LocalDateTime.of(2026, 4, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1394),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1319),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1395),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1349),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1329),
         rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
+        date = LocalDateTime.of(2026, 3, 23, 0, 0),
     ),
 )
 
@@ -158,8 +158,7 @@ class FakeRepository
             currentList.filter { it.id != id }
         }
     }
-
-    fun addToWatchedList(id: MediaId, rating: Float, date: LocalDate) {
+    fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) {
         _watchedList.update { currentList ->
             currentList + WatchedMedia(id, rating, date)
         }
@@ -174,7 +173,7 @@ class FakeRepository
     fun setRating(id: MediaId, rating: Float) {
         // if media is not present, add it to watched
         if (_watchedList.value.none { it.id == id }) {
-            addToWatchedList(id, rating, LocalDate.now())
+            addToWatchedList(id, rating, LocalDateTime.now())
         } else { // if already present, update the existing entry
             _watchedList.update { currentList ->
                 currentList.map {
@@ -187,7 +186,7 @@ class FakeRepository
         removeFromWatchlist(id)
     }
 
-    fun setWatchDate(id: MediaId, newDate: LocalDate) {
+    fun setWatchDate(id: MediaId, newDate: LocalDateTime) {
         _watchedList.update { currentList ->
             currentList.map {
                 if (it.id != id) it
@@ -211,7 +210,7 @@ class FakeRepository
 
         // if element not present, add it and remove it from other list
         else {
-            addToWatchedList(id, 0.0f, LocalDate.now())
+            addToWatchedList(id, 0.0f, LocalDateTime.now())
             removeFromWatchlist(id)
         }
     }

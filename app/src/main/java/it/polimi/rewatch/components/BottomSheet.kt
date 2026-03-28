@@ -64,6 +64,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
@@ -141,7 +142,6 @@ fun BottomSheet(
         .atStartOfDay(ZoneOffset.UTC)
         .toInstant()
         .toEpochMilli()
-
     val selectableDates = remember {
         object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
@@ -158,7 +158,6 @@ fun BottomSheet(
         selectableDates = selectableDates,
         initialSelectedDateMillis = LocalDate.now().toMillis(), // funzione extension definita prima
     )
-
     val scope = rememberCoroutineScope()
     val navigateAndClose: (MediaId) -> Unit = { id ->
         scope.launch {
@@ -170,6 +169,33 @@ fun BottomSheet(
             }
         }
     }
+    val mediaId = media.id as MediaId
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { selectedMillis ->
+                            viewModel.fakeRepo.setWatchDate(mediaId, selectedMillis.toLocalDate().atTime(LocalTime.now()))
+                        }
+                        showDatePicker = false
+                    },
+                ) {
+                    Text("Select")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Dismiss")
+                }
+            },
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -179,7 +205,6 @@ fun BottomSheet(
         //dragHandle = {  },
     ) {
         // 1. Extract repeated casts and conditions into local variables
-        val mediaId = media.id as MediaId
         val isWatched = watchedItem != null
         val isWatchlisted = watchlistItem != null
         val overscrollEffect = rememberOverscrollEffect()
@@ -245,30 +270,6 @@ fun BottomSheet(
                 }
             } else {
                 Text("You haven't watched this content yet")
-            }
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    confirmButton = {
-                        TextButton(
-                            onClick = {
-                                datePickerState.selectedDateMillis?.let { selectedMillis ->
-                                    viewModel.fakeRepo.setWatchDate(mediaId, selectedMillis.toLocalDate())
-                                }
-                                showDatePicker = false
-                            },
-                        ) {
-                            Text("Select")
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDatePicker = false }) {
-                            Text("Dismiss")
-                        }
-                    },
-                ) {
-                    DatePicker(state = datePickerState)
-                }
             }
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             // Open Page Action

@@ -56,7 +56,7 @@ import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 enum class SortOption(val label: String) {
     POPULARITY("Popularity"),
@@ -100,10 +100,7 @@ fun TrackingPage(
     Scaffold(
         topBar = {
             TopTabBar(
-                icon,
-                title,
-                tabs,
-                selectedTab,
+                icon, title, tabs, selectedTab,
                 { selectedTab = it },
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -184,7 +181,8 @@ fun TrackingPage(
                     }
                     // Elementi della sezione
                     items(key = { "${it.id}" }, items = items) { media ->
-                        PosterStarsItem(media, actions)
+                        if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
+                        else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
                     }
                 }
             }
@@ -302,9 +300,9 @@ fun <T> SortFilterChips(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-fun getDateHeader(date: LocalDate?): String {
+fun getDateHeader(date: LocalDateTime?): String {
     if (date == null) return "No Date"
-    val today = LocalDate.now()
+    val today = LocalDateTime.now()
     return when {
         date.year == today.year && date.month == today.month -> "This Month"
         date.year == today.year -> date.month.name.lowercase().replaceFirstChar { it.uppercase() }
