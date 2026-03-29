@@ -5,7 +5,6 @@ import android.os.Build
 import android.util.Patterns
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,8 +13,11 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Login
@@ -85,6 +87,8 @@ fun LoginPage(
     var isError by remember { mutableStateOf(false) }
     fun isLogin() = loginState == LoginState.LOGIN
 
+    val scrollState = rememberScrollState()
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun handleLogin() {
         if (isLogin()) {
@@ -114,91 +118,88 @@ fun LoginPage(
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
     ) { paddingValues ->
-        Box(
-            Modifier
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .imePadding()                // handle keyboard space need
                 .padding(
                     top = paddingValues.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
                 )
-                .fillMaxWidth(),
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_launcher_monochrome), contentDescription = null,
-                    )
-                    Text(
-                        "Rewatch",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    )
-
-                }
-                Spacer(Modifier.height(16.dp))
-                val icon = if (isLogin()) Icons.AutoMirrored.Filled.Login else Icons.AutoMirrored.Filled.Send
-                val txtLine = if (isLogin()) "Sign in to synchronize all of your lists to your account"
-                else "Check your inbox and enter here your verification code"
-                Column(
-                    Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Text(
-                        txtLine,
-                        style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
-                    )
-                }
-
-                Spacer(Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    label = { Text(loginState.label) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = loginState.kb),
-                    singleLine = true,
-                    isError = isError,
-                    supportingText = {
-                        if (isError) {
-                            Text(
-                                text = loginState.error,
-                                modifier = Modifier.fillMaxWidth(),
-                                color = MaterialTheme.colorScheme.error, // Usa il rosso del tema
-                            )
-                        }
-                    },
-                    trailingIcon = {
-                        if (isError) {
-                            Icon(
-                                imageVector = Icons.Default.Error,
-                                contentDescription = "Errore",
-                                tint = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    },
+                Icon(
+                    painterResource(R.drawable.ic_launcher_monochrome), contentDescription = null,
+                )
+                Text(
+                    "Rewatch",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 )
 
-                if (isError) Spacer(Modifier.height(10.dp))
-
-                Button(
-                    onClick = ::handleLogin,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                ) {
-                    Text(loginState.button)
-                }
-
             }
+            Spacer(Modifier.height(16.dp))
+            val icon = if (isLogin()) Icons.AutoMirrored.Filled.Login else Icons.AutoMirrored.Filled.Send
+            val txtLine = if (isLogin()) "Sign in to synchronize all of your lists to your account"
+            else "Check your inbox and enter here your verification code"
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Text(
+                    txtLine,
+                    style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text(loginState.label) },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = loginState.kb),
+                singleLine = true,
+                isError = isError,
+                supportingText = {
+                    if (isError) {
+                        Text(
+                            text = loginState.error,
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.error, // Usa il rosso del tema
+                        )
+                    }
+                },
+                trailingIcon = {
+                    if (isError) {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = "Errore",
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                },
+            )
+
+            if (isError) Spacer(Modifier.height(10.dp))
+
+            Button(
+                onClick = ::handleLogin,
+                modifier = Modifier
+                    .fillMaxWidth(),
+            ) {
+                Text(loginState.button)
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 
