@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +56,7 @@ import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.screens.tracking.SortFilterChips
+import it.polimi.rewatch.screens.tracking.sortedByDirection
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
@@ -104,8 +106,9 @@ fun PersonContent(
     val details = data.details
     val scrollState = rememberLazyGridState()
     val availableTabs = remember(data) { computeAvailableTabs(data) }
-    var currentTab by remember { mutableStateOf(availableTabs.firstOrNull() ?: "") }
-    var selectedSort by remember { mutableStateOf(SortOrder.POPULARITY) }
+    var currentTab by rememberSaveable { mutableStateOf(availableTabs.firstOrNull() ?: "") }
+    var selectedSort by rememberSaveable { mutableStateOf(SortOrder.POPULARITY) }
+    var isAscending by rememberSaveable { mutableStateOf(false) }
     val knownFor = remember(details) {
         details.knownForDepartment?.toString()?.replace("_", " ") ?: "Acting"
     }
@@ -142,17 +145,10 @@ fun PersonContent(
             .toList()
     }
     // 3. Ordinamento dinamico per Data o Popolarità
-    val displayList = remember(baseList, selectedSort) {
+    val displayList = remember(baseList, selectedSort, isAscending) {
         when (selectedSort) {
-            SortOrder.DATE -> baseList.sortedWith(
-                compareBy<PosterMedia> { it.releaseDate?.toString().isNullOrBlank() }
-                    .thenByDescending { it.releaseDate?.toString() },
-            )
-
-            SortOrder.POPULARITY -> baseList.sortedByDescending {
-                // NOTA: Se il tuo modello Media usa una property diversa per la popolarità (es: voteAverage o simili), modificala qui.
-                it.popularity
-            }
+            SortOrder.DATE -> baseList.sortedByDirection(isAscending) { it.releaseDate }
+            SortOrder.POPULARITY -> baseList.sortedByDirection(isAscending) { it.popularity }
         }
     }
 
@@ -160,7 +156,7 @@ fun PersonContent(
         details.name,
         actions.onNavigateBack,
         scrollState,
-    ) { innerPadding ->
+    ) { _ ->
         CustomLazyGrid(
             state = scrollState,
             contentPadding = PaddingValues(
@@ -211,7 +207,17 @@ fun PersonContent(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (displayList.isNotEmpty()) {
-                            SortFilterChips(SortOrder.entries, selectedSort, onSortSelected = { selectedSort = it }, true, SortOrder::label)
+                            SortFilterChips(
+                                SortOrder.entries, selectedSort,
+                                onSortSelected = {
+                                    if (it == selectedSort) isAscending = !isAscending
+                                    else {
+                                        selectedSort = it
+                                        isAscending = false
+                                    }
+                                },
+                                isAscending, SortOrder::label,
+                            )
                         } else {
                             Spacer(Modifier.weight(1f))
                         }

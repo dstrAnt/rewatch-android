@@ -3,7 +3,6 @@ package it.polimi.rewatch.screens.tracking
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -49,12 +47,6 @@ fun TrackingSkeleton(modifier: Modifier = Modifier) {
                         shape = RoundedCornerShape(5.dp),
                     )
                 }
-                Spacer(Modifier.weight(1f))
-                SkeletonPart(
-                    width = 25.dp,
-                    height = 25.dp,
-                    shape = CircleShape,
-                )
 
             }
         }
