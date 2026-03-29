@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -28,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,12 +46,13 @@ import jakarta.inject.Inject
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@HiltViewModel // Tells Hilt to manage this ViewModel
+@HiltViewModel
 class SettingsViewModel @Inject constructor(
     repository: FakeRepository,
 ) : ViewModel() {
     val fakeRepo = repository
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -61,11 +62,7 @@ fun SettingsPage(
     vm: SettingsViewModel = hiltViewModel(),
 ) {
     val fr = vm.fakeRepo
-    val email = fr.email.collectAsState().value
 
-    fun handleLogout() {
-        fr.logout()
-    }
     Scaffold(
         topBar = {
             SettingsTopBar()
@@ -91,7 +88,7 @@ fun SettingsPage(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 BorderBox(
-                    onClick = if (fr.isLogged()) ::handleLogout else actions.onNavigateToLogin,
+                    onClick = if (fr.isLogged()) actions.onNavigateToProfile else actions.onNavigateToLogin,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -101,29 +98,23 @@ fun SettingsPage(
                             .padding(16.dp),
                     ) {
                         Icon(
-                            Icons.Default.Person,
+                            if (fr.isLogged()) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
                         Column {
                             Text(
-                                if (fr.isLogged()) email else "Your Profile",
+                                if (fr.isLogged()) "Your Profile" else "Sign in",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
-                            if (fr.isLogged())
-                                Text(
-                                    "Click here to log out",
-                                    color = MaterialTheme.colorScheme.error,
-                                    lineHeight = 16.sp,
-                                )
-                            else
-                                Text(
-                                    "Sign in to synchronize your watchlist and watched contents",
-                                    color = Color.Gray,
-                                    lineHeight = 16.sp,
-                                )
+                            Text(
+                                if (fr.isLogged()) "Click here to see your personal stats"
+                                else "Synchronize your watchlist and watched contents",
+                                color = Color.Gray,
+                                lineHeight = 16.sp,
+                            )
                         }
                     }
                 }

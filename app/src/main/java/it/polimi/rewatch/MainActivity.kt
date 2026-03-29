@@ -68,6 +68,7 @@ import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.search.SearchViewModel
 import it.polimi.rewatch.screens.settings.LoginPage
+import it.polimi.rewatch.screens.settings.ProfilePage
 import it.polimi.rewatch.screens.settings.SettingsPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
@@ -100,7 +101,7 @@ fun RewatchApp() {
     var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterMedia?>(null) }
     val navActions = remember(backStack) {
         NavigationActions(
-            onNavigateToProfile = { id -> backStack.add(PersonPage(id)) },
+            onNavigateToPerson = { id -> backStack.add(PersonPage(id)) },
             onNavigateToMedia = { id -> backStack.add(MediaPage(id)) },
             onNavigateBack = { backStack.removeLastOrNull() },
             onFullscreenImage = {
@@ -114,6 +115,9 @@ fun RewatchApp() {
             },
             onNavigateToLogin = {
                 backStack.add(LoginPage)
+            },
+            onNavigateToProfile = {
+                backStack.add(ProfilePage)
             },
             onClearAndNavigateToSettings = {
                 backStack.clear()
@@ -217,13 +221,19 @@ fun RewatchApp() {
                         outerPadding = outerPadding,
                     )
                 }
-                entry<LoginPage> { key ->
+                entry<LoginPage> {
                     LoginPage(
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
-                entry<SettingsPage> { key ->
+                entry<ProfilePage> {
+                    ProfilePage(
+                        outerPadding = outerPadding,
+                        actions = navActions,
+                    )
+                }
+                entry<SettingsPage> {
                     SettingsPage(
                         actions = navActions,
                         outerPadding = outerPadding,
@@ -307,6 +317,9 @@ data object HomeTabs : NavKey
 
 @Serializable
 data object LoginPage : NavKey
+
+@Serializable
+data object ProfilePage : NavKey
 
 @Serializable
 data object SettingsPage : NavKey

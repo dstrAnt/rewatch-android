@@ -15,7 +15,7 @@ interface ItemId {
 data class PersonId(
     val id: Int,
 ) : ItemId {
-    override fun onClick(actions: NavigationActions) = actions.onNavigateToProfile(id)
+    override fun onClick(actions: NavigationActions) = actions.onNavigateToPerson(id)
 }
 
 @Serializable

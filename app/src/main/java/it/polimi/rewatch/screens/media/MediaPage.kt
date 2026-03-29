@@ -353,7 +353,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it) { actions.onNavigateToProfile(it.id) } },
+                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
         )
         add(
@@ -363,7 +363,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it) { actions.onNavigateToProfile(it.id) } },
+                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
         )
         // ... TV SHOW: Seasons tab ...
@@ -688,7 +688,7 @@ fun TitleAndInfoSection(
             }
 //            Spacer(Modifier.height(3.dp))
             if (directorId != null) {
-                Text("Directed by $director", Modifier.clickable { actions.onNavigateToProfile(directorId) })
+                Text("Directed by $director", Modifier.clickable { actions.onNavigateToPerson(directorId) })
             }
         }
 

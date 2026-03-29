@@ -69,6 +69,7 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
     val fakeRepo = repository
 }
+
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -98,9 +99,6 @@ fun LoginPage(
             if (fr.isValidCode(text)) {
                 isError = false
                 fr.login(email)
-                loginState = LoginState.LOGIN
-                text = ""
-                email = ""
                 actions.onClearAndNavigateToSettings()
             } else isError = true
         }
@@ -108,7 +106,7 @@ fun LoginPage(
 
     Scaffold(
         topBar = {
-            BasicTopBar(actions.onNavigateBack)
+            BasicTopBar(actions.onNavigateBack, "Log in")
         },
         modifier = Modifier
             .padding(
@@ -127,7 +125,7 @@ fun LoginPage(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
 
@@ -144,30 +142,21 @@ fun LoginPage(
                     )
 
                 }
-                if (isLogin())
-                    Column(
-                        Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Login, contentDescription = null)
-                        Text(
-                            "Sign in to synchronize your data on all your devices",
-                            style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
-                        )
-                    }
-                else
-                    Column(
-                        Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                        Text(
-                            "Check your email and enter here your verification code",
-                            style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
-                        )
-                    }
+                Spacer(Modifier.height(16.dp))
+                val icon = if (isLogin()) Icons.AutoMirrored.Filled.Login else Icons.AutoMirrored.Filled.Send
+                val txtLine = if (isLogin()) "Sign in to synchronize all of your lists to your account"
+                else "Check your inbox and enter here your verification code"
+                Column(
+                    Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Text(
+                        txtLine,
+                        style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+                    )
+                }
 
                 Spacer(Modifier.height(16.dp))
 
@@ -199,6 +188,8 @@ fun LoginPage(
                     },
                 )
 
+                if (isError) Spacer(Modifier.height(10.dp))
+
                 Button(
                     onClick = ::handleLogin,
                     modifier = Modifier
@@ -216,12 +207,13 @@ fun LoginPage(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BasicTopBar(
+fun BasicTopBar(
     onBack: () -> Unit,
+    title: String,
 ) {
     TopAppBar(
         title = {
-            Text("Log in")
+            Text(title)
         },
         navigationIcon = {
             IconButton(onClick = onBack) {

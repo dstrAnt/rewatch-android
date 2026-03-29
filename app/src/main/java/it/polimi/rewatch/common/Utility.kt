@@ -1,6 +1,5 @@
 package it.polimi.rewatch.common
 
-import android.content.Intent
 import android.os.Build
 import android.view.RoundedCorner
 import androidx.activity.compose.PredictiveBackHandler
@@ -81,12 +80,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import coil3.compose.AsyncImage
 import it.polimi.rewatch.model.MediaId
-import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterMedia
 import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
@@ -170,22 +167,22 @@ fun BorderBox(
     }
 }
 
-fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
-    val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
-    val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
-    val mediaType = try {
-        typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
-    } catch (_: IllegalArgumentException) {
-        MediaType.MOVIE
-    }
-
-    return Pair(mediaId, mediaType)
-}
-
-fun onMediaClickNav(
-    mediaId: String,
-    navController: NavHostController,
-) = navController.navigate("movie_page/$mediaId")
+//fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
+//    val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
+//    val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
+//    val mediaType = try {
+//        typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
+//    } catch (_: IllegalArgumentException) {
+//        MediaType.MOVIE
+//    }
+//
+//    return Pair(mediaId, mediaType)
+//}
+//
+//fun onMediaClickNav(
+//    mediaId: String,
+//    navController: NavHostController,
+//) = navController.navigate("movie_page/$mediaId")
 
 fun Double.getShortNotation(): String {
     return when {
@@ -279,8 +276,8 @@ data class TabItem(
 @Composable
 fun ExpandableText(
     text: String,
-    maxLines: Int = 3,
     modifier: Modifier = Modifier,
+    maxLines: Int = 3,
     style: TextStyle = LocalTextStyle.current, // Pass style down to ensure measurement matches rendering
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -395,19 +392,20 @@ fun getDeviceCornerRadius(): Dp {
 }
 
 class NavigationActions(
-    val onNavigateToProfile: (Int) -> Unit,
+    val onNavigateToPerson: (Int) -> Unit,
     val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
     val onFullscreenImage: (String?) -> Modifier,
     val onBottomSheet: (PosterMedia) -> Unit,
     val onNavigateToLogin: () -> Unit,
+    val onNavigateToProfile: () -> Unit,
     val onClearAndNavigateToSettings: () -> Unit,
 )
 
 @Composable
 fun <T : Any> AnimatedNavDisplay(
     backStack: List<T>,
-    modifier: Modifier = Modifier,
+//    modifier: Modifier = Modifier,
     onBack: () -> Unit = {
         if (backStack is MutableList<T>) {
             backStack.removeLastOrNull()
@@ -482,7 +480,7 @@ fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
                 backProgress = backEvent.progress
             }
             onDismiss()
-        } catch (e: CancellationException) {
+        } catch (_: CancellationException) {
             backProgress = 0f
         }
     }
