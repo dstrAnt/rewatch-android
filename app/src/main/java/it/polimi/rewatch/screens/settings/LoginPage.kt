@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -54,9 +56,9 @@ import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import jakarta.inject.Inject
 
-enum class LoginState(val label: String, val kb: KeyboardType, val button: String, val error: String) {
-    LOGIN("Email", KeyboardType.Email, "Next", "Insert a valid email address"),
-    CODE("Verification Code", KeyboardType.Number, "Log in", "Code is not valid")
+enum class LoginState {
+    LOGIN,
+    LINK
 }
 
 fun String.isValidEmail(): Boolean {
@@ -65,7 +67,7 @@ fun String.isValidEmail(): Boolean {
 
 
 @RequiresApi(Build.VERSION_CODES.O)
-@HiltViewModel // Tells Hilt to manage this ViewModel
+@HiltViewModel
 class LoginViewModel @Inject constructor(
     repository: FakeRepository,
 ) : ViewModel() {
@@ -82,7 +84,6 @@ fun LoginPage(
 ) {
     val fr = vm.fakeRepo
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
-    var text by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     fun isLogin() = loginState == LoginState.LOGIN
@@ -91,21 +92,11 @@ fun LoginPage(
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun handleLogin() {
-        if (isLogin()) {
-            if (text.isValidEmail()) {
-                isError = false
-                loginState = LoginState.CODE
-                email = text
-                fr.generateCode()
-                text = ""
-            } else isError = true
-        } else {
-            if (fr.isValidCode(text)) {
-                isError = false
-                fr.login(email)
-                actions.onClearAndNavigateToSettings()
-            } else isError = true
-        }
+        if (email.isValidEmail()) {
+            isError = false
+            loginState = LoginState.LINK
+            fr.generateCode()
+        } else isError = true
     }
 
     Scaffold(
@@ -145,59 +136,90 @@ fun LoginPage(
 
             }
             Spacer(Modifier.height(16.dp))
-            val icon = if (isLogin()) Icons.AutoMirrored.Filled.Login else Icons.AutoMirrored.Filled.Send
-            val txtLine = if (isLogin()) "Sign in to synchronize all of your lists to your account"
-            else "Check your inbox and enter here your verification code"
-            Column(
-                Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Text(
-                    txtLine,
-                    style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+
+            // variable content
+            if (isLogin()) {
+                val icon = Icons.AutoMirrored.Filled.Login
+                val txtLine = "Sign in to synchronize all of your lists to your account"
+                Column(
+                    Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Text(
+                        txtLine,
+                        style = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(5.dp),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    singleLine = true,
+                    isError = isError,
+                    supportingText = {
+                        if (isError) {
+                            Text(
+                                text = "Insert a valid email address",
+                                modifier = Modifier.fillMaxWidth(),
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        if (isError) {
+                            Icon(
+                                imageVector = Icons.Default.Error,
+                                contentDescription = "Error",
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
                 )
-            }
 
-            Spacer(Modifier.height(16.dp))
+                if (isError) Spacer(Modifier.height(10.dp))
 
-            OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
-                label = { Text(loginState.label) },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = loginState.kb),
-                singleLine = true,
-                isError = isError,
-                supportingText = {
-                    if (isError) {
-                        Text(
-                            text = loginState.error,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.error, // Usa il rosso del tema
-                        )
+                // buttons row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        onClick = ::handleLogin,
+                        modifier = Modifier
+                            .weight(1f),
+                    ) {
+                        Text("Next")
                     }
-                },
-                trailingIcon = {
-                    if (isError) {
-                        Icon(
-                            imageVector = Icons.Default.Error,
-                            contentDescription = "Errore",
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                },
-            )
-
-            if (isError) Spacer(Modifier.height(10.dp))
-
-            Button(
-                onClick = ::handleLogin,
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                Text(loginState.button)
+                }
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(top = 15.dp),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.Send,
+                        null, Modifier.size(40.dp),
+                        MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.height(15.dp))
+                    Text(
+                        "Check your inbox to finalize the login process",
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                    Spacer(Modifier.height(35.dp))
+                    Text("We sent a verification link to")
+                    Text(email, fontWeight = FontWeight.Bold)
+                }
             }
             Spacer(Modifier.height(16.dp))
         }

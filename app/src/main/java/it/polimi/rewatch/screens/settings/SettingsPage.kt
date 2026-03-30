@@ -110,7 +110,7 @@ fun SettingsPage(
 //                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                if (fr.isLogged()) "Click here to see your personal stats"
+                                if (fr.isLogged()) "See your account and the status of your lists"
                                 else "Synchronize your watchlist and watched contents",
                                 color = Color.Gray,
                                 lineHeight = 16.sp,
