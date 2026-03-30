@@ -57,6 +57,8 @@ import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
 
 enum class SortOption(val label: String) {
     POPULARITY("Popularity"),
@@ -308,6 +310,11 @@ fun getDateHeader(date: LocalDateTime?): String {
         date.year == today.year -> date.month.name.lowercase().replaceFirstChar { it.uppercase() }
         else -> "${date.year}"
     }
+}
+fun Date.toLocalDateTime(): LocalDateTime {
+    return this.toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
 }
 
 fun getRatingHeader(rating: Float?): String {

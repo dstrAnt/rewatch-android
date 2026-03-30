@@ -1,6 +1,7 @@
 package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.util.Patterns
 import androidx.annotation.RequiresApi
@@ -35,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,28 +53,41 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
 import jakarta.inject.Inject
+import kotlinx.coroutines.launch
 
 enum class LoginState {
-    LOGIN,
-    LINK
+    LOGIN, LINK
 }
 
 fun String.isValidEmail(): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    repository: FakeRepository,
+    val repository: FakeRepository,
+    val fbRepo: FirebaseUserRepository,
 ) : ViewModel() {
-    val fakeRepo = repository
+    fun sendSignInLink(email: String) {
+        viewModelScope.launch {
+            fbRepo.sendSignInLink(email)
+        }
+    }
+
+    fun verifySignInLink(email: String, link: String) {
+        viewModelScope.launch {
+            fbRepo.verifySignInLink(email, link)
+        }
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -82,20 +98,52 @@ fun LoginPage(
     actions: NavigationActions,
     vm: LoginViewModel = hiltViewModel(),
 ) {
-    val fr = vm.fakeRepo
+    vm.repository
+    vm.fbRepo
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
     var email by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }
     fun isLogin() = loginState == LoginState.LOGIN
-
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+
+    DisposableEffect(context) {
+        val activity = context as MainActivity
+
+        // Function to process the link if we find one
+        fun processIntent(intent: Intent?) {
+            val link = intent?.data?.toString()
+            if (link != null) {
+                //val savedEmail = AuthPrefs.getSavedEmail(context)
+                if (email.isNotEmpty()) {
+                    // Send it to the ViewModel!
+                    vm.verifySignInLink(email, link)
+                    actions.onClearAndNavigateToSettings()
+                    // Clear the email so we don't accidentally reuse it later
+                }
+            }
+        }
+
+        println("RECEIVED!!!")
+        // 1. Check if the app was completely closed and launched via the link
+        processIntent(activity.intent)
+        // 2. Listen for the link if the app was already open in the background
+        val listener = { newIntent: Intent ->
+            processIntent(newIntent)
+        }
+        activity.addOnNewIntentListener(listener)
+        // Cleanup when the Composable leaves the screen
+        onDispose {
+            activity.removeOnNewIntentListener(listener)
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun handleLogin() {
         if (email.isValidEmail()) {
             isError = false
             loginState = LoginState.LINK
-            fr.generateCode()
+            vm.sendSignInLink(email)
         } else isError = true
     }
 
@@ -103,11 +151,10 @@ fun LoginPage(
         topBar = {
             BasicTopBar(actions.onNavigateBack, "Log in")
         },
-        modifier = Modifier
-            .padding(
-                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-            ),
+        modifier = Modifier.padding(
+            start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+        ),
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -121,7 +168,6 @@ fun LoginPage(
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -133,7 +179,6 @@ fun LoginPage(
                     "Rewatch",
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 )
-
             }
             Spacer(Modifier.height(16.dp))
 
@@ -194,8 +239,7 @@ fun LoginPage(
                 ) {
                     Button(
                         onClick = ::handleLogin,
-                        modifier = Modifier
-                            .weight(1f),
+                        modifier = Modifier.weight(1f),
                     ) {
                         Text("Next")
                     }
@@ -224,8 +268,6 @@ fun LoginPage(
             Spacer(Modifier.height(16.dp))
         }
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

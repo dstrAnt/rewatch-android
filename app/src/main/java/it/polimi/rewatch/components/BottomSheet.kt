@@ -52,11 +52,13 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -86,10 +88,17 @@ fun Long.toLocalDate(): LocalDate {
 class BottomSheetViewModel @AssistedInject constructor(
     @Assisted private val id: MediaId,
     val fakeRepo: FakeRepository,
-) : ViewModel() {
+    val fbRepo: FirebaseUserRepository,
+    ) : ViewModel() {
     @AssistedFactory
     interface Factory {
         fun create(id: MediaId): BottomSheetViewModel
+    }
+
+    fun addToWatchlist(movie: WatchlistMedia) {
+        viewModelScope.launch {
+            fbRepo.addToWatchlist(movie)
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -238,7 +247,7 @@ fun BottomSheet(
                     label = "Watched",
                 )
                 SheetIconButton(
-                    onClick = { viewModel.fakeRepo.toggleWatchlist(mediaId) },
+                    onClick = { viewModel.addToWatchlist(WatchlistMedia(mediaId)) },
                     icon = if (isWatchlisted) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
                     label = "Watchlist",
                 )

@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
+    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
@@ -90,6 +91,11 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    // Import the Firebase BoM
+    implementation(platform(libs.firebase.bom)) // Use the latest version
+    // Add Auth and Firestore dependencies
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
 
 }

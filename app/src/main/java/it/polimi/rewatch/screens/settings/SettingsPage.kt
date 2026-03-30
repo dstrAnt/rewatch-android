@@ -41,6 +41,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
 import jakarta.inject.Inject
 
@@ -48,10 +49,9 @@ import jakarta.inject.Inject
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    repository: FakeRepository,
-) : ViewModel() {
-    val fakeRepo = repository
-}
+    val repository: FakeRepository,
+    val fbRepo: FirebaseUserRepository,
+) : ViewModel()
 
 @RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,7 +61,7 @@ fun SettingsPage(
     actions: NavigationActions,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
-    val fr = vm.fakeRepo
+    val fr = vm.fbRepo
 
     Scaffold(
         topBar = {
