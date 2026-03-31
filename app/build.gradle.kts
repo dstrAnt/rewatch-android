@@ -8,7 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
-    id("com.google.gms.google-services")
+//    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
@@ -27,7 +27,7 @@ android {
 
     defaultConfig {
         applicationId = "it.polimi.rewatch"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -92,10 +92,17 @@ dependencies {
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     // Import the Firebase BoM
-    implementation(platform(libs.firebase.bom)) // Use the latest version
+    implementation(platform(libs.firebase.bom)) {
+        exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.play")
+    } // Use the latest version
     // Add Auth and Firestore dependencies
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-
-
+    implementation(libs.firebase.auth) {
+        exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.play")
+    }
+    implementation(libs.firebase.firestore) {
+        //  exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.play")
+    }
 }

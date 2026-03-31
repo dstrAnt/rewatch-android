@@ -1,18 +1,21 @@
 package it.polimi.rewatch.common
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import app.moviebase.tmdb.Tmdb3
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import it.polimi.rewatch.BuildConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -46,12 +49,23 @@ object FirebaseModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-object RepositoryModule {
-    @RequiresApi(Build.VERSION_CODES.O)
-    @Provides
-    @Singleton // <-- THIS IS THE MAGIC WORD
-    fun provideFakeRepo(): FakeRepository {
-        return FakeRepository()
-    }
+abstract class RepositoryModule {
+    @Binds
+    @Singleton
+    abstract fun bindPersistRepository(impl: FirebaseRepository): PersistRepository
 }
 
+@Qualifier
+@Retention(AnnotationRetention.RUNTIME)
+annotation class ApplicationScope
+
+// Module
+@Module
+@InstallIn(SingletonComponent::class)
+object CoroutineScopeModule {
+    @ApplicationScope
+    @Singleton
+    @Provides
+    fun provideApplicationScope(): CoroutineScope =
+        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+}

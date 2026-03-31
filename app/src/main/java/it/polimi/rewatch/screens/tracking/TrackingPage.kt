@@ -51,7 +51,6 @@ import it.polimi.rewatch.R
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.model.MediaType
@@ -111,17 +110,14 @@ fun TrackingPage(
             )
         },
     ) { paddingValues ->
-        AnimatedUiState(
-            state = viewModel.uiState,
-            animationDurationMillis = 100,
+        Column(
             modifier = Modifier.padding(
                 top = paddingValues.calculateTopPadding(),
                 bottom = outerPadding.calculateBottomPadding(),
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
-            loadingContent = ::TrackingSkeleton,
-        ) { data ->
+        ) {
             CustomLazyGrid {
                 // 1. CHIPS DI ORDINAMENTO (Span completo)
                 item(span = { GridItemSpan(maxLineSpan) }) {

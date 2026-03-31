@@ -9,10 +9,164 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
+
+
+
+interface PersistRepository {
+    suspend fun sendSignInLink(email: String): Result<Unit>
+    suspend fun verifySignInLink(email: String, link: String): Result<Unit>
+    fun isLogged(): Boolean
+
+
+    val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
+    val watchedFlow: SharedFlow<Result<List<WatchedMedia>>>
+
+    fun addToWatchlist(id: MediaId)
+    fun removeFromWatchlist(id: MediaId)
+    fun toggleWatchlist(id: MediaId)
+
+    fun setRating(id: MediaId, rating: Float)
+    fun setWatchDate(id: MediaId, newDate: LocalDateTime)
+    fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime)
+    fun removeFromWatchedList(id: MediaId)
+    fun toggleWatchedList(id: MediaId)
+    fun logout()
+}
+
+@Singleton
+class FakeRepository @Inject constructor() : PersistRepository {
+    private val _watchlistFlow = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
+
+    // 2. Expose it as a read-only SharedFlow
+    override val watchlistFlow = _watchlistFlow.asSharedFlow()
+    private val _watchedFlow = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
+    override val watchedFlow = _watchedFlow.asSharedFlow()
+
+    init {
+        _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
+        _watchedFlow.tryEmit(Result.success(fakeWatch))
+    }
+
+    private val _code = MutableStateFlow("")
+    fun generateCode() {
+        _code.update { generateVerificationCode() }
+    }
+
+    private val _email = MutableStateFlow("")
+    val email = _email.asStateFlow()
+    override suspend fun sendSignInLink(email: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override suspend fun verifySignInLink(email: String, link: String): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    override fun logout() {
+        _email.update { "" }
+    }
+
+    override fun isLogged() = _email.value != ""
+
+    // The base helper we created earlier
+    private inline fun <T> MutableSharedFlow<Result<List<T>>>.updateList(crossinline transform: (List<T>) -> List<T>) {
+        val currentList = replayCache.firstOrNull()?.getOrNull() ?: emptyList()
+        tryEmit(Result.success(transform(currentList)))
+    }
+
+    // NEW: Extension property to easily read the current list state
+    private val <T> MutableSharedFlow<Result<List<T>>>.currentList: List<T>
+        get() = replayCache.firstOrNull()?.getOrNull() ?: emptyList()
+
+    // NEW: Generic Add
+    private fun <T> MutableSharedFlow<Result<List<T>>>.addItem(item: T) {
+        updateList { currentList -> currentList + item }
+    }
+
+    // NEW: Generic Remove (using a condition)
+    private inline fun <T> MutableSharedFlow<Result<List<T>>>.removeItem(crossinline condition: (T) -> Boolean) {
+        updateList { currentList -> currentList.filterNot(condition) }
+    }
+
+    // The Factorized Helper:
+// This handles all the messy Result unwrapping and SharedFlow emitting for you.
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun addToWatchlist(id: MediaId) =
+        _watchlistFlow.addItem(WatchlistMedia(id))
+
+
+    override fun removeFromWatchlist(id: MediaId) =
+        _watchlistFlow.removeItem { it.id == id }
+
+
+
+    override fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) =
+        _watchedFlow.addItem(WatchedMedia(id, rating = rating, date = date))
+
+
+    override fun removeFromWatchedList(id: MediaId) =
+        _watchedFlow.removeItem { it.id == id }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun setRating(id: MediaId, rating: Float) {
+        _watchedFlow.updateList { currentList ->
+            val existing = currentList.find { it.id == id }
+
+            if (existing == null) {
+                currentList + WatchedMedia(id, rating = rating, date = LocalDateTime.now())
+            } else {
+                currentList.map {
+                    if (it.id == id) it.copy(rating = rating) else it
+                }
+            }
+        }
+
+        removeFromWatchlist(id)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun toggleWatchedList(id: MediaId) {
+        // Grab the current state using our new property
+        val existingItem = _watchedFlow.currentList.find { it.id == id }
+
+        if (existingItem != null) {
+            // If element is present, remove it ONLY if not rated. Otherwise, do nothing.
+            if (existingItem.rating == 0.0f) {
+                removeFromWatchedList(id)
+            }
+        } else {
+            // If element not present, add it and remove from watchlist
+            addToWatchedList(id, 0.0f, LocalDateTime.now())
+            removeFromWatchlist(id)
+        }
+    }
+
+    override fun setWatchDate(id: MediaId, newDate: LocalDateTime) {
+        // Use the updateList helper we made previously for map operations
+        _watchedFlow.updateList { currentList ->
+            currentList.map {
+                if (it.id == id) it.copy(date = newDate) else it
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun toggleWatchlist(id: MediaId) {
+        // Check state using the new property and route accordingly
+        if (_watchlistFlow.currentList.any { it.id == id }) {
+            removeFromWatchlist(id)
+        } else {
+            addToWatchlist(id)
+        }
+    }
+}
 
 @RequiresApi(Build.VERSION_CODES.O)
 val fakeWatchlist = listOf(
@@ -112,108 +266,4 @@ fun generateVerificationCode(): String {
 //    val code = (100000..999999).random().toString()
 //    println(code)
     return code
-}
-
-fun String.isValidSixDigitCode(): Boolean {
-    val codeRegex = "^[0-9]{6}$".toRegex()
-    return this.matches(codeRegex)
-}
-
-@Singleton
-@RequiresApi(Build.VERSION_CODES.O)
-class FakeRepository
-@Inject constructor() {
-    private val _watchlist = MutableStateFlow(fakeWatchlist)
-    val watchlist = _watchlist.asStateFlow()
-    private val _watchedList = MutableStateFlow(fakeWatch)
-    val watchedList = _watchedList.asStateFlow()
-
-    private val _code = MutableStateFlow("")
-    fun generateCode() {
-        _code.update { generateVerificationCode() }
-    }
-
-    private val _email = MutableStateFlow("")
-    val email = _email.asStateFlow()
-    fun login(email: String) {
-        _email.update { email }
-    }
-
-    fun logout() {
-        _email.update { "" }
-    }
-
-    fun isLogged() = _email.value != ""
-
-    fun isValidCode(code: String) = code.isValidSixDigitCode() && code == _code.value
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun addToWatchlist(id: MediaId) {
-        _watchlist.update { currentList ->
-            currentList + WatchlistMedia(id)
-        }
-    }
-
-    fun removeFromWatchlist(id: MediaId) {
-        _watchlist.update { currentList ->
-            currentList.filter { it.id != id }
-        }
-    }
-    fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) {
-        _watchedList.update { currentList ->
-            currentList + WatchedMedia(id, rating, date)
-        }
-    }
-
-    fun removeFromWatchedList(id: MediaId) {
-        _watchedList.update { currentList ->
-            currentList.filter { it.id != id }
-        }
-    }
-
-    fun setRating(id: MediaId, rating: Float) {
-        // if media is not present, add it to watched
-        if (_watchedList.value.none { it.id == id }) {
-            addToWatchedList(id, rating, LocalDateTime.now())
-        } else { // if already present, update the existing entry
-            _watchedList.update { currentList ->
-                currentList.map {
-                    if (it.id != id) it
-                    else it.copy(rating = rating)
-                }
-            }
-        }
-        // if media present in watchlist, remove it
-        removeFromWatchlist(id)
-    }
-
-    fun setWatchDate(id: MediaId, newDate: LocalDateTime) {
-        _watchedList.update { currentList ->
-            currentList.map {
-                if (it.id != id) it
-                else it.copy(date = newDate)
-            }
-        }
-    }
-
-    fun toggleWatchlist(id: MediaId) {
-        // if element already present, remove it
-        if (_watchlist.value.any { it.id == id }) removeFromWatchlist(id)
-
-        // if element not present, add it
-        else addToWatchlist(id)
-    }
-
-    fun toggleWatchedList(id: MediaId) {
-        // if element already present, remove it only if not rated
-        if (_watchedList.value.any { it.id == id && it.rating == 0.0f }) removeFromWatchedList(id)
-        else if (_watchedList.value.any { it.id == id }) return
-
-        // if element not present, add it and remove it from other list
-        else {
-            addToWatchedList(id, 0.0f, LocalDateTime.now())
-            removeFromWatchlist(id)
-        }
-    }
-
 }

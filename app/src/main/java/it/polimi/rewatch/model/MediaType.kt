@@ -6,14 +6,16 @@ import it.polimi.rewatch.screens.media.MovieData
 import kotlinx.serialization.Serializable
 
 enum class MediaType {
-    MOVIE, TV_SHOW, EPISODE, SEASON
+    MOVIE, TV_SHOW, SEASON, EPISODE
 }
+
+// Common parent between PersonId and MediaId, used in PosterMedia
 interface ItemId {
     fun onClick(actions: NavigationActions)
 }
 
 data class PersonId(
-    val id: Int,
+    private val id: Int,
 ) : ItemId {
     override fun onClick(actions: NavigationActions) = actions.onNavigateToPerson(id)
 }
@@ -23,7 +25,8 @@ sealed interface MediaId : ItemId {
     val parentId: Int
     val type: MediaType
     suspend fun getData(repo: TmdbRepository): MovieData
-    suspend fun getDetails(repo: TmdbRepository): PosterMedia?
+    fun getUid(): String = "${type.name}_${parentId}"
+    suspend fun getDetails(repo: TmdbRepository): PosterInfo?
 }
 
 @Serializable

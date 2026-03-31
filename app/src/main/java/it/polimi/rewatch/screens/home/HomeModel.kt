@@ -3,23 +3,23 @@ package it.polimi.rewatch.screens.home
 import android.os.Build
 import androidx.annotation.RequiresApi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.common.UiFetchViewModel
+import it.polimi.rewatch.model.PosterInfo
 import jakarta.inject.Inject
 
 // Dati che compongono la nostra Homepage
 data class HomeData(
-    val trending: List<PosterMedia>,
-    val popular: List<PosterMedia>,
-    val recent: List<PosterMedia>,
+    val trending: List<PosterInfo>,
+    val popular: List<PosterInfo>,
+    val recent: List<PosterInfo>,
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel // Tells Hilt to manage this ViewModel
 class HomeViewModel @Inject constructor(
     private val repository: TmdbRepository,
-) : BaseViewModel<HomeData>() {
+) : UiFetchViewModel<HomeData>() {
 
     init {
         executeFetch()

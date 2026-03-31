@@ -40,17 +40,15 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BorderBox
-import it.polimi.rewatch.common.FakeRepository
-import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    val repository: FakeRepository,
-    val fbRepo: FirebaseUserRepository,
+    val repository: PersistRepository,
 ) : ViewModel()
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -61,8 +59,6 @@ fun SettingsPage(
     actions: NavigationActions,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
-    val fr = vm.fbRepo
-
     Scaffold(
         topBar = {
             SettingsTopBar()
@@ -88,7 +84,7 @@ fun SettingsPage(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 BorderBox(
-                    onClick = if (fr.isLogged()) actions.onNavigateToProfile else actions.onNavigateToLogin,
+                    onClick = if (vm.repository.isLogged()) actions.onNavigateToProfile else actions.onNavigateToLogin,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -98,19 +94,19 @@ fun SettingsPage(
                             .padding(16.dp),
                     ) {
                         Icon(
-                            if (fr.isLogged()) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
+                            if (vm.repository.isLogged()) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
                         Column {
                             Text(
-                                if (fr.isLogged()) "Your Profile" else "Sign in",
+                                if (vm.repository.isLogged()) "Your Profile" else "Sign in",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                if (fr.isLogged()) "See your account and the status of your lists"
+                                if (vm.repository.isLogged()) "See your account and the status of your lists"
                                 else "Synchronize your watchlist and watched contents",
                                 color = Color.Gray,
                                 lineHeight = 16.sp,

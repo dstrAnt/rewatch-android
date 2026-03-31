@@ -17,7 +17,7 @@ import app.moviebase.tmdb.model.TmdbShowDetail
 import app.moviebase.tmdb.model.TmdbShowStatus
 import kotlinx.datetime.LocalDate
 
-// Data object for relative screen
+// Data object for MediaPage data of Movie, Tv, Season, Episode
 data class MediaDetail(
     val title: String?,
     val posterPath: String?,

@@ -57,9 +57,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.R
-import it.polimi.rewatch.common.FakeRepository
-import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 
@@ -74,18 +73,17 @@ fun String.isValidEmail(): Boolean {
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    val repository: FakeRepository,
-    val fbRepo: FirebaseUserRepository,
+    val repository: PersistRepository,
 ) : ViewModel() {
     fun sendSignInLink(email: String) {
         viewModelScope.launch {
-            fbRepo.sendSignInLink(email)
+            repository.sendSignInLink(email)
         }
     }
 
     fun verifySignInLink(email: String, link: String) {
         viewModelScope.launch {
-            fbRepo.verifySignInLink(email, link)
+            repository.verifySignInLink(email, link)
         }
     }
 }
@@ -99,7 +97,6 @@ fun LoginPage(
     vm: LoginViewModel = hiltViewModel(),
 ) {
     vm.repository
-    vm.fbRepo
     var loginState by remember { mutableStateOf(LoginState.LOGIN) }
     var email by remember { mutableStateOf("") }
     var isError by remember { mutableStateOf(false) }

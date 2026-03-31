@@ -1,14 +1,14 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package it.polimi.rewatch
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -61,7 +61,7 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
@@ -77,7 +77,6 @@ import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint // 2. Add this annotation!
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -92,13 +91,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RewatchApp() {
     val backStack = rememberNavBackStack(HomeTabs)
     var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
-    var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterMedia?>(null) }
+    var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonPage(id)) },
@@ -144,16 +142,15 @@ fun RewatchApp() {
         bottomBar = {
             BottomBar(
                 AppDestinations.entries[pagerState.currentPage],
-                {
-                    scope.launch {
-                        pagerState.scrollToPage(AppDestinations.entries.indexOf(it))
-                    }
+            ) {
+                scope.launch {
+                    pagerState.scrollToPage(AppDestinations.entries.indexOf(it))
+                }
 //                    bottomBarState = it
 //
-                    backStack.removeAll({ true })
-                    backStack.add(HomeTabs)
-                },
-            )
+                backStack.removeAll { true }
+                backStack.add(HomeTabs)
+            }
         },
     ) { outerPadding ->
         // 5. Render the stack using NavDisplay
@@ -167,14 +164,14 @@ fun RewatchApp() {
                         state = pagerState,
                         //modifier = Modifier.padding(innerPadding)
                     ) { page ->
-                        when (AppDestinations.entries.get(page)) {
+                        when (AppDestinations.entries[page]) {
                             AppDestinations.HOME -> HomePage(
                                 actions = navActions,
                                 outerPadding = outerPadding,
                             )
                             AppDestinations.SEARCH -> {
                                 val viewModel = hiltViewModel<SearchViewModel>()
-                                viewModel.reset()
+//                                viewModel.reset()
                                 SearchPage(
                                     actions = navActions,
                                     outerPadding = outerPadding,

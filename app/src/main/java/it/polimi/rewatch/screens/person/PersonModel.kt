@@ -7,8 +7,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.BaseViewModel
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.common.UiFetchViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -22,7 +22,7 @@ data class PersonDetailsData(
 class PersonViewModel @AssistedInject constructor(
     @Assisted("personId") private val personId: Int,
     private val repository: TmdbRepository,
-) : BaseViewModel<PersonDetailsData>() {
+) : UiFetchViewModel<PersonDetailsData>() {
     @AssistedFactory
     interface Factory {
         fun create(

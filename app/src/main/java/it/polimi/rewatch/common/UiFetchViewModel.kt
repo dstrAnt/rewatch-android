@@ -15,7 +15,7 @@ sealed interface UiState<out T> {
     data class Error(val msg: String) : UiState<Nothing>
 }
 
-abstract class BaseViewModel<T> : ViewModel() {
+abstract class UiFetchViewModel<T> : ViewModel() {
     var uiState by mutableStateOf<UiState<T>>(UiState.Loading)
         protected set // Allows the base class to change it, but keeps it read-only for the UI
 

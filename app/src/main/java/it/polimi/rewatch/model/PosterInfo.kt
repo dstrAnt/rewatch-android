@@ -11,8 +11,8 @@ import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import kotlinx.datetime.LocalDate
 
-// Used to show results of search, person
-data class PosterMedia(
+// Used to show results of search, movie, tv, person
+data class PosterInfo(
     val id: ItemId,
     val posterImage: TmdbImage?,
     val posterPath: String?,

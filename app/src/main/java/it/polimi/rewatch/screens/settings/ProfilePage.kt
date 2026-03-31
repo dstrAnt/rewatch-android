@@ -27,13 +27,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,15 +47,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 
 @RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    repository: FakeRepository,
+    repository: PersistRepository,
 ) : ViewModel() {
     val fakeRepo = repository
 }
@@ -67,9 +67,9 @@ fun ProfilePage(
     vm: ProfileViewModel = hiltViewModel(),
 ) {
     val fr = vm.fakeRepo
-    val email = fr.email.collectAsState().value
-    val watchlist = fr.watchlist.collectAsState().value
-    val watchedList = fr.watchedList.collectAsState().value
+    val email by remember { mutableStateOf("") }
+//    val watchlist = fr.watchlistFlow.collectAsState().value
+//    val watchedList = fr.watchedFlow.collectAsState().value
 
     val scrollState = rememberScrollState()
 
@@ -108,13 +108,13 @@ fun ProfilePage(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                ProfileBoxRow("Movies in watchlist", "${watchlist.filter { it.id.type == MediaType.MOVIE }.size}")
-                HorizontalDivider()
-                ProfileBoxRow("Movies watched", "${watchedList.filter { it.id.type == MediaType.MOVIE }.size}")
-                HorizontalDivider()
-                ProfileBoxRow("TV Shows in watchlist", "${watchlist.filter { it.id.type == MediaType.TV_SHOW }.size}")
-                HorizontalDivider()
-                ProfileBoxRow("TV Shows watched", "${watchedList.filter { it.id.type == MediaType.TV_SHOW }.size}")
+//                ProfileBoxRow("Movies in watchlist", "${watchlist.filter { it.id.type == MediaType.MOVIE }.size}")
+//                HorizontalDivider()
+//                ProfileBoxRow("Movies watched", "${watchedList.filter { it.id.type == MediaType.MOVIE }.size}")
+//                HorizontalDivider()
+//                ProfileBoxRow("TV Shows in watchlist", "${watchlist.filter { it.id.type == MediaType.TV_SHOW }.size}")
+//                HorizontalDivider()
+//                ProfileBoxRow("TV Shows watched", "${watchedList.filter { it.id.type == MediaType.TV_SHOW }.size}")
             }
             // logout
             val redColor = MaterialTheme.colorScheme.error

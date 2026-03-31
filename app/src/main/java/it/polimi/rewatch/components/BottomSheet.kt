@@ -51,14 +51,12 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.FakeRepository
-import it.polimi.rewatch.common.FirebaseUserRepository
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
-import it.polimi.rewatch.model.PosterMedia
-import it.polimi.rewatch.model.WatchlistMedia
+import it.polimi.rewatch.model.PosterInfo
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -87,23 +85,17 @@ fun Long.toLocalDate(): LocalDate {
 @HiltViewModel(assistedFactory = BottomSheetViewModel.Factory::class)
 class BottomSheetViewModel @AssistedInject constructor(
     @Assisted private val id: MediaId,
-    val fakeRepo: FakeRepository,
-    val fbRepo: FirebaseUserRepository,
+    val persistRepo: PersistRepository,
     ) : ViewModel() {
     @AssistedFactory
     interface Factory {
         fun create(id: MediaId): BottomSheetViewModel
     }
 
-    fun addToWatchlist(movie: WatchlistMedia) {
-        viewModelScope.launch {
-            fbRepo.addToWatchlist(movie)
-        }
-    }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    val watchedItem = fakeRepo.watchedList
-        .map { list -> list.find { it.id == id } }
+    val watchedItem = persistRepo.watchedFlow
+        .map { result -> result.getOrNull()?.find { it.id == id } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
@@ -111,13 +103,13 @@ class BottomSheetViewModel @AssistedInject constructor(
         )
 
     @RequiresApi(Build.VERSION_CODES.O)
-    val watchlistItem = fakeRepo.watchlist
+    val watchlistItem = persistRepo.watchlistFlow
         .onEach { list ->
             // 1. Check if the flow is even triggering
-            println("DEBUG_FLOWSHEET: Repo emitted a list with ${list.size} items")
+            //  println("DEBUG_FLOWSHEET: Repo emitted a list with ${list.size} items")
         }
-        .map { list ->
-            val foundItem = list.find { it.id == id }
+        .map { result ->
+            val foundItem = result.getOrNull()?.find { it.id == id }
             // 2. Check if our equality logic is working
             println("DEBUG_FLOWSHEET: Searching for $id. Found: ${foundItem?.id}")
             foundItem
@@ -132,7 +124,7 @@ class BottomSheetViewModel @AssistedInject constructor(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
-    media: PosterMedia,
+    media: PosterInfo,
     viewModel: BottomSheetViewModel = hiltViewModel<BottomSheetViewModel, BottomSheetViewModel.Factory>(
         key = "sheet_${media.id}",
         creationCallback = { it.create(media.id as MediaId) },
@@ -187,7 +179,7 @@ fun BottomSheet(
                 TextButton(
                     onClick = {
                         datePickerState.selectedDateMillis?.let { selectedMillis ->
-                            viewModel.fakeRepo.setWatchDate(mediaId, selectedMillis.toLocalDate().atTime(LocalTime.now()))
+                            viewModel.persistRepo.setWatchDate(mediaId, selectedMillis.toLocalDate().atTime(LocalTime.now()))
                         }
                         showDatePicker = false
                     },
@@ -242,12 +234,12 @@ fun BottomSheet(
                 horizontalArrangement = Arrangement.SpaceAround,
             ) {
                 SheetIconButton(
-                    onClick = { viewModel.fakeRepo.toggleWatchedList(mediaId) },
+                    onClick = { viewModel.persistRepo.toggleWatchedList(mediaId) },
                     icon = if (isWatched) Icons.Filled.Visibility else Icons.Outlined.Visibility,
                     label = "Watched",
                 )
                 SheetIconButton(
-                    onClick = { viewModel.addToWatchlist(WatchlistMedia(mediaId)) },
+                    onClick = { viewModel.persistRepo.toggleWatchlist(mediaId) },
                     icon = if (isWatchlisted) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
                     label = "Watchlist",
                 )
@@ -258,7 +250,7 @@ fun BottomSheet(
             StarRating(
                 rating = (watchedItem?.rating ?: 0f) / 2,
                 starSize = 45.dp,
-                onRatingChanged = { viewModel.fakeRepo.setRating(mediaId, it * 2) },
+                onRatingChanged = { viewModel.persistRepo.setRating(mediaId, it * 2) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentWidth(),

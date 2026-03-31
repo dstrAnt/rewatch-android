@@ -54,7 +54,7 @@ import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.tracking.SortFilterChips
 import it.polimi.rewatch.screens.tracking.sortedByDirection
 import java.time.LocalDate
@@ -140,7 +140,7 @@ fun PersonContent(
         }
 
         combinedSequence
-            .map(::PosterMedia)
+            .map(::PosterInfo)
             .distinctBy { it.id }
             .toList()
     }

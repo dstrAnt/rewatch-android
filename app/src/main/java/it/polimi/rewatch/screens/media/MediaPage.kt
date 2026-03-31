@@ -99,7 +99,7 @@ import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
@@ -222,7 +222,7 @@ fun MediaContent(
                     voteAverage = movie.voteAverage,
                 )
 
-                TrackingInfo(watchlistItem, watchedListItem) { actions.onBottomSheet(PosterMedia(movie, mediaId)) }
+                TrackingInfo(watchlistItem, watchedListItem) { actions.onBottomSheet(PosterInfo(movie, mediaId)) }
             }
 //            println(movie.crew)
             tabbedSection(

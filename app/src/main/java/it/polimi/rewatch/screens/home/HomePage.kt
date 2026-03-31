@@ -43,7 +43,7 @@ import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -127,7 +127,7 @@ fun HomeContent(
 
 fun LazyGridScope.movieSection(
     title: String,
-    movies: List<PosterMedia>,
+    movies: List<PosterInfo>,
     cellsPerRow: Int,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,

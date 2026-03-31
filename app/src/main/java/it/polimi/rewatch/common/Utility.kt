@@ -84,7 +84,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import coil3.compose.AsyncImage
 import it.polimi.rewatch.model.MediaId
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -396,7 +396,7 @@ class NavigationActions(
     val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
     val onFullscreenImage: (String?) -> Modifier,
-    val onBottomSheet: (PosterMedia) -> Unit,
+    val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
     val onNavigateToProfile: () -> Unit,
     val onClearAndNavigateToSettings: () -> Unit,

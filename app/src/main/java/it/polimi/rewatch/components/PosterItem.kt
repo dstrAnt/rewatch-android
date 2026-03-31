@@ -1,8 +1,5 @@
 package it.polimi.rewatch.components
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -14,8 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,13 +26,12 @@ import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageScope
-import coil3.compose.rememberAsyncImagePainter
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.model.PosterMedia
+import it.polimi.rewatch.model.PosterInfo
 
 @Composable
 fun PosterItem3(
@@ -131,7 +125,7 @@ fun PosterItem2(
 
 @Composable
 fun PosterItem(
-    media: PosterMedia,
+    media: PosterInfo,
     actions: NavigationActions,
     modifier: Modifier = Modifier,
 ) = PosterItem(
@@ -148,7 +142,7 @@ fun PosterItem(
 
 @Composable
 private fun PosterItem(
-    media: PosterMedia,
+    media: PosterInfo,
     onNavigateToMedia: () -> Unit,
     modifier: Modifier = Modifier,
     onLong: (() -> Unit)? = null,
@@ -205,66 +199,3 @@ private fun PosterItem(
     }
 }
 
-@Composable
-fun PosterItemCustom(
-    id: Int,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
-) {
-    // 1. Remember the painter to observe its state as standard Compose State
-    val model = TmdbImageUrlBuilder.build(posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70)
-    val painter = rememberAsyncImagePainter(model = model)
-    val state by painter.state.collectAsState()
-    val shape = RoundedCornerShape(5.dp)
-    LocalContext.current // Brought back for onMovieClick
-    // 2. Wrap in a standard Box (avoids SubcomposeLayout entirely)
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                //onMediaClick(id.toString(), mediaType, context)
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Crossfade(
-            targetState = state,
-            animationSpec = tween(durationMillis = 500), // Adjust speed here (500ms is default)
-            label = "image_crossfade", // Good practice to label animations for debugging
-        ) { t ->
-            // 3. The actual image. Apply the modifier directly here so
-            // sizing behaves exactly like a standard Image component.
-            // 4. Overlay your custom Composables based on the state read
-            when (state) {
-                is AsyncImagePainter.State.Success -> {
-                    // Optional: What to show if the image completely fails
-                    Text(text = "Failed to load")
-
-                    Image(
-                        painter = painter,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-//            contentScale = ContentScale.Crop,
-//            alignment = alignment,
-                    )
-                }
-
-                else -> {
-                    Text(
-                        text = title.orEmpty(),
-                        modifier = Modifier.padding(5.dp),
-                        color = Color.Gray,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                // Success or Empty: Do nothing, the Image is already drawn underneath
-            }
-        }
-    }
-}
