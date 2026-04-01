@@ -37,7 +37,7 @@ fun SkeletonSection() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 5.dp),
+            .padding(top = 15.dp),
     ) {
         // --- Titolo Sezione ---
         SkeletonPart(

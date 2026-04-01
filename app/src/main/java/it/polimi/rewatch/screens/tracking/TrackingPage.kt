@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
@@ -21,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -40,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.polimi.rewatch.R
+import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
@@ -71,6 +74,17 @@ enum class WatchTabItem(val title: String) {
     WATCHLIST("Watchlist"), WATCHED("Watched")
 }
 
+@Composable
+fun getTrackingPainter(
+    type: MediaType,
+): Painter {
+    return when (type) {
+        MediaType.MOVIE -> painterResource(R.drawable.movie2)
+        MediaType.TV_SHOW -> rememberVectorPainter(Icons.Default.Tv)
+        else -> error("Undefined tracking page for this media type")
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackingPage(
@@ -80,7 +94,6 @@ fun TrackingPage(
     outerPadding: PaddingValues,
 ) {
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
-    val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
     var isAscending by rememberSaveable { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(tabs.first()) }
@@ -101,7 +114,7 @@ fun TrackingPage(
     Scaffold(
         topBar = {
             TopTabBar(
-                icon, title, tabs, selectedTab,
+                getTrackingPainter(type), title, tabs, selectedTab,
                 { selectedTab = it },
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -146,6 +159,7 @@ fun TrackingPage(
                                 .groupBy { getDateHeader(it.date) }
                     }
                 }
+                val tab = if (type == MediaType.MOVIE) "Movies" else "Shows"
                 if (groupedItems.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
                     Column(
                         Modifier
@@ -153,13 +167,11 @@ fun TrackingPage(
                             .padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        val tab = if (type == MediaType.MOVIE) "Movies" else "Shows"
-                        val icon = when {
-                            selectedTab == WatchTabItem.WATCHLIST && tab == "Movies" -> R.drawable.ticket
-                            selectedTab == WatchTabItem.WATCHED && tab == "Movies" -> R.drawable.movie_library
-                            selectedTab == WatchTabItem.WATCHLIST && tab == "Shows" -> R.drawable.tv_play
-                            selectedTab == WatchTabItem.WATCHED && tab == "Shows" -> R.drawable.list_stars
-                            else -> R.drawable.ticket
+                        val icon = when (selectedTab) {
+                            WatchTabItem.WATCHLIST if tab == "Movies" -> R.drawable.ticket
+                            WatchTabItem.WATCHED if tab == "Movies" -> R.drawable.movie_library
+                            WatchTabItem.WATCHLIST -> R.drawable.tv_play
+                            WatchTabItem.WATCHED -> R.drawable.list_stars
                         }
                         val `in` = if (selectedTab == WatchTabItem.WATCHLIST) " in " else " "
                         val tip = if (selectedTab == WatchTabItem.WATCHLIST) "want to watch later" else "already watched"
@@ -258,7 +270,7 @@ private fun LazyGridItemScope.PosterStarsItem(
 
 @Composable
 private fun TopTabBar(
-    icon: Int,
+    icon: Painter,
     title: String,
     tabs: List<WatchTabItem>,
     selectedTab: WatchTabItem,
@@ -270,26 +282,7 @@ private fun TopTabBar(
             .fillMaxWidth()
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .height(55.dp) // Standard M3 SearchBar height
-                .padding(start = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start,
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(20.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-            )
-        }
+        BasicTopBar(title, icon, false) {}
         CustomTabRow(
             availableTabs = tabs,
             onClick = onClick,

@@ -29,6 +29,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -44,8 +45,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -301,16 +305,10 @@ private fun BottomBar(
                     unselectedIconColor = MaterialTheme.colorScheme.onSurface, // Color of the icon when inactive
                 ),
                 icon = {
-                    if (destination.imgVec != null) Icon(
-                        imageVector = destination.imgVec,
-                        contentDescription = destination.label,
-                    )
-                    else Icon(
-                        painter = painterResource(
-                            id = destination.intIcon!!,
-                        ),
-                        contentDescription = destination.label,
-                        modifier = Modifier.size(20.dp),
+                    Icon(
+                        destination.getPainter(),
+                        destination.label,
+                        Modifier.size(destination.getSize()),
                     )
                 },
             )
@@ -346,13 +344,30 @@ enum class AppDestinations(
     ),
     MOVIE(
         "Movies",
-        intIcon = R.drawable.movie,
+        intIcon = R.drawable.movie2,
     ),
     TV(
         "Tv Shows",
-        intIcon = R.drawable.tv,
+        Icons.Default.Tv,
     ),
     SETTINGS(
         "Settings", Icons.Default.Settings,
-    ),
+    );
+
+    @Composable
+    fun getPainter(): Painter {
+        return when {
+            intIcon != null -> painterResource(intIcon)
+            imgVec != null -> rememberVectorPainter(imgVec)
+            else -> error("No icon found for $this")
+        }
+    }
+
+    fun getSize(): Dp {
+        return when {
+            intIcon != null -> 20.dp
+            imgVec != null -> 24.dp
+            else -> error("No icon found for $this")
+        }
+    }
 }

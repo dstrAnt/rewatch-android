@@ -25,14 +25,11 @@ import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -41,9 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -54,7 +50,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
-import it.polimi.rewatch.R
+import it.polimi.rewatch.common.BasicTopBar
+import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
@@ -144,7 +141,7 @@ fun LoginPage(
 
     Scaffold(
         topBar = {
-            BasicTopBar(actions.onNavigateBack, "Log in")
+            BasicTopBar("Log in", rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack)) { actions.onNavigateBack() }
         },
         modifier = Modifier.padding(
             start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -163,18 +160,7 @@ fun LoginPage(
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_launcher_monochrome), contentDescription = null,
-                )
-                Text(
-                    "Rewatch",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                )
-            }
+            Logo()
             Spacer(Modifier.height(16.dp))
 
             // variable content
@@ -263,24 +249,3 @@ fun LoginPage(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun BasicTopBar(
-    onBack: () -> Unit,
-    title: String,
-) {
-    TopAppBar(
-        title = {
-            Text(title)
-        },
-        navigationIcon = {
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
-            }
-        },
-    )
-}

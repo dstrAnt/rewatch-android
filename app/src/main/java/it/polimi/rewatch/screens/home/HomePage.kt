@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.common.CustomLazyGrid
+import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
@@ -54,10 +55,7 @@ fun HomePage(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        text = "Rewatch",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    )
+                    Logo()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.Black,
@@ -107,7 +105,7 @@ fun HomeContent(
         listOf(
             Pair("Trending", data.trending),
             Pair("Top Rated", data.popular),
-            Pair("Recent", data.recent),
+            Pair("Newest", data.recent),
         )
             .forEach { (title, data) ->
                 movieSection(
@@ -139,7 +137,7 @@ fun LazyGridScope.movieSection(
             color = Color.White,
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier
-                .padding(bottom = 10.dp)
+                .padding(vertical = 10.dp)
                 .animateItem(fadeInSpec = null, fadeOutSpec = null),
         )
     }

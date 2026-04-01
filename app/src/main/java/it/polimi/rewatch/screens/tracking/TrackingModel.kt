@@ -1,7 +1,5 @@
 package it.polimi.rewatch.screens.tracking
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +21,6 @@ data class TrackingData(
 )
 
 @HiltViewModel
-@RequiresApi(Build.VERSION_CODES.O)
 class TrackingViewModel @Inject constructor(
     private val tmdbRepo: TmdbRepository,
     private val persistRepo: PersistRepository,
