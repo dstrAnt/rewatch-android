@@ -120,34 +120,12 @@ fun TrackingPage(
             ),
         ) {
             CustomLazyGrid {
-                // 1. CHIPS DI ORDINAMENTO (Span completo)
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        SortFilterChips(
-                            options = availableSortOptions.getValue(selectedTab),
-                            selectedSort = activeOrder,
-                            onSortSelected = { newSort ->
-                                // Update the map for the currently active tab
-                                if (tabSortOrders[selectedTab] == newSort) isAscending = !isAscending
-                                else {
-                                    tabSortOrders[selectedTab] = newSort
-                                    isAscending = false
-                                }
-                            },
-                            isAscending = isAscending,
-                            label = SortOption::label,
-                        )
-                    }
-                }
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
                     WatchTabItem.WATCHLIST -> watchlist.filter { it.id.type == type }
                     WatchTabItem.WATCHED -> watched.filter { it.id.type == type }
                 }
-// 2. Sort and group the unified data structure
+                // 2. Sort and group the unified data structure
                 val groupedItems = items.run {
                     when (activeOrder) {
                         SortOption.POPULARITY ->
@@ -208,6 +186,28 @@ fun TrackingPage(
                         }
                     }
                 } else {
+                    // 1. CHIPS DI ORDINAMENTO (Span completo)
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            SortFilterChips(
+                                options = availableSortOptions.getValue(selectedTab),
+                                selectedSort = activeOrder,
+                                onSortSelected = { newSort ->
+                                    // Update the map for the currently active tab
+                                    if (tabSortOrders[selectedTab] == newSort) isAscending = !isAscending
+                                    else {
+                                        tabSortOrders[selectedTab] = newSort
+                                        isAscending = false
+                                    }
+                                },
+                                isAscending = isAscending,
+                                label = SortOption::label,
+                            )
+                        }
+                    }
                     // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
                     groupedItems.forEach { (header, items) ->
                         // Titolo della sezione (span completo)

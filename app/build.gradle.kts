@@ -114,7 +114,7 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
 
     // integrate Compose and JUnit 4
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0") // Controlla la versione aggiornata
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
 
     // to load composables
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")

@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.NavigationActions
@@ -46,7 +48,9 @@ import jakarta.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     val repository: PersistRepository,
-) : ViewModel()
+) : ViewModel() {
+    val email = repository.email
+}
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -56,6 +60,7 @@ fun SettingsPage(
     actions: NavigationActions,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
+    val email by vm.email.collectAsStateWithLifecycle("")
     Scaffold(
         topBar = {
             SettingsTopBar()
@@ -81,7 +86,7 @@ fun SettingsPage(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 BorderBox(
-                    onClick = if (vm.repository.isLogged()) actions.onNavigateToProfile else actions.onNavigateToLogin,
+                    onClick = if (email != null) actions.onNavigateToProfile else actions.onNavigateToLogin,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -91,19 +96,19 @@ fun SettingsPage(
                             .padding(16.dp),
                     ) {
                         Icon(
-                            if (vm.repository.isLogged()) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
+                            if (email != null) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
                         Column {
                             Text(
-                                if (vm.repository.isLogged()) "Your Profile" else "Sign in",
+                                if (email != null) "Your Profile" else "Sign in",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                if (vm.repository.isLogged()) "See your account and the status of your lists"
+                                if (email != null) "See your account and the status of your lists"
                                 else "Synchronize your watchlist and watched contents",
                                 color = Color.Gray,
                                 lineHeight = 16.sp,

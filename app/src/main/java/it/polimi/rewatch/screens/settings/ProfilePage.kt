@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -46,14 +47,38 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
+import it.polimi.rewatch.model.MediaType
 import jakarta.inject.Inject
-
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    repository: PersistRepository,
+    private val repository: PersistRepository,
 ) : ViewModel() {
-    val fakeRepo = repository
+    private val _errorMessage = MutableStateFlow<String?>(null)
+
+    private inline fun <T> Flow<Result<List<T>>>.countBy(crossinline predicate: (T) -> Boolean): Flow<Int> {
+        return this.map { result ->
+            result.getOrElse { error ->
+                _errorMessage.value = error.message
+                emptyList()
+            }.count(predicate)
+        }
+    }
+
+    val watchlistMovies = repository.watchlistFlow.countBy { it.id.type == MediaType.MOVIE }
+    val watchedMovies = repository.watchedFlow.countBy { it.id.type == MediaType.MOVIE }
+
+    val watchlistShows = repository.watchlistFlow.countBy { it.id.type == MediaType.TV_SHOW }
+    val watchedShows = repository.watchedFlow.countBy { it.id.type == MediaType.TV_SHOW }
+
+    val email = repository.email
+
+    fun logout() {
+        repository.logout()
+    }
 }
 
 
@@ -63,15 +88,16 @@ fun ProfilePage(
     actions: NavigationActions,
     vm: ProfileViewModel = hiltViewModel(),
 ) {
-    val fr = vm.fakeRepo
-    val email by vm.fakeRepo.email.collectAsStateWithLifecycle("")
-//    val watchlist by vm.fakeRepo.watchlistFlow.collectAsStateWithLifecycle()
-//    val watchedList by vm.fakeRepo.watchedFlow.collectAsStateWithLifecycle()
+    val watchedMovies by vm.watchedMovies.collectAsStateWithLifecycle(0)
+    val watchedShows by vm.watchedShows.collectAsStateWithLifecycle(0)
+    val watchlistShows by vm.watchlistShows.collectAsStateWithLifecycle(0)
+    val watchlistMovies by vm.watchlistMovies.collectAsStateWithLifecycle(0)
+    val email by vm.email.collectAsStateWithLifecycle("")
 
     val scrollState = rememberScrollState()
 
     fun handleLogout() {
-        fr.logout()
+        vm.logout()
         actions.onClearAndNavigateToSettings()
     }
     Scaffold(
@@ -105,13 +131,10 @@ fun ProfilePage(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-//                ProfileBoxRow("Movies in watchlist", "${watchlist.filter { it.id.type == MediaType.MOVIE }.size}")
-//                HorizontalDivider()
-//                ProfileBoxRow("Movies watched", "${watchedList.filter { it.id.type == MediaType.MOVIE }.size}")
-//                HorizontalDivider()
-//                ProfileBoxRow("TV Shows in watchlist", "${watchlist.filter { it.id.type == MediaType.TV_SHOW }.size}")
-//                HorizontalDivider()
-//                ProfileBoxRow("TV Shows watched", "${watchedList.filter { it.id.type == MediaType.TV_SHOW }.size}")
+                ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
+                ProfileBoxRow("Movies watched", "$watchedMovies", true)
+                ProfileBoxRow("TV Shows in watchlist", "$watchlistShows", true)
+                ProfileBoxRow("TV Shows watched", "$watchedShows")
             }
             // logout
             val redColor = MaterialTheme.colorScheme.error
@@ -139,7 +162,7 @@ fun ProfilePage(
 }
 
 @Composable
-private fun ProfileBoxRow(label: String, value: String) {
+private fun ProfileBoxRow(label: String, value: String, withDivider: Boolean = false) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
@@ -149,6 +172,7 @@ private fun ProfileBoxRow(label: String, value: String) {
         Text(label)
         Text(value)
     }
+    if (withDivider) HorizontalDivider()
 }
 
 @Composable
