@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.common.UiState
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
@@ -27,18 +28,22 @@ class TrackingViewModel @Inject constructor(
     private val tmdbRepo: TmdbRepository,
     private val persistRepo: PersistRepository,
 ) : ViewModel() {
+
     val watchlist = persistRepo.watchlistFlow
         .map { result ->
-            result.getOrElse { error ->
-                _errorMessage.value = error.message
-                emptyList()
-            }
+            result.fold(
+                onSuccess = { list ->
+                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                },
+                onFailure = { error ->
+                    UiState.Error(error.message ?: "Unknown error")
+                },
+            )
         }
-        .map { list -> list.map { tmdbRepo.enrichWatched(it) } }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            emptyList(),
+            UiState.Loading, // <-- initial value is Loading, not empty list
         )
 
     // Optional: Keep track of loading/errors in a separate state

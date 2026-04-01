@@ -51,6 +51,7 @@ import it.polimi.rewatch.R
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.model.MediaType
@@ -70,7 +71,6 @@ enum class WatchTabItem(val title: String) {
     WATCHLIST("Watchlist"), WATCHED("Watched")
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackingPage(
@@ -79,7 +79,6 @@ fun TrackingPage(
     actions: NavigationActions,
     outerPadding: PaddingValues,
 ) {
-
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
@@ -96,7 +95,7 @@ fun TrackingPage(
         WatchTabItem.WATCHED to listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
     )
     val activeOrder = tabSortOrders.getValue(selectedTab)
-    val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
+    val state by viewModel.watchlist.collectAsStateWithLifecycle()
     val watched by viewModel.watchedList.collectAsStateWithLifecycle()
 
     Scaffold(
@@ -111,14 +110,16 @@ fun TrackingPage(
             )
         },
     ) { paddingValues ->
-        Column(
+        AnimatedUiState(
+            state,
             modifier = Modifier.padding(
                 top = paddingValues.calculateTopPadding(),
                 bottom = outerPadding.calculateBottomPadding(),
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
-        ) {
+            loadingContent = ::TrackingSkeleton,
+        ) { watchlist ->
             CustomLazyGrid {
                 // 1. Route to the correct list and order
                 val items = when (selectedTab) {
