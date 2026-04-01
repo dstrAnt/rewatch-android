@@ -62,7 +62,7 @@ class TrackingViewModel @Inject constructor(
         .map { list -> list.map { tmdbRepo.enrichWatched(it) } }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.Lazily,
+            SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList(),
         )
 //    @RequiresApi(Build.VERSION_CODES.O)

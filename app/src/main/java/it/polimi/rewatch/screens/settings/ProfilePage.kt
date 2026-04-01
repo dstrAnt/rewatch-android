@@ -31,8 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +42,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
@@ -65,9 +64,9 @@ fun ProfilePage(
     vm: ProfileViewModel = hiltViewModel(),
 ) {
     val fr = vm.fakeRepo
-    val email by remember { mutableStateOf("") }
-//    val watchlist = fr.watchlistFlow.collectAsState().value
-//    val watchedList = fr.watchedFlow.collectAsState().value
+    val email by vm.fakeRepo.email.collectAsStateWithLifecycle("")
+//    val watchlist by vm.fakeRepo.watchlistFlow.collectAsStateWithLifecycle()
+//    val watchedList by vm.fakeRepo.watchedFlow.collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
 
@@ -153,7 +152,7 @@ private fun ProfileBoxRow(label: String, value: String) {
 }
 
 @Composable
-fun ProfileBox(icon: ImageVector, email: String) {
+fun ProfileBox(icon: ImageVector, email: String?) {
     Column(
         verticalArrangement = Arrangement.spacedBy(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -176,7 +175,7 @@ fun ProfileBox(icon: ImageVector, email: String) {
             )
         }
         Text(
-            text = email,
+            text = email.orEmpty(),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
         )

@@ -12,9 +12,11 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDateTime
@@ -32,6 +34,8 @@ class FirebaseRepository @Inject constructor(
 ) : PersistRepository {
     override fun isLogged(): Boolean = auth.currentUser != null
 
+
+
     private val actionCodeSettings =
         ActionCodeSettings.newBuilder().setUrl("https://app-rewatch.firebaseapp.com/finishSignUp").setHandleCodeInApp(true)
             .setAndroidPackageName("it.polimi.rewatch", true, "12").build()
@@ -48,6 +52,30 @@ class FirebaseRepository @Inject constructor(
     override fun logout() {
         auth.signOut()
     }
+
+    // 1. Create a basic Flow using callbackFlow to bridge the Firebase Listener
+    private val authStateFlow: Flow<String?> = callbackFlow {
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            // Send the current user downstream whenever the state changes
+            trySend(firebaseAuth.currentUser?.email)
+        }
+        // Register the listener
+        auth.addAuthStateListener(authStateListener)
+        // Unregister the listener automatically when the flow collection is cancelled
+        awaitClose {
+            auth.removeAuthStateListener(authStateListener)
+        }
+    }
+
+    // 2. Convert it to a StateFlow (which implements SharedFlow)
+    override val email: SharedFlow<String?> = authStateFlow.stateIn(
+        scope = appScope,
+        // Keeps the upstream listener active for 5 seconds after the last subscriber leaves
+        // This prevents tearing down and rebuilding the listener during configuration changes (like screen rotations)
+        started = SharingStarted.WhileSubscribed(5000),
+        // The initial value is synchronously grabbed from the current Firebase state
+        initialValue = auth.currentUser?.email,
+    )
 
     // --- Firestore helpers ---
     private fun collectionRef(subcollection: String): CollectionReference {
@@ -76,9 +104,7 @@ class FirebaseRepository @Inject constructor(
     }
 
     // --- Observe ---
-    private fun <T> observeMedia(
-        subcollection: String, mapper: (TrackingMediaDto) -> T,
-    ): Flow<Result<List<T>>> = callbackFlow {
+    private fun <T> observeMedia(subcollection: String, mapper: (TrackingMediaDto) -> T): Flow<Result<List<T>>> = callbackFlow {
         val ref = try {
             collectionRef(subcollection)
         } catch (e: Exception) {
@@ -106,13 +132,11 @@ class FirebaseRepository @Inject constructor(
     private val currentWatched get() = watchedFlow.replayCache.firstOrNull()?.getOrNull().orEmpty()
 
     // --- Watchlist ---
-    override fun addToWatchlist(id: MediaId) =
-        setDoc("watchlist", TrackingMediaDto(WatchlistMedia(id)))
+    override fun addToWatchlist(id: MediaId) = setDoc("watchlist", TrackingMediaDto(WatchlistMedia(id)))
 
     override fun removeFromWatchlist(id: MediaId) = deleteDoc("watchlist", id)
 
-    override fun toggleWatchlist(id: MediaId) =
-        if (currentWatchlist.any { it.id == id }) removeFromWatchlist(id) else addToWatchlist(id)
+    override fun toggleWatchlist(id: MediaId) = if (currentWatchlist.any { it.id == id }) removeFromWatchlist(id) else addToWatchlist(id)
 
     // --- Watched ---
     override fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) =

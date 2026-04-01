@@ -97,6 +97,11 @@ fun RewatchApp() {
     var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
     var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
+    val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { AppDestinations.entries.size })
+    val currentScreen = backStack.lastOrNull()
+
+
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonPage(id)) },
@@ -121,11 +126,13 @@ fun RewatchApp() {
                 backStack.clear()
                 backStack.add(SettingsPage)
             },
+            onBackToHome = {
+                scope.launch {
+                    pagerState.scrollToPage(0)
+                }
+            },
         )
     }
-    val pagerState = rememberPagerState(pageCount = { AppDestinations.entries.size })
-    val currentScreen = backStack.lastOrNull()
-    val scope = rememberCoroutineScope()
 
     BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeTabs) {
         // Snap the user back to the Home tab atomically
@@ -185,21 +192,14 @@ fun RewatchApp() {
                                 actions = navActions,
                                 type = MediaType.MOVIE,
                                 outerPadding = outerPadding,
-                            ) {
-                                scope.launch {
-                                    pagerState.scrollToPage(0)
-                                }
-                            }
+                            )
 
                             AppDestinations.TV -> TrackingPage(
                                 actions = navActions,
                                 type = MediaType.TV_SHOW,
                                 outerPadding = outerPadding,
-                            ) {
-                                scope.launch {
-                                    pagerState.scrollToPage(0)
-                                }
-                            }
+                            )
+
 
                             AppDestinations.SETTINGS -> SettingsPage(outerPadding, navActions)
                         }

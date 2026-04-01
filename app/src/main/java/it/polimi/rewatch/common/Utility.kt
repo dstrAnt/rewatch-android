@@ -404,6 +404,7 @@ class NavigationActions(
     val onNavigateToLogin: () -> Unit,
     val onNavigateToProfile: () -> Unit,
     val onClearAndNavigateToSettings: () -> Unit,
+    val onBackToHome: () -> Unit,
 )
 
 @Composable

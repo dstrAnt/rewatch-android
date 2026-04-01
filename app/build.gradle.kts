@@ -105,8 +105,8 @@ dependencies {
         //  exclude(group = "com.google.android.gms")
         exclude(group = "com.google.android.play")
     }
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+    //implementation(libs.firebase.auth)
+    //implementation(libs.firebase.firestore)
 
     /* TESTING */
 

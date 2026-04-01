@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
@@ -21,6 +20,7 @@ interface PersistRepository {
     suspend fun verifySignInLink(email: String, link: String): Result<Unit>
     fun isLogged(): Boolean
 
+    val email: SharedFlow<String?>
 
     val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
     val watchedFlow: SharedFlow<Result<List<WatchedMedia>>>
@@ -57,7 +57,7 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     private val _email = MutableStateFlow("")
-    val email = _email.asStateFlow()
+    override val email = _email.asSharedFlow()
     override suspend fun sendSignInLink(email: String): Result<Unit> {
         return Result.success(Unit)
     }

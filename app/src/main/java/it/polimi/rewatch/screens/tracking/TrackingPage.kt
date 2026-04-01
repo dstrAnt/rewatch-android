@@ -74,12 +74,12 @@ enum class WatchTabItem(val title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackingPage(
-    viewModel: TrackingViewModel = hiltViewModel(),
     type: MediaType,
+    viewModel: TrackingViewModel = hiltViewModel(),
     actions: NavigationActions,
     outerPadding: PaddingValues,
-    backToHome: () -> Unit,
 ) {
+
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
     val tabs = WatchTabItem.entries
@@ -202,7 +202,7 @@ fun TrackingPage(
                         )
                         Spacer(Modifier.height(16.dp))
                         Button(
-                            onClick = backToHome,
+                            onClick = actions.onBackToHome,
                         ) {
                             Text("Explore")
                         }
