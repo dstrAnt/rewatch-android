@@ -1,7 +1,5 @@
 package it.polimi.rewatch.screens.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.common.UiFetchViewModel
@@ -15,7 +13,7 @@ data class HomeData(
     val recent: List<PosterInfo>,
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @HiltViewModel // Tells Hilt to manage this ViewModel
 class HomeViewModel @Inject constructor(
     private val repository: TmdbRepository,

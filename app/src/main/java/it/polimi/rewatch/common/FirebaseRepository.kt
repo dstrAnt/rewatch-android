@@ -22,6 +22,9 @@ import java.time.LocalDateTime
 
 
 // 3. The Firebase Implementation
+/**
+ * Repository to access Firebase methods and services
+ */
 class FirebaseRepository @Inject constructor(
     private val auth: FirebaseAuth,
     private val db: FirebaseFirestore,

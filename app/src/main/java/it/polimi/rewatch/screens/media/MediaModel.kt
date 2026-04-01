@@ -1,7 +1,5 @@
 package it.polimi.rewatch.screens.media
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.viewModelScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -32,14 +30,14 @@ class MediaViewModel @AssistedInject constructor(
         fun create(mediaId: MediaId): MediaViewModel
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     val watchedListItem = persistRepo.watchedFlow.map { result -> result.getOrNull()?.find { it.id == mediaId } }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
         initialValue = null, // The starting value while it searches
     )
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     val watchlistItem = persistRepo.watchlistFlow.map { result -> result.getOrNull()?.find { it.id == mediaId } }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
@@ -50,6 +48,6 @@ class MediaViewModel @AssistedInject constructor(
         executeFetch()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override suspend fun fetchData() = mediaId.getData(repository)
 }

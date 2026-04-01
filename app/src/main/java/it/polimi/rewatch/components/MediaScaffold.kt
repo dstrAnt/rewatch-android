@@ -22,6 +22,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 
+/**
+ * [MediaScaffold] is a template that adds an [AppearingTopBar] at the top of a page
+ */
 @Composable
 fun MediaScaffold(
     title: String?,
@@ -42,7 +45,10 @@ fun MediaScaffold(
     }
 }
 
-
+/**
+ * [AppearingTopBar] is a top bar with a gradient background that gets darker
+ * as the user scrolls down the page
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppearingTopBar(

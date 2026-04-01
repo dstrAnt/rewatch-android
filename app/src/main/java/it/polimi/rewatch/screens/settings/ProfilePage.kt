@@ -1,7 +1,5 @@
 package it.polimi.rewatch.screens.settings
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -51,7 +49,7 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     repository: PersistRepository,
@@ -59,7 +57,7 @@ class ProfileViewModel @Inject constructor(
     val fakeRepo = repository
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun ProfilePage(
     outerPadding: PaddingValues,

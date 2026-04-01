@@ -1,7 +1,5 @@
 package it.polimi.rewatch.common
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.TvId
@@ -16,7 +14,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
-
 
 
 interface PersistRepository {
@@ -97,7 +94,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
 
     // The Factorized Helper:
 // This handles all the messy Result unwrapping and SharedFlow emitting for you.
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun addToWatchlist(id: MediaId) =
         _watchlistFlow.addItem(WatchlistMedia(id))
 
@@ -114,7 +110,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
     override fun removeFromWatchedList(id: MediaId) =
         _watchedFlow.removeItem { it.id == id }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun setRating(id: MediaId, rating: Float) {
         _watchedFlow.updateList { currentList ->
             val existing = currentList.find { it.id == id }
@@ -131,7 +126,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
         removeFromWatchlist(id)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun toggleWatchedList(id: MediaId) {
         // Grab the current state using our new property
         val existingItem = _watchedFlow.currentList.find { it.id == id }
@@ -157,7 +151,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun toggleWatchlist(id: MediaId) {
         // Check state using the new property and route accordingly
         if (_watchlistFlow.currentList.any { it.id == id }) {
@@ -168,7 +161,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 val fakeWatchlist = listOf(
     WatchlistMedia(
         id = MovieId(550),
@@ -202,7 +194,7 @@ val fakeWatchlist = listOf(
     ),
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1390),
@@ -266,4 +258,9 @@ fun generateVerificationCode(): String {
 //    val code = (100000..999999).random().toString()
 //    println(code)
     return code
+}
+
+fun String.isValidSixDigitCode(): Boolean {
+    val codeRegex = "^[0-9]{6}$".toRegex()
+    return this.matches(codeRegex)
 }

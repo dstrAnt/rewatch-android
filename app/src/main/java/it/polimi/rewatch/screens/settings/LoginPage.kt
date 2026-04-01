@@ -2,9 +2,7 @@ package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Build
 import android.util.Patterns
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -70,7 +68,7 @@ fun String.isValidEmail(): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     val repository: PersistRepository,
@@ -88,7 +86,7 @@ class LoginViewModel @Inject constructor(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginPage(
@@ -135,7 +133,7 @@ fun LoginPage(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     fun handleLogin() {
         if (email.isValidEmail()) {
             isError = false
@@ -230,9 +228,7 @@ fun LoginPage(
 
                 // buttons row
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Button(
                         onClick = ::handleLogin,

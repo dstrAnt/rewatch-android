@@ -1,8 +1,6 @@
 package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,13 +43,12 @@ import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     val repository: PersistRepository,
 ) : ViewModel()
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SettingsPage(

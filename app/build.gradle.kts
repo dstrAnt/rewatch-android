@@ -105,4 +105,22 @@ dependencies {
         //  exclude(group = "com.google.android.gms")
         exclude(group = "com.google.android.play")
     }
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
+    /* TESTING */
+
+    // basic JUnit 4
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+
+    // integrate Compose and JUnit 4
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0") // Controlla la versione aggiornata
+
+    // to load composables
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
+
+    // to unlock in case of dealing with animations
+    // androidTestImplementation("androidx.compose.ui:ui-test:1.6.0")
+
+
 }

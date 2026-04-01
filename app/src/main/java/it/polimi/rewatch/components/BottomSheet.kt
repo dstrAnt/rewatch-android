@@ -1,7 +1,5 @@
 package it.polimi.rewatch.components
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -69,13 +67,13 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 // Da LocalDate a Long (Milliseconds UTC)
-@RequiresApi(Build.VERSION_CODES.O)
+
 fun LocalDate.toMillis(): Long {
     return this.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 }
 
 // Da Long (Milliseconds UTC) a LocalDate
-@RequiresApi(Build.VERSION_CODES.O)
+
 fun Long.toLocalDate(): LocalDate {
     return Instant.ofEpochMilli(this)
         .atZone(ZoneId.of("UTC"))
@@ -93,7 +91,6 @@ class BottomSheetViewModel @AssistedInject constructor(
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
     val watchedItem = persistRepo.watchedFlow
         .map { result -> result.getOrNull()?.find { it.id == id } }
         .stateIn(
@@ -102,7 +99,7 @@ class BottomSheetViewModel @AssistedInject constructor(
             initialValue = null, // The starting value while it searches
         )
 
-    @RequiresApi(Build.VERSION_CODES.O)
+
     val watchlistItem = persistRepo.watchlistFlow
         .onEach { list ->
             // 1. Check if the flow is even triggering
@@ -120,7 +117,10 @@ class BottomSheetViewModel @AssistedInject constructor(
         )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+/**
+ * [BottomSheet] is a drawer that comes out from the bottom of the screen and
+ * provides the user with all the commands to manage the presence of a content in their lists
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(

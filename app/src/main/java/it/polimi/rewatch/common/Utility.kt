@@ -92,6 +92,10 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 import kotlin.math.max
 
+/*
+    In this file we put some functions and composables that we reuse in many other components
+ */
+
 fun String.formatDate(format: String): String {
     return try {
         val inputFormat =

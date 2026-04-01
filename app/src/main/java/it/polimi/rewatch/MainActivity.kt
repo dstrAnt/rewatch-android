@@ -169,6 +169,7 @@ fun RewatchApp() {
                                 actions = navActions,
                                 outerPadding = outerPadding,
                             )
+
                             AppDestinations.SEARCH -> {
                                 val viewModel = hiltViewModel<SearchViewModel>()
 //                                viewModel.reset()
@@ -184,13 +185,21 @@ fun RewatchApp() {
                                 actions = navActions,
                                 type = MediaType.MOVIE,
                                 outerPadding = outerPadding,
-                            )
+                            ) {
+                                scope.launch {
+                                    pagerState.scrollToPage(0)
+                                }
+                            }
 
                             AppDestinations.TV -> TrackingPage(
                                 actions = navActions,
                                 type = MediaType.TV_SHOW,
                                 outerPadding = outerPadding,
-                            )
+                            ) {
+                                scope.launch {
+                                    pagerState.scrollToPage(0)
+                                }
+                            }
 
                             AppDestinations.SETTINGS -> SettingsPage(outerPadding, navActions)
                         }

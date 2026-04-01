@@ -1,7 +1,5 @@
 package it.polimi.rewatch.screens.tracking
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -43,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -70,7 +70,7 @@ enum class WatchTabItem(val title: String) {
     WATCHLIST("Watchlist"), WATCHED("Watched")
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackingPage(
@@ -78,6 +78,7 @@ fun TrackingPage(
     type: MediaType,
     actions: NavigationActions,
     outerPadding: PaddingValues,
+    backToHome: () -> Unit,
 ) {
     val title = if (type == MediaType.MOVIE) "Movies" else "Tv Shows"
     val icon = if (type == MediaType.MOVIE) R.drawable.movie else R.drawable.tv
@@ -166,21 +167,63 @@ fun TrackingPage(
                                 .groupBy { getDateHeader(it.date) }
                     }
                 }
-                // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
-                groupedItems.forEach { (header, items) ->
-                    // Titolo della sezione (span completo)
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text(
-                            text = header,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
+                if (groupedItems.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column(
+                        Modifier
+                            .padding(top = 50.dp)
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        val tab = if (type == MediaType.MOVIE) "Movies" else "Shows"
+                        val icon = when {
+                            selectedTab == WatchTabItem.WATCHLIST && tab == "Movies" -> R.drawable.ticket
+                            selectedTab == WatchTabItem.WATCHED && tab == "Movies" -> R.drawable.movie_library
+                            selectedTab == WatchTabItem.WATCHLIST && tab == "Shows" -> R.drawable.tv_play
+                            selectedTab == WatchTabItem.WATCHED && tab == "Shows" -> R.drawable.list_stars
+                            else -> R.drawable.ticket
+                        }
+                        val `in` = if (selectedTab == WatchTabItem.WATCHLIST) " in " else " "
+                        val tip = if (selectedTab == WatchTabItem.WATCHLIST) "want to watch later" else "already watched"
+                        Icon(
+                            painter = painterResource(icon),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(70.dp),
                         )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "No $tab$`in`${selectedTab.title}",
+                            style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
+                        )
+                        Text(
+                            "Save the ${tab.lowercase()} you $tip and you'll see them here",
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Button(
+                            onClick = backToHome,
+                        ) {
+                            Text("Explore")
+                        }
                     }
-                    // Elementi della sezione
-                    items(key = { "${it.id}" }, items = items) { media ->
-                        if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
-                        else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
+                } else {
+                    // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
+                    groupedItems.forEach { (header, items) ->
+                        // Titolo della sezione (span completo)
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Text(
+                                text = header,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
+                            )
+                        }
+                        // Elementi della sezione
+                        items(key = { "${it.id}" }, items = items) { media ->
+                            if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
+                            else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
+                        }
                     }
                 }
             }
@@ -297,7 +340,7 @@ fun <T> SortFilterChips(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 fun getDateHeader(date: LocalDateTime?): String {
     if (date == null) return "No Date"
     val today = LocalDateTime.now()
@@ -307,6 +350,7 @@ fun getDateHeader(date: LocalDateTime?): String {
         else -> "${date.year}"
     }
 }
+
 fun Date.toLocalDateTime(): LocalDateTime {
     return this.toInstant()
         .atZone(ZoneId.systemDefault())

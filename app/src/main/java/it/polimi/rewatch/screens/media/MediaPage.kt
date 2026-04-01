@@ -1,8 +1,6 @@
 package it.polimi.rewatch.screens.media
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -122,7 +120,7 @@ data class TrackingItems(
     val watchedListItem: StateFlow<WatchedMedia?>,
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun MediaPage(
     mediaId: MediaId,
@@ -148,7 +146,7 @@ fun MediaPage(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 @OptIn(

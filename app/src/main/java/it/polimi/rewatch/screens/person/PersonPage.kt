@@ -1,8 +1,6 @@
 package it.polimi.rewatch.screens.person
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -71,7 +69,7 @@ private fun String.capitalize(): String = this.replace("_", " ").lowercase().rep
     if (it.isLowerCase()) it.titlecase() else it.toString()
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PersonPage(
@@ -95,7 +93,7 @@ fun PersonPage(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PersonContent(
@@ -290,7 +288,7 @@ private fun Bio(bio: String?) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
     if (dateOfBirth == null) return
@@ -382,7 +380,7 @@ private fun ProfilePicture(profileImage: TmdbImage?, modifier: Modifier = Modifi
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 fun calculatePersonAge(birthday: String?): String {
     if (birthday.isNullOrBlank()) return " - "
     return try {

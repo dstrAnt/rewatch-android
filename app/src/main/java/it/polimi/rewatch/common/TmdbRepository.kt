@@ -25,11 +25,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
+/**
+ * Repository to retrieve details about the Movies, TV Shows, Seasons, Episodes and People.
+ */
 @Singleton // Tells Hilt to only make one of these for the whole app
 class TmdbRepository @Inject constructor(
     private val tmdb: Tmdb3, // Hilt delivers your API client here!
 ) {
-    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getHomeData(): HomeData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
         val trendingDeferred = async { tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, 1).results.map(::PosterInfo) }
