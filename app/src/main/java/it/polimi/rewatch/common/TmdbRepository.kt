@@ -1,6 +1,7 @@
 package it.polimi.rewatch.common
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.AppendResponse
@@ -173,11 +174,15 @@ class TmdbRepository @Inject constructor(
 //            watched = watchedDeferred.awaitAll(),
 //        )
 //    }
-
-    suspend fun enrichWatched(item: WatchlistMedia) = withContext(Dispatchers.IO) {
-        val details = item.id.getDetails(this@TmdbRepository)
+    suspend fun enrichWatched(item: WatchlistMedia): WatchlistMedia {
+        return try {
+            val details = item.id.getDetails(this@TmdbRepository)
+            item.copy(mediaData = details!!)
+        } catch (e: Exception) {
+            Log.w("TmdbRepo", "Failed to enrich ${item.id}, using cached data", e)
+            item // return un-enriched item instead of crashing
+        }
         // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
-        item.copy(mediaData = details!!) // copy mantiene gli altri campi
     }
 
     suspend fun enrichWatched(item: WatchedMedia) = withContext(Dispatchers.IO) {

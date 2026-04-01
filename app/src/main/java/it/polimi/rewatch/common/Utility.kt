@@ -362,6 +362,7 @@ fun <T> CustomTabRow(
 fun CustomLazyGrid(
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
+    userScrollEnabled: Boolean = true,
     content: LazyGridScope.(Int) -> Unit,
 ) = BoxWithConstraints {
     // 1. Define your adaptive minimum size
@@ -376,6 +377,7 @@ fun CustomLazyGrid(
         horizontalArrangement = Arrangement.spacedBy(7.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
         contentPadding = contentPadding,
+        userScrollEnabled = userScrollEnabled,
         modifier = Modifier
             .fillMaxSize()
             .animateContentSize()

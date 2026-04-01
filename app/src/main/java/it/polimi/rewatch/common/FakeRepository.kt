@@ -1,5 +1,6 @@
 package it.polimi.rewatch.common
 
+import com.google.firebase.auth.AuthCredential
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.TvId
@@ -17,11 +18,10 @@ import java.time.LocalDateTime
 
 interface PersistRepository {
     suspend fun sendSignInLink(email: String): Result<Unit>
-    suspend fun verifySignInLink(email: String, link: String): Result<Unit>
+    suspend fun verifySignInLink(email: String, link: String): Result<LinkResult>
     fun isLogged(): Boolean
 
-    val email: SharedFlow<String?>
-
+    //val email: SharedFlow<String?>
     val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
     val watchedFlow: SharedFlow<Result<List<WatchedMedia>>>
 
@@ -35,6 +35,9 @@ interface PersistRepository {
     fun removeFromWatchedList(id: MediaId)
     fun toggleWatchedList(id: MediaId)
     fun logout()
+    val authState: SharedFlow<AuthState>
+    suspend fun signInAnonymously(): Result<Unit>
+    suspend fun resolveCollision(anonymousUid: String, credential: AuthCredential, merge: Boolean): Result<Unit>
 }
 
 @Singleton
@@ -57,17 +60,32 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     private val _email = MutableStateFlow("")
-    override val email = _email.asSharedFlow()
+    val email = _email.asSharedFlow()
     override suspend fun sendSignInLink(email: String): Result<Unit> {
         return Result.success(Unit)
     }
 
-    override suspend fun verifySignInLink(email: String, link: String): Result<Unit> {
-        return Result.success(Unit)
+    override suspend fun verifySignInLink(email: String, link: String): Result<LinkResult> {
+        return Result.success(LinkResult.Linked)
     }
 
     override fun logout() {
         _email.update { "" }
+    }
+
+    override val authState: SharedFlow<AuthState>
+        get() = TODO("Not yet implemented")
+
+    override suspend fun signInAnonymously(): Result<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun resolveCollision(
+        anonymousUid: String,
+        credential: AuthCredential,
+        merge: Boolean,
+    ): Result<Unit> {
+        TODO("Not yet implemented")
     }
 
     override fun isLogged() = _email.value != ""
@@ -193,8 +211,6 @@ val fakeWatchlist = listOf(
         id = MovieId(83532),
     ),
 )
-
-
 val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1390),

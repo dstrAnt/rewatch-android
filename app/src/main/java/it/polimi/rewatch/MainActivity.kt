@@ -71,7 +71,7 @@ import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.search.SearchViewModel
-import it.polimi.rewatch.screens.settings.LoginPage
+import it.polimi.rewatch.screens.settings.AuthPage
 import it.polimi.rewatch.screens.settings.ProfilePage
 import it.polimi.rewatch.screens.settings.SettingsPage
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -232,10 +232,11 @@ fun RewatchApp() {
                     )
                 }
                 entry<LoginPage> {
-                    LoginPage(
-                        actions = navActions,
-                        outerPadding = outerPadding,
-                    )
+                    AuthPage(actions = navActions) {}
+//                    LoginPage(
+//                        actions = navActions,
+//                        outerPadding = outerPadding,
+//                    )
                 }
                 entry<ProfilePage> {
                     ProfilePage(

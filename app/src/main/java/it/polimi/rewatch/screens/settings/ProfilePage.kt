@@ -47,6 +47,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import it.polimi.rewatch.common.AuthState
 import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
@@ -76,8 +77,7 @@ class ProfileViewModel @Inject constructor(
 
     val watchlistShows = repository.watchlistFlow.countBy { it.id.type == MediaType.TV_SHOW }
     val watchedShows = repository.watchedFlow.countBy { it.id.type == MediaType.TV_SHOW }
-
-    val email = repository.email
+    val email: Flow<String?> = repository.authState.map { if (it is AuthState.Authenticated) it.email else null }
 
     fun logout() {
         repository.logout()

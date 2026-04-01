@@ -102,7 +102,8 @@ dependencies {
         exclude(group = "com.google.android.play")
     }
     implementation(libs.firebase.firestore) {
-        //  exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.gms", module = "play-services-measurement")
+        exclude(group = "com.google.android.gms", module = "play-services-ads-identifier")
         exclude(group = "com.google.android.play")
     }
     //implementation(libs.firebase.auth)

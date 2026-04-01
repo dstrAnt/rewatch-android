@@ -1,5 +1,6 @@
 package it.polimi.rewatch.common
 
+import android.util.Log
 import app.moviebase.tmdb.Tmdb3
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -12,6 +13,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import it.polimi.rewatch.BuildConfig
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -67,5 +69,11 @@ object CoroutineScopeModule {
     @Singleton
     @Provides
     fun provideApplicationScope(): CoroutineScope =
-        CoroutineScope(SupervisorJob() + Dispatchers.Default)
+        CoroutineScope(
+            SupervisorJob() +
+                    Dispatchers.Default +
+                    CoroutineExceptionHandler { _, throwable ->
+                        Log.e("AppScope", "Uncaught coroutine exception", throwable)
+                    },
+        )
 }

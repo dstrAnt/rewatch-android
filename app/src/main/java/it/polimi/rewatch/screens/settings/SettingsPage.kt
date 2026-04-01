@@ -34,6 +34,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import it.polimi.rewatch.common.AuthState
 import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.NavigationActions
@@ -45,7 +46,7 @@ import jakarta.inject.Inject
 class SettingsViewModel @Inject constructor(
     val repository: PersistRepository,
 ) : ViewModel() {
-    val email = repository.email
+    val email = repository.authState
 }
 
 
@@ -56,7 +57,7 @@ fun SettingsPage(
     actions: NavigationActions,
     vm: SettingsViewModel = hiltViewModel(),
 ) {
-    val email by vm.email.collectAsStateWithLifecycle("")
+    val authState by vm.email.collectAsStateWithLifecycle(AuthState.SignedOut)
     Scaffold(
         topBar = {
             BasicTopBar("Settings", rememberVectorPainter(Icons.Default.Settings), false) {}
@@ -82,7 +83,7 @@ fun SettingsPage(
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 BorderBox(
-                    onClick = if (email != null) actions.onNavigateToProfile else actions.onNavigateToLogin,
+                    onClick = if (authState is AuthState.Authenticated) actions.onNavigateToProfile else actions.onNavigateToLogin,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -92,19 +93,19 @@ fun SettingsPage(
                             .padding(16.dp),
                     ) {
                         Icon(
-                            if (email != null) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
+                            if (authState != null) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
                         Column {
                             Text(
-                                if (email != null) "Your Profile" else "Sign in",
+                                if (authState != null) "Your Profile" else "Sign in",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                if (email != null) "See your account and the status of your lists"
+                                if (authState != null) "See your account and the status of your lists"
                                 else "Synchronize your watchlist and watched contents",
                                 color = Color.Gray,
                                 lineHeight = 16.sp,

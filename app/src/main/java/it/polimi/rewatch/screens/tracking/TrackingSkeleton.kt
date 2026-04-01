@@ -17,7 +17,9 @@ import it.polimi.rewatch.common.SkeletonPart
 
 @Composable
 fun TrackingSkeleton(modifier: Modifier = Modifier) {
-    CustomLazyGrid {
+    CustomLazyGrid(
+        userScrollEnabled = false,
+    ) {
         // Chips Row
         item(
             key = "ChipsSkeleton",
