@@ -93,19 +93,19 @@ fun SettingsPage(
                             .padding(16.dp),
                     ) {
                         Icon(
-                            if (authState != null) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
+                            if (authState is AuthState.Authenticated) Icons.Default.Person else Icons.AutoMirrored.Filled.Login,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(45.dp),
                         )
                         Column {
                             Text(
-                                if (authState != null) "Your Profile" else "Sign in",
+                                if (authState is AuthState.Authenticated) "Your Profile" else "Sign in",
                                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
 //                                overflow = TextOverflow.Ellipsis,
                             )
                             Text(
-                                if (authState != null) "See your account and the status of your lists"
+                                if (authState is AuthState.Authenticated) "See your account and the status of your lists"
                                 else "Synchronize your watchlist and watched contents",
                                 color = Color.Gray,
                                 lineHeight = 16.sp,

@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -81,7 +80,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
@@ -585,25 +583,12 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
 
 @Composable
 fun Logo() {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            painterResource(R.drawable.logo_monochrome),
-            null,
-            Modifier.size(40.dp),
-            tint = Color.White,
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(
-            text = "Rewatch",
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-        )
-    }
+    Icon(
+        painterResource(R.drawable.logo_monochrome),
+        null,
+        Modifier.size(40.dp),
+        tint = Color.White,
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

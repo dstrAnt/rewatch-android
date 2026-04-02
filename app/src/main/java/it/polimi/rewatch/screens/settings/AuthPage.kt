@@ -4,10 +4,13 @@ import android.content.Intent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -42,6 +45,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.AuthState
 import it.polimi.rewatch.common.LinkResult
+import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
@@ -222,12 +226,22 @@ private fun IdleContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text("ReWatch", style = MaterialTheme.typography.headlineLarge)
+        Row(
+            Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Logo()
+            Spacer(Modifier.width(10.dp))
+            Text("ReWatch", style = MaterialTheme.typography.headlineLarge)
+        }
+//        Logo()
 
         when (authState) {
             is AuthState.Anonymous -> {
                 Text(
-                    "You're browsing as a guest. Sign in to sync your lists.",
+                    "You're browsing as a guest. Sign in to sync your lists on this device.",
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -236,7 +250,7 @@ private fun IdleContent(
 
             else -> {
                 Text(
-                    "Sign in with a magic link",
+                    "Sign in to start building your lists",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
