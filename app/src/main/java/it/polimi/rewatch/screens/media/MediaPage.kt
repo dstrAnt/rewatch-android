@@ -285,51 +285,61 @@ private fun TrackingInfo(
 ) {
     HorizontalDivider()
     Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(vertical = 10.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(DividerDefaults.color)
-            .clickable(onClick = onClick),
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(10.dp))
-        if (watchedListItem != null) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
-            ) {
-                if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
-                else Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
-                if (watchedListItem.rating == 0.0f) Text("You watched this content")
-                else {
-                    Text("You rated this content")
-                    StarRating(watchedListItem.rating / 2)
+        Column(
+            Modifier
+                .width(400.dp)
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 10.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(DividerDefaults.color)
+                .clickable(onClick = onClick),
+        ) {
+            Spacer(Modifier.height(10.dp))
+            if (watchedListItem != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                ) {
+                    if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
+                    else Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
+                    if (watchedListItem.rating == 0.0f) Text("You watched this content")
+                    else {
+                        Text("You rated this content")
+                        StarRating(watchedListItem.rating / 2)
+                    }
                 }
+                Spacer(Modifier.height(10.dp))
+            } else if (watchlistItem != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
+                    Text("This content is in your watchlist")
+                }
+                Spacer(Modifier.height(10.dp))
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Icon(
+                        painterResource(R.drawable.popcorn),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text("Add this content to your lists")
+                }
+                Spacer(Modifier.height(10.dp))
             }
-            Spacer(Modifier.height(10.dp))
-        } else if (watchlistItem != null) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            ) {
-                Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
-                Text("This content is in your watchlist")
-            }
-            Spacer(Modifier.height(10.dp))
-        } else {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            ) {
-                Icon(painterResource(R.drawable.popcorn), contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
-                Text("Add this content to your lists")
-            }
-            Spacer(Modifier.height(10.dp))
         }
     }
 }
@@ -596,16 +606,19 @@ fun BackdropImage(
     modifier: Modifier = Modifier,
 ) {
     image?.let {
-        Box {
+        Box(
+            modifier = Modifier
+                .layoutEvade(
+                    padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
+
+            ) {
             RewatchAsyncImage(
                 model = build(it, width = 600, height = 300),
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxWidth()
                     .height(210.dp)
-                    .layoutEvade(
-                        padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
-                    ),
             )
             Box(
                 modifier = Modifier

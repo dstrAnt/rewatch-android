@@ -1,10 +1,12 @@
 package it.polimi.rewatch.screens.settings
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,7 +16,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,7 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.HorizontalDivider
@@ -57,10 +59,13 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val repository: PersistRepository,
+    val repository: PersistRepository,
 ) : ViewModel() {
+    val state = repository.authState
+
     private val _errorMessage = MutableStateFlow<String?>(null)
 
     private inline fun <T> Flow<Result<List<T>>>.countBy(crossinline predicate: (T) -> Boolean): Flow<Int> {
@@ -82,30 +87,33 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         repository.logout()
     }
+
 }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfilePage(
     outerPadding: PaddingValues,
     actions: NavigationActions,
     vm: ProfileViewModel = hiltViewModel(),
 ) {
+    val authState by vm.state.collectAsStateWithLifecycle(AuthState.SignedOut)
+
     val watchedMovies by vm.watchedMovies.collectAsStateWithLifecycle(0)
     val watchedShows by vm.watchedShows.collectAsStateWithLifecycle(0)
     val watchlistShows by vm.watchlistShows.collectAsStateWithLifecycle(0)
     val watchlistMovies by vm.watchlistMovies.collectAsStateWithLifecycle(0)
     val email by vm.email.collectAsStateWithLifecycle("")
 
-    val scrollState = rememberScrollState()
-
     fun handleLogout() {
         vm.logout()
         actions.onClearAndNavigateToSettings()
     }
+
     Scaffold(
         topBar = {
-            BasicTopBar("Profile", rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack)) { actions.onNavigateBack() }
+            BasicTopBar("Profile", rememberVectorPainter(Icons.Default.Person), false) {}
         },
         modifier = Modifier
             .padding(
@@ -113,59 +121,103 @@ fun ProfilePage(
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
     ) { paddingValues ->
-
-        Column(
+        BoxWithConstraints(
             Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .imePadding()                // handle keyboard space need
                 .padding(
                     top = paddingValues.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
                 )
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(25.dp),
+                .fillMaxSize(),
         ) {
-            ProfileBox(Icons.Default.Person, email)
-            val boxShape = RoundedCornerShape(5.dp)
             Column(
-                modifier = Modifier
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .heightIn(min = maxHeight)
+                    .padding(16.dp)
                     .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
-                ProfileBoxRow("Movies watched", "$watchedMovies", true)
-                ProfileBoxRow("TV Shows in watchlist", "$watchlistShows", true)
-                ProfileBoxRow("TV Shows watched", "$watchedShows")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(25.dp),
+                ) {
+                    val e = if (authState is AuthState.Authenticated) email else "Guest"
+                    ProfileBox(Icons.Default.Person, e)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
+                        ProfileBoxRow("Movies watched", "$watchedMovies", true)
+                        ProfileBoxRow("TV Shows in watchlist", "$watchlistShows", true)
+                        ProfileBoxRow("TV Shows watched", "$watchedShows")
+                    }
+                    // login / logout
+                    val color = when (authState) {
+                        is AuthState.Authenticated -> MaterialTheme.colorScheme.error
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+
+                    fun callback() = when (authState) {
+                        is AuthState.Authenticated -> (::handleLogout)()
+                        else -> actions.onNavigateToLogin()
+                    }
+
+                    val label = when (authState) {
+                        is AuthState.Authenticated -> "Logout"
+                        else -> "Login"
+                    }
+                    val icon = when (authState) {
+                        is AuthState.Authenticated -> Icons.AutoMirrored.Filled.Logout
+                        else -> Icons.AutoMirrored.Filled.Login
+                    }
+                    LogButton(color, { callback() }, label, icon)
+                    Spacer(Modifier.height(16.dp))
+                }
+                Column(
+                    Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text("Rewatch-Android v0.9b", style = MaterialTheme.typography.bodySmall)
+                    Text("Politecnico di Milano © 2026", style = MaterialTheme.typography.bodySmall)
+                }
             }
-            // logout
-            val redColor = MaterialTheme.colorScheme.error
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(boxShape)
-                    .border(
-                        BorderStroke(1.dp, redColor),
-                        boxShape,
-                    )
-                    .clickable(onClick = ::handleLogout)
-                    .padding(vertical = 10.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text("Logout", color = redColor)
-                Spacer(Modifier.width(10.dp))
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = redColor)
-            }
-            Spacer(Modifier.height(16.dp))
         }
     }
-
 }
 
 @Composable
-private fun ProfileBoxRow(label: String, value: String, withDivider: Boolean = false) {
+private fun LogButton(
+    color: Color,
+    callback: () -> Unit,
+    label: String,
+    icon: ImageVector,
+) {
+    val boxShape = RoundedCornerShape(5.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(boxShape)
+            .border(
+                BorderStroke(1.dp, color),
+                boxShape,
+            )
+            .clickable(onClick = callback)
+            .padding(vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = color)
+        Spacer(Modifier.width(10.dp))
+        Icon(icon, contentDescription = null, tint = color)
+    }
+}
+
+
+@Composable
+fun ProfileBoxRow(label: String, value: String, withDivider: Boolean = false) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier

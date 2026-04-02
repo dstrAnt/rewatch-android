@@ -1,19 +1,26 @@
 package it.polimi.rewatch.screens.settings
 
 import android.content.Intent
+import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,10 +39,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -44,6 +53,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.AuthState
+import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.LinkResult
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
@@ -51,6 +61,10 @@ import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 
+
+fun String.isValidEmail(): Boolean {
+    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
+}
 
 // --- ViewModel ---
 @HiltViewModel
@@ -108,19 +122,19 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun signInAnonymously() {
-        uiState = AuthUiState.Loading("Setting up…")
-        viewModelScope.launch {
-            repo.signInAnonymously()
-                .onSuccess { uiState = AuthUiState.Idle }
-                .onFailure { uiState = AuthUiState.Error(it.message ?: "Failed") }
-        }
-    }
-
-    fun logout() {
-        repo.logout()
-        uiState = AuthUiState.Idle
-    }
+//    fun signInAnonymously() {
+//        uiState = AuthUiState.Loading("Setting up…")
+//        viewModelScope.launch {
+//            repo.signInAnonymously()
+//                .onSuccess { uiState = AuthUiState.Idle }
+//                .onFailure { uiState = AuthUiState.Error(it.message ?: "Failed") }
+//        }
+//    }
+//
+//    fun logout() {
+//        repo.logout()
+//        uiState = AuthUiState.Idle
+//    }
 }
 
 sealed interface AuthUiState {
@@ -134,6 +148,7 @@ sealed interface AuthUiState {
 // --- Compose Screen ---
 @Composable
 fun AuthPage(
+    outerPadding: PaddingValues,
     viewModel: AuthViewModel = hiltViewModel(),
     actions: NavigationActions,
     onContinue: () -> Unit,
@@ -144,6 +159,7 @@ fun AuthPage(
         if (authState is AuthState.Authenticated) onContinue()
     }
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
 
 
     DisposableEffect(context) {
@@ -174,13 +190,26 @@ fun AuthPage(
         }
     }
 
-    Scaffold { padding ->
-        Box(
+    Scaffold(
+        topBar = {
+            BasicTopBar("Log in", rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack)) { actions.onNavigateBack() }
+        },
+        modifier = Modifier.padding(
+            start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+        ),
+    ) { padding ->
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+                .imePadding()     // handle keyboard space need
+                .padding(
+                    top = padding.calculateTopPadding() + 25.dp,
+                    bottom = outerPadding.calculateBottomPadding(),
+                )
+                .padding(horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             when (val ui = viewModel.uiState) {
                 is AuthUiState.Loading -> LoadingContent(ui.message)
@@ -201,12 +230,12 @@ fun AuthPage(
                 )
 
                 is AuthUiState.Idle -> IdleContent(
-                    authState = authState,
+//                    authState = authState,
                     email = viewModel.email,
                     onEmailChange = { viewModel.email = it },
                     onSendLink = { viewModel.sendMagicLink() },
-                    onSkip = { viewModel.signInAnonymously() },
-                    onLogout = { viewModel.logout() },
+//                    onSkip = { viewModel.signInAnonymously() },
+//                    onLogout = { viewModel.logout() },
                 )
             }
         }
@@ -215,12 +244,12 @@ fun AuthPage(
 
 @Composable
 private fun IdleContent(
-    authState: AuthState,
+//    authState: AuthState,
     email: String,
     onEmailChange: (String) -> Unit,
     onSendLink: () -> Unit,
-    onSkip: () -> Unit,
-    onLogout: () -> Unit,
+//    onSkip: () -> Unit,
+//    onLogout: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -236,26 +265,12 @@ private fun IdleContent(
             Spacer(Modifier.width(10.dp))
             Text("ReWatch", style = MaterialTheme.typography.headlineLarge)
         }
-//        Logo()
-
-        when (authState) {
-            is AuthState.Anonymous -> {
-                Text(
-                    "You're browsing as a guest. Sign in to sync your lists on this device.",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            else -> {
-                Text(
-                    "Sign in to start building your lists",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        Text(
+            "Sign in to synchronize your lists",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
 
         OutlinedTextField(
             value = email,
@@ -272,24 +287,14 @@ private fun IdleContent(
 
         Button(
             onClick = onSendLink,
-            enabled = email.isNotBlank(),
+            enabled = email.isValidEmail(),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text("Send magic link")
+            Text("Send link")
         }
-
-        if (authState is AuthState.SignedOut) {
-            TextButton(onClick = onSkip) {
-                Text("Skip for now")
-            }
-        }
-
-        if (authState is AuthState.Anonymous) {
-            TextButton(onClick = onLogout) {
-                Text("Sign out guest account")
-            }
-        }
+        Spacer(Modifier.height(16.dp))
     }
+
 }
 
 @Composable

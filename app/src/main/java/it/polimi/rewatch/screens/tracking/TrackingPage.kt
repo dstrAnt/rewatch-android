@@ -20,7 +20,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -41,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -79,8 +77,8 @@ fun getTrackingPainter(
     type: MediaType,
 ): Painter {
     return when (type) {
-        MediaType.MOVIE -> painterResource(R.drawable.movie2)
-        MediaType.TV_SHOW -> rememberVectorPainter(Icons.Default.Tv)
+        MediaType.MOVIE -> painterResource(R.drawable.movie)
+        MediaType.TV_SHOW -> painterResource(R.drawable.tv)
         else -> error("Undefined tracking page for this media type")
     }
 }

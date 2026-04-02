@@ -1,5 +1,6 @@
 package it.polimi.rewatch.common
 
+import android.content.res.Configuration
 import android.os.Build
 import android.view.RoundedCorner
 import androidx.activity.compose.PredictiveBackHandler
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,6 +78,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
@@ -516,7 +519,7 @@ fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 // 2. Removed .fillMaxSize() so the gesture bounds strictly match the scaled image
-                .fillMaxWidth()
+                .fillMaxByOrientation() // <--- Your custom modifier
                 .graphicsLayer {
                     translationY = animatedOffsetY
                     scaleX = animatedScale
@@ -604,7 +607,7 @@ fun BasicTopBar(
             Text(title)
         },
         navigationIcon = {
-            IconButton(onClick = onBack, enabled = true) {
+            IconButton(onClick = onBack, enabled = clickEnabled) {
                 Icon(
                     icon,
                     contentDescription = null,
@@ -616,4 +619,14 @@ fun BasicTopBar(
             }
         },
     )
+}
+
+fun Modifier.fillMaxByOrientation(): Modifier = composed {
+    val orientation = LocalConfiguration.current.orientation
+
+    if (orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        fillMaxWidth()
+    } else {
+        fillMaxHeight()
+    }
 }

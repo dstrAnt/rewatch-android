@@ -27,9 +27,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -73,7 +72,7 @@ import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.search.SearchViewModel
 import it.polimi.rewatch.screens.settings.AuthPage
 import it.polimi.rewatch.screens.settings.ProfilePage
-import it.polimi.rewatch.screens.settings.SettingsPage
+import it.polimi.rewatch.screens.settings.ProfilePageEx
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.launch
@@ -205,7 +204,7 @@ fun RewatchApp() {
                             )
 
 
-                            AppDestinations.SETTINGS -> SettingsPage(outerPadding, navActions)
+                            AppDestinations.PROFILE -> ProfilePage(outerPadding, navActions)
                         }
                     }
                 }
@@ -232,20 +231,22 @@ fun RewatchApp() {
                     )
                 }
                 entry<LoginPage> {
-                    AuthPage(actions = navActions) {}
+                    AuthPage(actions = navActions, outerPadding = outerPadding) {
+                        navActions.onClearAndNavigateToSettings()
+                    }
 //                    LoginPage(
 //                        actions = navActions,
 //                        outerPadding = outerPadding,
 //                    )
                 }
                 entry<ProfilePage> {
-                    ProfilePage(
+                    ProfilePageEx(
                         outerPadding = outerPadding,
                         actions = navActions,
                     )
                 }
                 entry<SettingsPage> {
-                    SettingsPage(
+                    ProfilePage(
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
@@ -288,9 +289,9 @@ private fun BottomBar(
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
-        modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
+        modifier = Modifier.height(65.dp + systemBarHeight),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
+        tonalElevation = 0.dp,
         windowInsets = NavigationBarDefaults.windowInsets,
     ) {
         AppDestinations.entries.forEach { destination ->
@@ -345,14 +346,14 @@ enum class AppDestinations(
     ),
     MOVIE(
         "Movies",
-        intIcon = R.drawable.movie2,
+        intIcon = R.drawable.movie,
     ),
     TV(
         "Tv Shows",
-        Icons.Default.Tv,
+        intIcon = R.drawable.tv,
     ),
-    SETTINGS(
-        "Settings", Icons.Default.Settings,
+    PROFILE(
+        "Profile", Icons.Default.Person,
     );
 
     @Composable

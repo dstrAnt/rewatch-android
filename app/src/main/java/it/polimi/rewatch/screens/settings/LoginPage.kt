@@ -2,7 +2,6 @@ package it.polimi.rewatch.screens.settings
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.util.Patterns
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -60,11 +59,6 @@ import kotlinx.coroutines.launch
 enum class LoginState {
     LOGIN, LINK
 }
-
-fun String.isValidEmail(): Boolean {
-    return Patterns.EMAIL_ADDRESS.matcher(this).matches()
-}
-
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
