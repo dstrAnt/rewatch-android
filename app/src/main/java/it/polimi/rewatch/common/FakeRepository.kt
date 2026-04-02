@@ -9,17 +9,14 @@ import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
 
 
 interface PersistRepository {
     suspend fun sendSignInLink(email: String): Result<Unit>
     suspend fun verifySignInLink(email: String, link: String): Result<LinkResult>
-    fun isLogged(): Boolean
 
     //val email: SharedFlow<String?>
     val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
@@ -43,41 +40,37 @@ interface PersistRepository {
 @Singleton
 class FakeRepository @Inject constructor() : PersistRepository {
     private val _watchlistFlow = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
-
-    // 2. Expose it as a read-only SharedFlow
     override val watchlistFlow = _watchlistFlow.asSharedFlow()
     private val _watchedFlow = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
     override val watchedFlow = _watchedFlow.asSharedFlow()
+    private var _email = ""
 
     init {
         _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
         _watchedFlow.tryEmit(Result.success(fakeWatch))
     }
 
-    private val _code = MutableStateFlow("")
-    fun generateCode() {
-        _code.update { generateVerificationCode() }
-    }
-
-    private val _email = MutableStateFlow("")
-    val email = _email.asSharedFlow()
     override suspend fun sendSignInLink(email: String): Result<Unit> {
         return Result.success(Unit)
     }
 
     override suspend fun verifySignInLink(email: String, link: String): Result<LinkResult> {
-        return Result.success(LinkResult.Linked)
+        _email = email
+        _authState.tryEmit(AuthState.Authenticated("", email))
+        return Result.success(LinkResult.SignedIn)
     }
 
     override fun logout() {
-        _email.update { "" }
+        _authState.tryEmit(AuthState.SignedOut)
+        _email = ""
     }
 
-    override val authState: SharedFlow<AuthState>
-        get() = TODO("Not yet implemented")
+    private val _authState = MutableSharedFlow<AuthState>(replay = 1)
+    override val authState = _authState.asSharedFlow()
 
     override suspend fun signInAnonymously(): Result<Unit> {
-        TODO("Not yet implemented")
+        _authState.tryEmit(AuthState.Anonymous(""))
+        return Result.success(Unit)
     }
 
     override suspend fun resolveCollision(
@@ -85,10 +78,8 @@ class FakeRepository @Inject constructor() : PersistRepository {
         credential: AuthCredential,
         merge: Boolean,
     ): Result<Unit> {
-        TODO("Not yet implemented")
+        return Result.success(Unit)
     }
-
-    override fun isLogged() = _email.value != ""
 
     // The base helper we created earlier
     private inline fun <T> MutableSharedFlow<Result<List<T>>>.updateList(crossinline transform: (List<T>) -> List<T>) {
@@ -269,14 +260,3 @@ val fakeWatch = listOf(
     ),
 )
 
-fun generateVerificationCode(): String {
-    val code = "111111"
-//    val code = (100000..999999).random().toString()
-//    println(code)
-    return code
-}
-
-fun String.isValidSixDigitCode(): Boolean {
-    val codeRegex = "^[0-9]{6}$".toRegex()
-    return this.matches(codeRegex)
-}

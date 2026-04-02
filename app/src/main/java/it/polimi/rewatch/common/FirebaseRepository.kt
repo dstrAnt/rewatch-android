@@ -54,7 +54,6 @@ class FirebaseRepository @Inject constructor(
         awaitClose { auth.removeAuthStateListener(listener) }
     }.stateIn(appScope, SharingStarted.WhileSubscribed(5000), AuthState.SignedOut)
 
-    override fun isLogged(): Boolean = auth.currentUser != null
 
     // --- Anonymous auth ---
     override suspend fun signInAnonymously(): Result<Unit> = runCatching {

@@ -4,9 +4,11 @@ import android.content.res.Configuration
 import android.os.Build
 import android.view.RoundedCorner
 import androidx.activity.compose.PredictiveBackHandler
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
@@ -87,6 +89,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
@@ -196,7 +199,6 @@ fun BorderBox(
 //    mediaId: String,
 //    navController: NavHostController,
 //) = navController.navigate("movie_page/$mediaId")
-
 fun Double.getShortNotation(): String {
     return when {
         this >= 1_000_000_000 -> String.format(Locale.US, "%.1f billion", this / 1_000_000_000)
@@ -431,56 +433,30 @@ fun <T : Any> AnimatedNavDisplay(
 ) = NavDisplay(
     backStack = backStack,
     onBack = onBack,
-    transitionSpec = {
-        // Forward Navigation:
-        // New screen slides in from the right TOGETHER WITH old screen pushing left
-        slideInHorizontally(
-            animationSpec = tween(400),
-            initialOffsetX = { fullWidth -> fullWidth },
-        ) togetherWith slideOutHorizontally(
-            animationSpec = tween(400),
-            targetOffsetX = { fullWidth -> -fullWidth / 4 },
-        )
-    },
-    popTransitionSpec = {
-        // Backward Navigation (Predictive Back):
-        // Old screen pulls in from the left TOGETHER WITH top screen sliding right
-        slideInHorizontally(
-            animationSpec = tween(
-                durationMillis = 400,
-                easing = EaseInOutCubic,
-            ),
-            initialOffsetX = { fullWidth -> -fullWidth / 4 },
-        ) togetherWith slideOutHorizontally(
-            animationSpec = tween(
-                durationMillis = 400,
-                easing = EaseInOutCubic,
-            ),
-            targetOffsetX = { fullWidth -> fullWidth },
-        ).apply {
-            // CRITICAL FOR PARALLAX:
-            // This forces the returning bottom screen to render underneath the exiting top screen.
-            // Without this, the bottom screen will pop on top and hide your slide/shadow.
-            //targetContentZIndex = -1f
-        }
-    },
-    predictivePopTransitionSpec = {
-        // PREDICTIVE BACK: Triggered ONLY by the edge-swipe gesture.
-        // Using a standard tween here allows the OS to seamlessly map your
-        // finger's physical swipe distance to the X-offset of the slide.
-        slideInHorizontally(
-            animationSpec = tween(400),
-            initialOffsetX = { fullWidth -> -fullWidth / 4 },
-        ) togetherWith slideOutHorizontally(
-            animationSpec = tween(400),
-            targetOffsetX = { fullWidth -> fullWidth },
-        ).apply {
-            // Keeps the exiting screen hovering ON TOP of the returning screen
-            //   targetContentZIndex = -1f
-        }
-    },
     entryProvider = entryProvider,
+    transitionSpec = {
+        slideInHorizontally(standardTween) { it } togetherWith
+                slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR }
+    },
+    popTransitionSpec = { popContentTransform() },
+    predictivePopTransitionSpec = { popContentTransform() },
 )
+
+private const val ANIM_DURATION = 400
+private const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
+
+// 2. Create reusable animation specs (Note the <IntOffset> type required for slides)
+private val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
+private val cubicTween = tween<IntOffset>(ANIM_DURATION, easing = EaseInOutCubic)
+
+// 3. Create a helper function for the pop transitions
+private fun popContentTransform(): ContentTransform {
+    return (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } togetherWith
+            slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }).apply {
+        // Keeps the exiting screen hovering ON TOP of the returning screen
+        targetContentZIndex = -1f
+    }
+}
 
 @Composable
 fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {

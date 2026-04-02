@@ -108,7 +108,7 @@ fun ProfilePage(
 
     fun handleLogout() {
         vm.logout()
-        actions.onClearAndNavigateToSettings()
+        //actions.onClearAndNavigateToSettings()
     }
 
     Scaffold(

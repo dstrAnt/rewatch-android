@@ -54,7 +54,7 @@ object FirebaseModule {
 abstract class RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindPersistRepository(impl: FirebaseRepository): PersistRepository
+    abstract fun bindPersistRepository(impl: FakeRepository): PersistRepository
 }
 
 @Qualifier

@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -78,6 +78,9 @@ class AuthViewModel @Inject constructor(
     // Hold collision info so we can resolve it after user decides
     private var pendingCollision: LinkResult.Collision? = null
 
+    fun reset() {
+        uiState = AuthUiState.Idle
+    }
 
     fun sendMagicLink() {
         if (email.isBlank()) return
@@ -97,7 +100,7 @@ class AuthViewModel @Inject constructor(
                     when (result) {
                         is LinkResult.Linked,
                         is LinkResult.SignedIn,
-                            -> uiState = AuthUiState.Idle
+                            -> uiState = AuthUiState.Success
 
                         is LinkResult.Collision -> {
                             pendingCollision = result
@@ -121,26 +124,13 @@ class AuthViewModel @Inject constructor(
                 .onFailure { uiState = AuthUiState.Error(it.message ?: "Failed") }
         }
     }
-
-//    fun signInAnonymously() {
-//        uiState = AuthUiState.Loading("Setting up…")
-//        viewModelScope.launch {
-//            repo.signInAnonymously()
-//                .onSuccess { uiState = AuthUiState.Idle }
-//                .onFailure { uiState = AuthUiState.Error(it.message ?: "Failed") }
-//        }
-//    }
-//
-//    fun logout() {
-//        repo.logout()
-//        uiState = AuthUiState.Idle
-//    }
 }
 
 sealed interface AuthUiState {
     data object Idle : AuthUiState
     data class Loading(val message: String) : AuthUiState
     data object LinkSent : AuthUiState
+    data object Success : AuthUiState
     data object MergePrompt : AuthUiState
     data class Error(val message: String) : AuthUiState
 }
@@ -151,13 +141,14 @@ fun AuthPage(
     outerPadding: PaddingValues,
     viewModel: AuthViewModel = hiltViewModel(),
     actions: NavigationActions,
-    onContinue: () -> Unit,
 ) {
-    val authState by viewModel.authState.collectAsStateWithLifecycle(AuthState.SignedOut)
     // If authenticated (non-anonymous), navigate away
-    LaunchedEffect(authState) {
-        if (authState is AuthState.Authenticated) onContinue()
-    }
+//    LaunchedEffect(authState) {
+//        if (authState is AuthState.Authenticated) {
+//            delay(400L) // Wait for 1 second (1000 milliseconds)
+//            //        actions.onNavigateBack()
+//        }
+//    }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
@@ -214,6 +205,10 @@ fun AuthPage(
             when (val ui = viewModel.uiState) {
                 is AuthUiState.Loading -> LoadingContent(ui.message)
                 is AuthUiState.LinkSent -> LinkSentContent()
+                is AuthUiState.Success -> SuccessContent {
+                    actions.onNavigateBack()
+                }
+
                 is AuthUiState.MergePrompt -> MergePromptContent(
                     onMerge = {
                         viewModel.resolveCollision(merge = true)
@@ -221,6 +216,7 @@ fun AuthPage(
                     },
                     onDiscard = {
                         viewModel.resolveCollision(merge = false)
+                        actions.onClearAndNavigateToSettings()
                     },
                 )
 
@@ -294,7 +290,33 @@ private fun IdleContent(
         }
         Spacer(Modifier.height(16.dp))
     }
+}
 
+@Composable
+private fun SuccessContent(
+    onMerge: () -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            Icons.Default.CheckCircleOutline,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text("Success", style = MaterialTheme.typography.headlineSmall)
+        Text(
+            "You are logged in.",
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+//        TextButton(onClick = onMerge) { Text("Done") }
+        Button(onClick = onMerge, modifier = Modifier.fillMaxWidth()) {
+            Text("Done")
+        }
+    }
 }
 
 @Composable

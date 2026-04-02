@@ -72,7 +72,6 @@ import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.search.SearchViewModel
 import it.polimi.rewatch.screens.settings.AuthPage
 import it.polimi.rewatch.screens.settings.ProfilePage
-import it.polimi.rewatch.screens.settings.ProfilePageEx
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.launch
@@ -231,20 +230,13 @@ fun RewatchApp() {
                     )
                 }
                 entry<LoginPage> {
-                    AuthPage(actions = navActions, outerPadding = outerPadding) {
-                        navActions.onClearAndNavigateToSettings()
-                    }
+                    AuthPage(actions = navActions, outerPadding = outerPadding)
 //                    LoginPage(
 //                        actions = navActions,
 //                        outerPadding = outerPadding,
 //                    )
                 }
-                entry<ProfilePage> {
-                    ProfilePageEx(
-                        outerPadding = outerPadding,
-                        actions = navActions,
-                    )
-                }
+
                 entry<SettingsPage> {
                     ProfilePage(
                         actions = navActions,
