@@ -1,5 +1,6 @@
 package it.polimi.rewatch.screens.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,12 +8,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.items
@@ -20,13 +24,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,12 +45,56 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.CustomLazyGrid
+import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
+
+enum class HomeTabItem(val title: String) {
+    MOVIES("Movies"), SHOWS("TV Shows")
+}
+
+@Composable
+private fun HomeTopBar(
+    tabs: List<HomeTabItem>,
+    selectedTab: HomeTabItem,
+    onClick: (HomeTabItem) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier
+            .fillMaxWidth()
+            .background(Color.Black)
+            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Logo()
+            Spacer(Modifier.width(10.dp))
+            Text(
+                text = "ReWatch",
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            )
+        }
+        CustomTabRow(
+            availableTabs = tabs,
+            onClick = onClick,
+            title = { it.title },
+            tabState = selectedTab,
+            containerColor = headerColor,
+            divider = {},
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,33 +103,12 @@ fun HomePage(
     actions: NavigationActions,
     outerPadding: PaddingValues,
 ) {
+    val tabs = HomeTabItem.entries
+    var selectedTab by rememberSaveable { mutableStateOf(tabs.first()) }
+
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Logo()
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            text = "ReWatch",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = headerColor,
-                    scrolledContainerColor = Color.Unspecified,
-                    navigationIconContentColor = Color.Unspecified,
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.Unspecified,
-                ),
-            )
+            HomeTopBar(tabs, selectedTab, { selectedTab = it })
         },
     ) { paddingValues ->
         AnimatedUiState(
@@ -104,6 +129,7 @@ fun HomePage(
             HomeContent(
                 data,
                 actions,
+                selectedTab,
             )
         }
     }
@@ -113,12 +139,16 @@ fun HomePage(
 fun HomeContent(
     data: HomeData,
     actions: NavigationActions,
+    selectedTab: HomeTabItem,
 ) {
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
-
+    val data = when (selectedTab) {
+        HomeTabItem.MOVIES -> data.movieData
+        HomeTabItem.SHOWS -> data.showData
+    }
 
     CustomLazyGrid {
         listOf(
@@ -139,6 +169,7 @@ fun HomeContent(
     }
 }
 
+
 fun LazyGridScope.movieSection(
     title: String,
     movies: List<PosterInfo>,
@@ -156,6 +187,7 @@ fun LazyGridScope.movieSection(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(painterResource(icon), null, Modifier.size(24.dp), Color.White)
             Text(
                 text = title,
                 color = Color.White,
@@ -164,7 +196,6 @@ fun LazyGridScope.movieSection(
                     .padding(vertical = 10.dp)
                     .animateItem(fadeInSpec = null, fadeOutSpec = null),
             )
-            Icon(painterResource(icon), null, Modifier.size(24.dp), Color.White)
         }
     }
     // --- Adaptive Grid ---

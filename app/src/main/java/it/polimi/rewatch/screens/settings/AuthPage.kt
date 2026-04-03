@@ -39,6 +39,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -48,11 +49,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
-import it.polimi.rewatch.common.AuthState
 import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.LinkResult
 import it.polimi.rewatch.common.Logo
@@ -183,7 +182,11 @@ fun AuthPage(
 
     Scaffold(
         topBar = {
-            BasicTopBar("Log in", rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack)) { actions.onNavigateBack() }
+            BasicTopBar(
+                "",
+                rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
+                color = Color.Unspecified,
+            ) { actions.onNavigateBack() }
         },
         modifier = Modifier.padding(
             start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),

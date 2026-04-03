@@ -7,6 +7,7 @@ import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.AppendResponse
 import app.moviebase.tmdb.model.TmdbDiscover
 import app.moviebase.tmdb.model.TmdbDiscoverMovieSortBy
+import app.moviebase.tmdb.model.TmdbDiscoverShowSortBy
 import app.moviebase.tmdb.model.TmdbDiscoverTimeRange
 import app.moviebase.tmdb.model.TmdbTimeWindow
 import it.polimi.rewatch.model.EpisodeId
@@ -15,7 +16,7 @@ import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
-import it.polimi.rewatch.screens.home.HomeData
+import it.polimi.rewatch.screens.home.MediaData
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.search.SearchType
@@ -33,8 +34,9 @@ import java.time.LocalDate
 class TmdbRepository @Inject constructor(
     private val tmdb: Tmdb3, // Hilt delivers your API client here!
 ) {
-    suspend fun getHomeData(): HomeData = withContext(Dispatchers.IO) {
+    suspend fun getHomeMovieData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
+
         val trendingDeferred = async { tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, 1).results.map(::PosterInfo) }
         val topDeferred = async { tmdb.movies.getTopRated().results.map(::PosterInfo) }
         val recentDeferred = async {
@@ -46,7 +48,28 @@ class TmdbRepository @Inject constructor(
             tmdb.discover.discoverMovie(page = 1, discover = discoverParams).results.map(::PosterInfo)
         }
 
-        HomeData(
+        MediaData(
+            trending = trendingDeferred.await(),
+            popular = topDeferred.await(),
+            recent = recentDeferred.await(),
+        )
+    }
+
+    suspend fun getHomeShowData(): MediaData = withContext(Dispatchers.IO) {
+        val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
+
+        val trendingDeferred = async { tmdb.trending.getTrendingShows(TmdbTimeWindow.DAY, 1).results.map(::PosterInfo) }
+        val topDeferred = async { tmdb.show.getTopRated().results.map(::PosterInfo) }
+        val recentDeferred = async {
+            val discoverParams = TmdbDiscover.Show(
+                sortBy = TmdbDiscoverShowSortBy.POPULARITY,
+                firstAirDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
+                voteCountGte = 50,
+            )
+            tmdb.discover.discoverShow(page = 1, discover = discoverParams).results.map(::PosterInfo)
+        }
+
+        MediaData(
             trending = trendingDeferred.await(),
             popular = topDeferred.await(),
             recent = recentDeferred.await(),

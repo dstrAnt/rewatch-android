@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
@@ -50,7 +49,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.AuthState
-import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.model.MediaType
@@ -112,9 +110,9 @@ fun ProfilePage(
     }
 
     Scaffold(
-        topBar = {
-            BasicTopBar("Profile", rememberVectorPainter(Icons.Default.Person), false) {}
-        },
+//        topBar = {
+//            BasicTopBar("Profile", rememberVectorPainter(Icons.Default.Person), false) {}
+//        },
         modifier = Modifier
             .padding(
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -142,6 +140,7 @@ fun ProfilePage(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(25.dp),
                 ) {
+                    Spacer(Modifier.height(5.dp))
                     val e = if (authState is AuthState.Authenticated) email else "Guest"
                     ProfileBox(Icons.Default.Person, e)
                     Column(
@@ -250,7 +249,7 @@ fun ProfileBox(icon: ImageVector, email: String?) {
                 imageVector = icon,
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(55.dp),
+                modifier = Modifier.size(45.dp),
             )
         }
         Text(

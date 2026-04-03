@@ -619,6 +619,7 @@ fun BasicTopBar(
     title: String,
     icon: Painter,
     clickEnabled: Boolean = true,
+    color: Color = headerColor,
     onBack: () -> Unit,
 ) {
     TopAppBar(
@@ -626,7 +627,7 @@ fun BasicTopBar(
             Text(title)
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = headerColor,
+            containerColor = color,
             scrolledContainerColor = Color.Unspecified,
             navigationIconContentColor = Color.Unspecified,
             titleContentColor = Color.White,
