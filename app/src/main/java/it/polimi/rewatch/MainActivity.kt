@@ -95,19 +95,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun RewatchApp() {
-    val backStack = rememberNavBackStack(HomeTabs)
+    val backStack = rememberNavBackStack(HomeNavTabs)
     var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
     var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { AppDestinations.entries.size })
+    val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
     val currentScreen = backStack.lastOrNull()
 
 
     val navActions = remember(backStack) {
         NavigationActions(
-            onNavigateToPerson = { id -> backStack.add(PersonPage(id)) },
-            onNavigateToMedia = { id -> backStack.add(MediaPage(id)) },
+            onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
+            onNavigateToMedia = { id -> backStack.add(MediaNavPage(id)) },
             onNavigateBack = { backStack.removeLastOrNull() },
             onFullscreenImage = {
                 Modifier.clickable {
@@ -119,14 +119,14 @@ fun RewatchApp() {
                 if (it.id is MediaId) bottomSheetMedia = it
             },
             onNavigateToLogin = {
-                backStack.add(LoginPage)
+                backStack.add(LoginNavPage)
             },
             onNavigateToProfile = {
-                backStack.add(ProfilePage)
+                backStack.add(ProfileNavPage)
             },
             onClearAndNavigateToSettings = {
                 backStack.clear()
-                backStack.add(SettingsPage)
+                backStack.add(SettingsNavPage)
             },
             onBackToHome = {
                 scope.launch {
@@ -136,7 +136,7 @@ fun RewatchApp() {
         )
     }
 
-    BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeTabs) {
+    BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeNavTabs) {
         // Snap the user back to the Home tab atomically
         scope.launch {
             pagerState.scrollToPage(0)
@@ -150,15 +150,15 @@ fun RewatchApp() {
     Scaffold(
         bottomBar = {
             BottomBar(
-                AppDestinations.entries[pagerState.currentPage],
+                BottomTabs.entries[pagerState.currentPage],
             ) {
                 scope.launch {
-                    pagerState.scrollToPage(AppDestinations.entries.indexOf(it))
+                    pagerState.scrollToPage(BottomTabs.entries.indexOf(it))
                 }
 //                    bottomBarState = it
 //
                 backStack.removeAll { true }
-                backStack.add(HomeTabs)
+                backStack.add(HomeNavTabs)
             }
         },
     ) { outerPadding ->
@@ -167,19 +167,19 @@ fun RewatchApp() {
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
-                entry<HomeTabs>(metadata = noAnimationMetadata()) {
+                entry<HomeNavTabs>(metadata = noAnimationMetadata()) {
                     // Update HomePage to accept lambdas instead of navController
                     HorizontalPager(
                         state = pagerState,
                         //modifier = Modifier.padding(innerPadding)
                     ) { page ->
-                        when (AppDestinations.entries[page]) {
-                            AppDestinations.HOME -> HomePage(
+                        when (BottomTabs.entries[page]) {
+                            BottomTabs.HOME -> HomePage(
                                 actions = navActions,
                                 outerPadding = outerPadding,
                             )
 
-                            AppDestinations.SEARCH -> {
+                            BottomTabs.SEARCH -> {
                                 val viewModel = hiltViewModel<SearchViewModel>()
 //                                viewModel.reset()
                                 SearchPage(
@@ -190,25 +190,24 @@ fun RewatchApp() {
                                 )
                             }
 
-                            AppDestinations.MOVIE -> TrackingPage(
+                            BottomTabs.MOVIE -> TrackingPage(
                                 actions = navActions,
                                 type = MediaType.MOVIE,
                                 outerPadding = outerPadding,
                             )
 
-                            AppDestinations.TV -> TrackingPage(
+                            BottomTabs.TV -> TrackingPage(
                                 actions = navActions,
                                 type = MediaType.TV_SHOW,
                                 outerPadding = outerPadding,
                             )
 
-
-                            AppDestinations.PROFILE -> ProfilePage(outerPadding, navActions)
+                            BottomTabs.PROFILE -> ProfilePage(outerPadding, navActions)
                         }
                     }
                 }
 
-                entry<MediaPage> { key ->
+                entry<MediaNavPage> { key ->
                     // 4. Look how clean this is! No more backStackEntry.arguments?.getString()
                     // You just access key.movieId directly.
                     Box(
@@ -222,14 +221,14 @@ fun RewatchApp() {
                     }
                 }
 
-                entry<PersonPage> { key ->
+                entry<PersonNavPage> { key ->
                     PersonPage(
                         actions = navActions,
                         personId = key.personId,
                         outerPadding = outerPadding,
                     )
                 }
-                entry<LoginPage> {
+                entry<LoginNavPage> {
                     AuthPage(actions = navActions, outerPadding = outerPadding)
 //                    LoginPage(
 //                        actions = navActions,
@@ -237,7 +236,7 @@ fun RewatchApp() {
 //                    )
                 }
 
-                entry<SettingsPage> {
+                entry<SettingsNavPage> {
                     ProfilePage(
                         actions = navActions,
                         outerPadding = outerPadding,
@@ -275,8 +274,8 @@ private fun noAnimationMetadata(): Map<String, Any> = metadata {
 
 @Composable
 private fun BottomBar(
-    currentDestination: AppDestinations,
-    onClick: (AppDestinations) -> Unit,
+    currentDestination: BottomTabs,
+    onClick: (BottomTabs) -> Unit,
 ) {
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Usiamo direttamente NavigationBar per avere il controllo totale
@@ -286,7 +285,7 @@ private fun BottomBar(
         tonalElevation = 0.dp,
         windowInsets = NavigationBarDefaults.windowInsets,
     ) {
-        AppDestinations.entries.forEach { destination ->
+        BottomTabs.entries.forEach { destination ->
             val isSelected = destination == currentDestination
 
             NavigationBarItem(
@@ -311,23 +310,23 @@ private fun BottomBar(
 }
 
 @Serializable
-data object HomeTabs : NavKey
+data object HomeNavTabs : NavKey
 
 @Serializable
-data object LoginPage : NavKey
+data object LoginNavPage : NavKey
 
 @Serializable
-data object ProfilePage : NavKey
+data object ProfileNavPage : NavKey
 
 @Serializable
-data object SettingsPage : NavKey
+data object SettingsNavPage : NavKey
 
 @Serializable
-data class MediaPage(val mediaId: MediaId) : NavKey
+data class MediaNavPage(val mediaId: MediaId) : NavKey
 
 @Serializable
-data class PersonPage(val personId: Int) : NavKey
-enum class AppDestinations(
+data class PersonNavPage(val personId: Int) : NavKey
+enum class BottomTabs(
     val label: String,
     val imgVec: ImageVector? = null,
     val intIcon: Int? = null,

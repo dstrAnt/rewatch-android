@@ -699,7 +699,16 @@ fun TitleAndInfoSection(
             }
 //            Spacer(Modifier.height(3.dp))
             if (directorId != null) {
-                Text("Directed by $director", Modifier.clickable { actions.onNavigateToPerson(directorId) })
+                Row {
+                    Text("Directed by ")
+                    Text(
+                        " $director ",
+                        Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .clickable { actions.onNavigateToPerson(directorId) }
+                            .padding(0.dp),
+                    )
+                }
             }
         }
 

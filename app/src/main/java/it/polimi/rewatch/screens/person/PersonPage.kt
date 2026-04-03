@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +46,7 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
+import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
@@ -68,7 +68,6 @@ enum class SortOrder(val label: String) {
 private fun String.capitalize(): String = this.replace("_", " ").lowercase().replaceFirstChar {
     if (it.isLowerCase()) it.titlecase() else it.toString()
 }
-
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -92,7 +91,6 @@ fun PersonPage(
         )
     }
 }
-
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -164,7 +162,7 @@ fun PersonContent(
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            itemFullSpan {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -287,7 +285,6 @@ private fun Bio(bio: String?) {
         ExpandableText(bio, modifier = Modifier.padding(horizontal = 16.dp), maxLines = 3)
     }
 }
-
 
 @Composable
 private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {

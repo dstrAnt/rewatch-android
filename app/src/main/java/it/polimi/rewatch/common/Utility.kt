@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -43,6 +44,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridCells.Fixed
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -364,7 +367,7 @@ fun <T> CustomTabRow(
 @Composable
 fun CustomLazyGrid(
     state: LazyGridState = rememberLazyGridState(),
-    contentPadding: PaddingValues = PaddingValues(top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     userScrollEnabled: Boolean = true,
     content: LazyGridScope.(Int) -> Unit,
 ) = BoxWithConstraints {
@@ -379,7 +382,9 @@ fun CustomLazyGrid(
         state = state,
         horizontalArrangement = Arrangement.spacedBy(7.dp),
         verticalArrangement = Arrangement.spacedBy(7.dp),
-        contentPadding = contentPadding,
+        contentPadding = PaddingValues(
+            top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp,
+        ).plus(contentPadding),
         userScrollEnabled = userScrollEnabled,
         modifier = Modifier
             .fillMaxSize()
@@ -600,9 +605,16 @@ fun BasicTopBar(
 fun Modifier.fillMaxByOrientation(): Modifier = composed {
     val orientation = LocalConfiguration.current.orientation
 
-    if (orientation != Configuration.ORIENTATION_LANDSCAPE) {
+    if (orientation != Configuration.ORIENTATION_LANDSCAPE)
         fillMaxWidth()
-    } else {
+    else
         fillMaxHeight()
-    }
 }
+
+
+fun LazyGridScope.itemFullSpan(
+    content: @Composable (LazyGridItemScope.() -> Unit),
+): Unit = item(
+    span = { GridItemSpan(maxLineSpan) },
+    content = content,
+)
