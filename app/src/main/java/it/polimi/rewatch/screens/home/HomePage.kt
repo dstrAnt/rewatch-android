@@ -156,18 +156,18 @@ fun LazyGridScope.movieSection(
                 .animateItem(fadeInSpec = null, fadeOutSpec = null),
         )
     }
-    // --- Griglia Adattiva ---
+    // --- Adaptive Grid ---
     items(
         items = displayedMovies,
         key = { "${title}_${it.id}" },
-    ) { // CRUCIAL: Compose needs this to track which items are new) {
+    ) { // CRUCIAL: Compose needs this to track which items are new
         PosterItem(
             it,
             actions,
             Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
         )
     }
-    // --- Pulsante Dinamico ---
+    // --- Dynamic Button ---
     item(key = "button_$title", span = { GridItemSpan(maxLineSpan) }) {
         if (movies.size > cellsPerRow * 3) {
             HomeButton(
