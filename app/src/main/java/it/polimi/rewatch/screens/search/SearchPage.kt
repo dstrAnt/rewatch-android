@@ -1,11 +1,13 @@
 package it.polimi.rewatch.screens.search
 
+import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -18,10 +20,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.SavedSearch
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -36,6 +42,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,11 +53,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,6 +83,21 @@ fun SearchPage(
     val movies by viewModel.media.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
+    val type = viewModel.mediaType.collectAsStateWithLifecycle().value
+    val string = when (type) {
+        SearchType.MOVIES -> "movies"
+        SearchType.TV -> "tv shows"
+        SearchType.CAST -> "people"
+    }
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = Color.Black.toArgb()
+            // Imposta le icone della status bar come chiare (perché lo sfondo è nero)
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        }
+    }
     // Intercept the back button BEFORE the SearchBar catches it,
     // and forcefully navigate back out of the page.
 //    LaunchedEffect(Unit) {
@@ -92,72 +118,110 @@ fun SearchPage(
         }
     }
     Scaffold { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(
-                    top = padding.calculateTopPadding(),
-                    bottom = outerPadding.calculateBottomPadding(),
-                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            focusManager.clearFocus()
-                        },
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(
+                        top = padding.calculateTopPadding(),
+                        bottom = outerPadding.calculateBottomPadding(),
+                        start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                        end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
                     )
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                focusManager.clearFocus()
+                            },
+                        )
+                    }
+                    .pointerInput(Unit) {
+                        detectVerticalDragGestures { change, dragAmount ->
+                            // dragAmount > 0 means the user is swiping DOWN.
+                            // We use a small threshold (e.g., 10f) so a tiny jitter
+                            // doesn't accidentally trigger the keyboard.
+                            if (dragAmount > 10f) {
+                                focusRequester.requestFocus()
+                            }
+                        }
+                    },
+            ) {
+                CustomExpandedSearchBar(
+                    placeholder = "Search $string...",
+                    query = query,
+                    onQueryChange = viewModel::onQueryChange,
+                    onClearQuery = { viewModel.onQueryChange("") },
+                    onTabChange = viewModel::onTabChanged,
+                    focusRequester = focusRequester,
+                )
+                // This is the 'content' slot
+                val focusManager = LocalFocusManager.current
+                val listState = rememberLazyListState()
+
+                LaunchedEffect(listState.isScrollInProgress) {
+                    if (listState.isScrollInProgress) {
+                        focusManager.clearFocus()
+                    }
                 }
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { change, dragAmount ->
-                        // dragAmount > 0 means the user is swiping DOWN.
-                        // We use a small threshold (e.g., 10f) so a tiny jitter
-                        // doesn't accidentally trigger the keyboard.
-                        if (dragAmount > 10f) {
-                            focusRequester.requestFocus()
+                // 2. The Results Area
+                if (query.isEmpty())
+                    Column(
+                        Modifier
+                            .padding(horizontal = 16.dp)
+                            .verticalScroll(rememberScrollState())
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Spacer(Modifier.height(50.dp))
+                        Icon(
+                            Icons.Default.SavedSearch,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(70.dp),
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "Find anything",
+                            style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
+                        )
+                        Text(
+                            "Type a query to start searching for $string",
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        Button(
+                            onClick = { focusRequester.requestFocus() },
+                        ) {
+                            Text("Search")
+                        }
+                        Spacer(Modifier.height(50.dp))
+                    }
+                else
+                    LazyColumn(
+                        modifier = Modifier.fillMaxHeight(),
+                        state = listState,
+                    ) {
+                        items(movies) {
+                            ListItem(
+                                headlineContent = {
+                                    Text(it.title.orEmpty() + it.releaseDate?.let { ", ${it.year}" }.orEmpty())
+                                },
+                                leadingContent = {
+                                    PosterItem(it, actions, modifier = Modifier.size(60.dp, 90.dp))
+                                },
+                                modifier = Modifier.clickable {
+                                    // 2. Trigger callback with the movie ID
+                                    focusManager.clearFocus()
+                                    it.id.onClick(actions)
+                                },
+                            )
+
+                            HorizontalDivider()
                         }
                     }
-                },
-        ) {
-            CustomExpandedSearchBar(
-                placeholder = "Search movies...",
-                query = query,
-                onQueryChange = viewModel::onQueryChange,
-                onClearQuery = { viewModel.onQueryChange("") },
-                onTabChange = viewModel::onTabChanged,
-                focusRequester = focusRequester,
-            )
-            // This is the 'content' slot
-            val focusManager = LocalFocusManager.current
-            val listState = rememberLazyListState()
-
-            LaunchedEffect(listState.isScrollInProgress) {
-                if (listState.isScrollInProgress) {
-                    focusManager.clearFocus()
-                }
-            }
-            // 2. The Results Area
-            LazyColumn(
-                modifier = Modifier.fillMaxHeight(),
-                state = listState,
-            ) {
-                items(movies) {
-                    ListItem(
-                        headlineContent = {
-                            Text(it.title.orEmpty() + it.releaseDate?.let { ", ${it.year}" }.orEmpty())
-                        },
-                        leadingContent = {
-                            PosterItem(it, actions, modifier = Modifier.size(60.dp, 90.dp))
-                        },
-                        modifier = Modifier.clickable {
-                            // 2. Trigger callback with the movie ID
-                            focusManager.clearFocus()
-                            it.id.onClick(actions)
-                        },
-                    )
-
-                    HorizontalDivider()
-                }
             }
         }
     }
@@ -176,7 +240,7 @@ fun CustomExpandedSearchBar(
     val focusManager = LocalFocusManager.current
 
     Surface(
-        color = MaterialTheme.colorScheme.surface,
+        color = Color.Black,
         tonalElevation = SearchBarDefaults.TonalElevation, // Gives it that slight M3 tinted look
     ) {
         Column(
@@ -245,6 +309,7 @@ fun CustomExpandedSearchBar(
         }
     }
 }
+
 enum class SearchType(val title: String) {
     MOVIES("Films"), TV("Tv"), CAST("Cast, Crew, Studios"),
 }

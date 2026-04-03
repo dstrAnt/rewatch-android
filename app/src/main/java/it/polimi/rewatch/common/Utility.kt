@@ -64,6 +64,7 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -342,11 +343,13 @@ fun <T> CustomTabRow(
     onClick: (T) -> Unit,
     title: (T) -> String,
     tabState: T?,
+    containerColor: Color = Color.Unspecified,
 ) = PrimaryScrollableTabRow(
     edgePadding = 0.dp,
     selectedTabIndex = availableTabs.indexOf(
         tabState,
     ),
+    containerColor = containerColor,
 ) {
     availableTabs.forEach {
         Tab(
@@ -587,6 +590,13 @@ fun BasicTopBar(
         title = {
             Text(title)
         },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Black,
+            scrolledContainerColor = Color.Unspecified,
+            navigationIconContentColor = Color.Unspecified,
+            titleContentColor = Color.White,
+            actionIconContentColor = Color.Unspecified,
+        ),
         navigationIcon = {
             IconButton(onClick = onBack, enabled = clickEnabled) {
                 Icon(

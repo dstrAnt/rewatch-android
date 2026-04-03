@@ -56,16 +56,19 @@ class TrackingViewModel @Inject constructor(
 //        )
     val watchedList = persistRepo.watchedFlow
         .map { result ->
-            result.getOrElse { error ->
-                _errorMessage.value = error.message
-                emptyList()
-            }
+            result.fold(
+                onSuccess = { list ->
+                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                },
+                onFailure = { error ->
+                    UiState.Error(error.message ?: "Unknown error")
+                },
+            )
         }
-        .map { list -> list.map { tmdbRepo.enrichWatched(it) } }
         .stateIn(
-            scope = viewModelScope,
+            viewModelScope,
             SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList(),
+            UiState.Loading, // <-- initial value is Loading, not empty list
         )
 //    @RequiresApi(Build.VERSION_CODES.O)
     //  override suspend fun fetchData() = tmdbRepo.getTrackingData(fakeRepo)

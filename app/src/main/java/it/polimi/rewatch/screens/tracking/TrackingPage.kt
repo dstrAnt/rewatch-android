@@ -1,5 +1,6 @@
 package it.polimi.rewatch.screens.tracking
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -106,8 +107,13 @@ fun TrackingPage(
         WatchTabItem.WATCHED to listOf(SortOption.DATE, SortOption.RATING, SortOption.ALPHABETICAL),
     )
     val activeOrder = tabSortOrders.getValue(selectedTab)
-    val state by viewModel.watchlist.collectAsStateWithLifecycle()
+    val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
     val watched by viewModel.watchedList.collectAsStateWithLifecycle()
+
+    val currentUiState = when (selectedTab) {
+        WatchTabItem.WATCHLIST -> watchlist
+        WatchTabItem.WATCHED -> watched
+    }
 
     Scaffold(
         topBar = {
@@ -122,7 +128,7 @@ fun TrackingPage(
         },
     ) { paddingValues ->
         AnimatedUiState(
-            state,
+            currentUiState,
             modifier = Modifier.padding(
                 top = paddingValues.calculateTopPadding(),
                 bottom = outerPadding.calculateBottomPadding(),
@@ -130,13 +136,10 @@ fun TrackingPage(
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
             loadingContent = ::TrackingSkeleton,
-        ) { watchlist ->
+        ) { currentList ->
             CustomLazyGrid {
                 // 1. Route to the correct list and order
-                val items = when (selectedTab) {
-                    WatchTabItem.WATCHLIST -> watchlist.filter { it.id.type == type }
-                    WatchTabItem.WATCHED -> watched.filter { it.id.type == type }
-                }
+                val items = currentList.filter { it.id.type == type }
                 // 2. Sort and group the unified data structure
                 val groupedItems = items.run {
                     when (activeOrder) {
@@ -278,6 +281,7 @@ private fun TopTabBar(
     Column(
         modifier
             .fillMaxWidth()
+            .background(Color.Black)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
         BasicTopBar(title, icon, false) {}
@@ -286,6 +290,7 @@ private fun TopTabBar(
             onClick = onClick,
             title = { it.title },
             tabState = selectedTab,
+            containerColor = Color.Black,
         )
     }
 }
