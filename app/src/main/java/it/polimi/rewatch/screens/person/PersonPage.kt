@@ -1,36 +1,32 @@
 package it.polimi.rewatch.screens.person
 
 import android.annotation.SuppressLint
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -49,12 +46,15 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
+import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
-import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.model.PosterInfo
+import it.polimi.rewatch.screens.tracking.SortFilterChips
+import it.polimi.rewatch.screens.tracking.sortedByDirection
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
@@ -69,7 +69,6 @@ private fun String.capitalize(): String = this.replace("_", " ").lowercase().rep
     if (it.isLowerCase()) it.titlecase() else it.toString()
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PersonPage(
@@ -93,7 +92,6 @@ fun PersonPage(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun PersonContent(
@@ -103,22 +101,19 @@ fun PersonContent(
 ) {
     val details = data.details
     val scrollState = rememberLazyGridState()
-
     val availableTabs = remember(data) { computeAvailableTabs(data) }
-    var currentTab by remember { mutableStateOf(availableTabs.firstOrNull() ?: "") }
-    var selectedSort by remember { mutableStateOf(SortOrder.POPULARITY) }
-
+    var currentTab by rememberSaveable { mutableStateOf(availableTabs.firstOrNull() ?: "") }
+    var selectedSort by rememberSaveable { mutableStateOf(SortOrder.POPULARITY) }
+    var isAscending by rememberSaveable { mutableStateOf(false) }
     val knownFor = remember(details) {
         details.knownForDepartment?.toString()?.replace("_", " ") ?: "Acting"
     }
     val isActingPrimary = remember(knownFor) {
         knownFor.equals("Acting", ignoreCase = true)
     }
-
     // 2. Base list popolata in base alla nuova logica di divisione delle tab
     val baseList = remember(currentTab, data, knownFor, isActingPrimary) {
         if (currentTab.isBlank()) return@remember emptyList()
-
         val combinedSequence = when (currentTab) {
             "Movies" -> {
                 if (isActingPrimary) data.movieCredits.cast.asSequence()
@@ -141,23 +136,15 @@ fun PersonContent(
         }
 
         combinedSequence
-            .map(::Media)
-            .distinctBy { it.id to it.type }
+            .map(::PosterInfo)
+            .distinctBy { it.id }
             .toList()
     }
-
     // 3. Ordinamento dinamico per Data o Popolarità
-    val displayList = remember(baseList, selectedSort) {
+    val displayList = remember(baseList, selectedSort, isAscending) {
         when (selectedSort) {
-            SortOrder.DATE -> baseList.sortedWith(
-                compareBy<Media> { it.releaseDate?.toString().isNullOrBlank() }
-                    .thenByDescending { it.releaseDate?.toString() },
-            )
-
-            SortOrder.POPULARITY -> baseList.sortedByDescending {
-                // NOTA: Se il tuo modello Media usa una property diversa per la popolarità (es: voteAverage o simili), modificala qui.
-                it.popularity
-            }
+            SortOrder.DATE -> baseList.sortedByDirection(isAscending) { it.releaseDate }
+            SortOrder.POPULARITY -> baseList.sortedByDirection(isAscending) { it.popularity }
         }
     }
 
@@ -165,15 +152,17 @@ fun PersonContent(
         details.name,
         actions.onNavigateBack,
         scrollState,
-    ) { innerPadding ->
+    ) { _ ->
         CustomLazyGrid(
             state = scrollState,
             contentPadding = PaddingValues(
-                top = outerPadding.calculateTopPadding(), bottom = outerPadding.calculateBottomPadding() + 5.dp,
-                start = 5.dp, end = 5.dp,
+                top = outerPadding.calculateTopPadding(),
+                bottom = outerPadding.calculateBottomPadding() + 5.dp,
+                start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
             ),
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            itemFullSpan {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -204,7 +193,6 @@ fun PersonContent(
                             )
                         }
                     }
-
                     // Sezione Filtri di Ordinamento
                     Row(
                         modifier = Modifier
@@ -215,11 +203,20 @@ fun PersonContent(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (displayList.isNotEmpty()) {
-                            SortFilterChips(selectedSort, onSortSelected = { selectedSort = it })
+                            SortFilterChips(
+                                SortOrder.entries, selectedSort,
+                                onSortSelected = {
+                                    if (it == selectedSort) isAscending = !isAscending
+                                    else {
+                                        selectedSort = it
+                                        isAscending = false
+                                    }
+                                },
+                                isAscending, SortOrder::label,
+                            )
                         } else {
                             Spacer(Modifier.weight(1f))
                         }
-
                         val listSize = displayList.size
                         Text(
                             text = "$listSize Title${if (listSize > 1) "s" else ""}",
@@ -232,9 +229,9 @@ fun PersonContent(
 
             items(
                 items = displayList,
-                key = { "${it.id}_${it.type.name}" },
+                key = { "${it.id}" },
             ) {
-                PosterItem(it, actions.onNavigateToMedia, Modifier.animateItem())
+                PosterItem(it, actions, Modifier.animateItem())
             }
         }
     }
@@ -253,7 +250,6 @@ private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
             data.movieCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
         }
         if (hasPrimaryMovies) add("Movies")
-
         // Tab "Shows" per il dipartimento principale
         val hasPrimaryShows = if (isActingPrimary) {
             data.showCredits.cast.isNotEmpty()
@@ -261,12 +257,10 @@ private fun computeAvailableTabs(data: PersonDetailsData): List<String> {
             data.showCredits.crew.any { it.department.toString().equals(knownFor, ignoreCase = true) }
         }
         if (hasPrimaryShows) add("Shows")
-
         // Se non è primariamente un attore ma ha crediti recitativi, crea una tab "Acting" secondaria
         if (!isActingPrimary && (data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty())) {
             add("Acting")
         }
-
         // Aggiungi tutti gli altri dipartimenti (escludendo quello principale che ora è in Movies/Shows)
         sequenceOf(data.movieCredits.crew, data.showCredits.crew)
             .flatten()
@@ -292,7 +286,6 @@ private fun Bio(bio: String?) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
     if (dateOfBirth == null) return
@@ -384,7 +377,7 @@ private fun ProfilePicture(profileImage: TmdbImage?, modifier: Modifier = Modifi
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 fun calculatePersonAge(birthday: String?): String {
     if (birthday.isNullOrBlank()) return " - "
     return try {
@@ -392,39 +385,5 @@ fun calculatePersonAge(birthday: String?): String {
         "$age years"
     } catch (_: DateTimeParseException) {
         "Wrong date format"
-    }
-}
-
-// 5. Componente dei Chip aggiornato per l'ordinamento
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SortFilterChips(
-    selectedSort: SortOrder,
-    onSortSelected: (SortOrder) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        SortOrder.entries.forEach { sort ->
-            CompositionLocalProvider(
-                LocalMinimumInteractiveComponentSize provides 0.dp,
-            ) {
-                FilterChip(
-                    modifier = Modifier.height(28.dp),
-                    selected = selectedSort == sort,
-                    onClick = { onSortSelected(sort) },
-                    label = {
-                        Text(
-                            text = sort.label,
-                            style = MaterialTheme.typography.labelMedium,
-                        )
-                    },
-                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
-                )
-            }
-        }
     }
 }

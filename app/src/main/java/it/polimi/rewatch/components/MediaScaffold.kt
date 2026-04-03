@@ -1,24 +1,11 @@
 package it.polimi.rewatch.components
 
-import androidx.activity.compose.PredictiveBackHandler
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,22 +16,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.abs
 
+/**
+ * [MediaScaffold] is a template that adds an [AppearingTopBar] at the top of a page
+ */
 @Composable
 fun MediaScaffold(
     title: String?,
@@ -53,7 +33,6 @@ fun MediaScaffold(
     modifier: Modifier = Modifier,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-
     Scaffold(
         topBar = {
             AppearingTopBar(scrollState, title, onNavigateBack)
@@ -66,79 +45,10 @@ fun MediaScaffold(
     }
 }
 
-@Composable
-fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
-    var offsetY by remember { mutableFloatStateOf(0f) }
-    var backProgress by remember { mutableFloatStateOf(0f) }
-    val animatedOffsetY by animateFloatAsState(targetValue = offsetY, label = "offsetY")
-    val scale = 1f - (backProgress * 0.15f)
-    val animatedScale by animateFloatAsState(targetValue = scale, label = "scale")
-
-    PredictiveBackHandler { progressFlow ->
-        try {
-            progressFlow.collect { backEvent ->
-                backProgress = backEvent.progress
-            }
-            onDismiss()
-        } catch (e: CancellationException) {
-            backProgress = 0f
-        }
-    }
-
-    Box(
-        // 1. Center the image inside the Box now that it doesn't fillMaxSize
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.8f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onDismiss, // This handles clicks on the gray background
-            ),
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "Full Screen",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                // 2. Removed .fillMaxSize() so the gesture bounds strictly match the scaled image
-                .fillMaxWidth()
-                .graphicsLayer {
-                    translationY = animatedOffsetY
-                    scaleX = animatedScale
-                    scaleY = animatedScale
-                }
-                .pointerInput(Unit) {
-                    // 3. Swallow taps on the image so they don't trigger the Box's dismiss click
-                    detectTapGestures(onTap = { /* Do nothing */ })
-                }
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragEnd = {
-                            if (abs(offsetY) > 300f) onDismiss() else offsetY = 0f
-                        },
-                        onDragCancel = { offsetY = 0f },
-                        onVerticalDrag = { change, dragAmount ->
-                            change.consume()
-                            offsetY += dragAmount
-                        },
-                    )
-                },
-        )
-
-        IconButton(
-            onClick = onDismiss,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(16.dp),
-        ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-        }
-    }
-}
-
+/**
+ * [AppearingTopBar] is a top bar with a gradient background that gets darker
+ * as the user scrolls down the page
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppearingTopBar(

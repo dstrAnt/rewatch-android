@@ -1,13 +1,14 @@
+@file:Suppress("AssignedValueIsNeverRead")
+
 package it.polimi.rewatch
 
 import android.graphics.Color
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -23,8 +24,10 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,14 +40,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.navigation.compose.rememberNavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.metadata
@@ -52,27 +59,31 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.common.AnimatedNavDisplay
+import it.polimi.rewatch.common.FullScreenImageOverlay
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.components.FullScreenImageOverlay
+import it.polimi.rewatch.components.BottomSheet
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.search.SearchViewModel
+import it.polimi.rewatch.screens.settings.AuthPage
+import it.polimi.rewatch.screens.settings.ProfilePage
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.theme.RewatchTheme
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint // 2. Add this annotation!
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.dark(
-                scrim = Color.TRANSPARENT,
-            ),
+            statusBarStyle = SystemBarStyle.dark(scrim = Color.TRANSPARENT),
         )
         setContent {
             RewatchTheme {
@@ -82,18 +93,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RewatchApp() {
-    var bottomBarState by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
-    rememberNavController()
-    val backStack = rememberNavBackStack(Home)
-    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
-    var isOverlayVisible by remember { mutableStateOf(false) }
+    val backStack = rememberNavBackStack(HomeNavTabs)
+    var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
+    var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
+    val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
+    val currentScreen = backStack.lastOrNull()
+
+
     val navActions = remember(backStack) {
         NavigationActions(
-            onNavigateToProfile = { id -> backStack.add(PersonPage(id)) },
-            onNavigateToMedia = { id, type -> backStack.add(MediaPage(id, type)) },
+            onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
+            onNavigateToMedia = { id -> backStack.add(MediaNavPage(id)) },
             onNavigateBack = { backStack.removeLastOrNull() },
             onFullscreenImage = {
                 Modifier.clickable {
@@ -101,20 +115,51 @@ fun RewatchApp() {
                     isOverlayVisible = true
                 }
             },
+            onBottomSheet = {
+                if (it.id is MediaId) bottomSheetMedia = it
+            },
+            onNavigateToLogin = {
+                backStack.add(LoginNavPage)
+            },
+            onNavigateToProfile = {
+                backStack.add(ProfileNavPage)
+            },
+            onClearAndNavigateToSettings = {
+                backStack.clear()
+                backStack.add(SettingsNavPage)
+            },
+            onBackToHome = {
+                scope.launch {
+                    pagerState.scrollToPage(0)
+                }
+            },
         )
+    }
+
+    BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeNavTabs) {
+        // Snap the user back to the Home tab atomically
+        scope.launch {
+            pagerState.scrollToPage(0)
+        }
+//        bottomBarState = AppDestinations.HOME
+//
+//        backStack.clear()
+//        backStack.add(Home)
     }
 
     Scaffold(
         bottomBar = {
             BottomBar(
-                bottomBarState,
-                {
-                    bottomBarState = it
-
-                    backStack.removeAll({ true })
-                    backStack.add(it.navKey)
-                },
-            )
+                BottomTabs.entries[pagerState.currentPage],
+            ) {
+                scope.launch {
+                    pagerState.scrollToPage(BottomTabs.entries.indexOf(it))
+                }
+//                    bottomBarState = it
+//
+                backStack.removeAll { true }
+                backStack.add(HomeNavTabs)
+            }
         },
     ) { outerPadding ->
         // 5. Render the stack using NavDisplay
@@ -122,36 +167,47 @@ fun RewatchApp() {
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
             entryProvider = entryProvider {
-                entry<Home>(
-                    metadata = noAnimationMetadata(),
-                ) {
+                entry<HomeNavTabs>(metadata = noAnimationMetadata()) {
                     // Update HomePage to accept lambdas instead of navController
-                    HomePage(
-                        actions = navActions,
-                        outerPadding = outerPadding,
-                    )
+                    HorizontalPager(
+                        state = pagerState,
+                        //modifier = Modifier.padding(innerPadding)
+                    ) { page ->
+                        when (BottomTabs.entries[page]) {
+                            BottomTabs.HOME -> HomePage(
+                                actions = navActions,
+                                outerPadding = outerPadding,
+                            )
+
+                            BottomTabs.SEARCH -> {
+                                val viewModel = hiltViewModel<SearchViewModel>()
+//                                viewModel.reset()
+                                SearchPage(
+                                    actions = navActions,
+                                    outerPadding = outerPadding,
+                                    pagerState = pagerState,
+                                    viewModel = viewModel,
+                                )
+                            }
+
+                            BottomTabs.MOVIE -> TrackingPage(
+                                actions = navActions,
+                                type = MediaType.MOVIE,
+                                outerPadding = outerPadding,
+                            )
+
+                            BottomTabs.TV -> TrackingPage(
+                                actions = navActions,
+                                type = MediaType.TV_SHOW,
+                                outerPadding = outerPadding,
+                            )
+
+                            BottomTabs.PROFILE -> ProfilePage(outerPadding, navActions)
+                        }
+                    }
                 }
 
-                entry<Search>(
-                    metadata = noAnimationMetadata(),
-                ) {
-                    SearchPage(
-                        actions = navActions,
-                        outerPadding = outerPadding,
-                    )
-                }
-
-                entry<TrackingPage>(
-                    metadata = noAnimationMetadata(),
-                ) { key ->
-                    TrackingPage(
-                        actions = navActions,
-                        type = key.type,
-                        outerPadding = outerPadding,
-                    )
-                }
-
-                entry<MediaPage> { key ->
+                entry<MediaNavPage> { key ->
                     // 4. Look how clean this is! No more backStackEntry.arguments?.getString()
                     // You just access key.movieId directly.
                     Box(
@@ -159,17 +215,30 @@ fun RewatchApp() {
                     ) {
                         MediaPage(
                             actions = navActions,
-                            movieId = key.mediaId, // Type-safe property
-                            mediaType = key.mediaType,
+                            mediaId = key.mediaId, // Type-safe property
                             outerPadding = outerPadding,
                         )
                     }
                 }
 
-                entry<PersonPage> { key ->
+                entry<PersonNavPage> { key ->
                     PersonPage(
                         actions = navActions,
                         personId = key.personId,
+                        outerPadding = outerPadding,
+                    )
+                }
+                entry<LoginNavPage> {
+                    AuthPage(actions = navActions, outerPadding = outerPadding)
+//                    LoginPage(
+//                        actions = navActions,
+//                        outerPadding = outerPadding,
+//                    )
+                }
+
+                entry<SettingsNavPage> {
+                    ProfilePage(
+                        actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
@@ -177,6 +246,9 @@ fun RewatchApp() {
         )
         // Add your movie details route here just like before
         // composable("movie_page/{movieId}") { ... }
+    }
+    bottomSheetMedia?.let {
+        BottomSheet(media = it, onDismiss = { bottomSheetMedia = null }, actions = navActions)
     }
     val animationSpec = tween<Float>(durationMillis = 300)
     AnimatedVisibility(
@@ -202,18 +274,18 @@ private fun noAnimationMetadata(): Map<String, Any> = metadata {
 
 @Composable
 private fun BottomBar(
-    currentDestination: AppDestinations,
-    onClick: (AppDestinations) -> Unit,
+    currentDestination: BottomTabs,
+    onClick: (BottomTabs) -> Unit,
 ) {
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
-        modifier = Modifier.height(65.dp + systemBarHeight), // Ecco i tuoi 60dp
+        modifier = Modifier.height(65.dp + systemBarHeight),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 0.dp, // Opzionale: rimuove l'ombra se vuoi un look più flat,
+        tonalElevation = 0.dp,
         windowInsets = NavigationBarDefaults.windowInsets,
     ) {
-        AppDestinations.entries.forEach { destination ->
+        BottomTabs.entries.forEach { destination ->
             val isSelected = destination == currentDestination
 
             NavigationBarItem(
@@ -226,61 +298,69 @@ private fun BottomBar(
                     unselectedIconColor = MaterialTheme.colorScheme.onSurface, // Color of the icon when inactive
                 ),
                 icon = {
-                    if (destination.imgVec != null) Icon(
-                        imageVector = destination.imgVec,
-                        contentDescription = destination.label,
-                    )
-                    else Icon(
-                        painter = painterResource(
-                            id = destination.intIcon!!,
-                        ),
-                        contentDescription = destination.label,
-                        modifier = Modifier.size(20.dp),
+                    Icon(
+                        destination.getPainter(),
+                        destination.label,
+                        Modifier.size(destination.getSize()),
                     )
                 },
             )
         }
     }
 }
-sealed interface TopLevelTab : NavKey
 
 @Serializable
-data object Home : TopLevelTab
+data object HomeNavTabs : NavKey
 
 @Serializable
-data object Search : TopLevelTab
+data object LoginNavPage : NavKey
 
 @Serializable
-data class TrackingPage(val type: MediaType) : TopLevelTab
+data object ProfileNavPage : NavKey
 
 @Serializable
-data class MediaPage(val mediaId: String, val mediaType: MediaType) : NavKey
+data object SettingsNavPage : NavKey
 
 @Serializable
-data class PersonPage(val personId: Int) : NavKey
-enum class AppDestinations(
+data class MediaNavPage(val mediaId: MediaId) : NavKey
+
+@Serializable
+data class PersonNavPage(val personId: Int) : NavKey
+enum class BottomTabs(
     val label: String,
     val imgVec: ImageVector? = null,
     val intIcon: Int? = null,
-    val navKey: NavKey,
 ) {
-    HOME("Home", intIcon = R.drawable.popcorn, navKey = Home),
+    HOME("Home", intIcon = R.drawable.popcorn),
     SEARCH(
         "Search", Icons.Default.Search,
-        navKey = Search,
     ),
     MOVIE(
         "Movies",
         intIcon = R.drawable.movie,
-        navKey = TrackingPage(MediaType.MOVIE),
     ),
     TV(
         "Tv Shows",
         intIcon = R.drawable.tv,
-        navKey = TrackingPage(MediaType.TV_SHOW),
     ),
     PROFILE(
-        "Profile", Icons.Default.AccountBox,
-        navKey = PersonPage(31),
-    ),
+        "Profile", Icons.Default.Person,
+    );
+
+    @Composable
+    fun getPainter(): Painter {
+        return when {
+            intIcon != null -> painterResource(intIcon)
+            imgVec != null -> rememberVectorPainter(imgVec)
+            else -> error("No icon found for $this")
+        }
+    }
+
+    fun getSize(): Dp {
+        return when {
+            intIcon != null -> 20.dp
+            imgVec != null -> 24.dp
+            else -> error("No icon found for $this")
+        }
+    }
 }

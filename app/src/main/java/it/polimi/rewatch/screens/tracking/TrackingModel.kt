@@ -1,43 +1,19 @@
 package it.polimi.rewatch.screens.tracking
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.BaseViewModel
+import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.Media
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.common.UiState
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
-import java.time.LocalDate
-
-interface BaseMedia {
-    val id: Int
-    val type: MediaType
-    val mediaData: Media
-    val rating: Float? get() = null
-    val title: String? get() = null
-    val popularity: Float? get() = null // Only Watchlist has this
-    val date: LocalDate? get() = null         // Only Watched has this
-}
-
-data class WatchedMedia(
-    override val id: Int,
-    override val type: MediaType,
-    override val mediaData: Media = Media(type),
-    override val rating: Float?,
-    override val date: LocalDate,
-) : BaseMedia {
-    override val title get() = mediaData.title
-}
-data class WatchlistMedia(
-    override val id: Int,
-    override val type: MediaType,
-    override val mediaData: Media = Media(type),
-) : BaseMedia {
-    override val rating: Float get() = mediaData.rating
-    override val title get() = mediaData.title
-    override val popularity get() = mediaData.popularity
-}
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 data class TrackingData(
     val watchlist: List<WatchlistMedia>,
@@ -46,96 +22,55 @@ data class TrackingData(
 
 @HiltViewModel
 class TrackingViewModel @Inject constructor(
-    private val repository: TmdbRepository,
-) : BaseViewModel<TrackingData>() {
+    private val tmdbRepo: TmdbRepository,
+    private val persistRepo: PersistRepository,
+) : ViewModel() {
 
-    init {
-        executeFetch()
-    }
+    val watchlist = persistRepo.watchlistFlow
+        .map { result ->
+            result.fold(
+                onSuccess = { list ->
+                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                },
+                onFailure = { error ->
+                    UiState.Error(error.message ?: "Unknown error")
+                },
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            UiState.Loading, // <-- initial value is Loading, not empty list
+        )
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun fetchData() = repository.getTrackingData()
+    // Optional: Keep track of loading/errors in a separate state
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage = _errorMessage.asStateFlow()
+
+    //   val _watchlist = fakeRepo.watchlist
+//        .map { list -> list.map { tmdbRepo.enrichWatched(it) } }
+//        .stateIn(
+//            scope = viewModelScope,
+//            started = SharingStarted.Lazily,
+//            initialValue = emptyList(),
+//        )
+    val watchedList = persistRepo.watchedFlow
+        .map { result ->
+            result.fold(
+                onSuccess = { list ->
+                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                },
+                onFailure = { error ->
+                    UiState.Error(error.message ?: "Unknown error")
+                },
+            )
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            UiState.Loading, // <-- initial value is Loading, not empty list
+        )
+//    @RequiresApi(Build.VERSION_CODES.O)
+    //  override suspend fun fetchData() = tmdbRepo.getTrackingData(fakeRepo)
 }
-
-// fake list builders
-fun fakeWatchlist(): List<WatchlistMedia> {
-    return buildList {
-        add(
-            WatchlistMedia(
-                id = 550,
-                type = MediaType.MOVIE,
-            ),
-        )
-        add(
-            WatchlistMedia(
-                id = 83533,
-                type = MediaType.MOVIE,
-            ),
-        )
-        add(
-            WatchlistMedia(
-                id = 1317288,
-                type = MediaType.MOVIE,
-            ),
-        )
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-fun fakeWatched(): List<WatchedMedia> = listOf(
-    WatchedMedia(
-        id = 1390,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1399,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2023, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1393,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2024, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1398,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 4, 23),
-    ),
-    WatchedMedia(
-        id = 1394,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1319,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1395,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1349,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-    WatchedMedia(
-        id = 1329,
-        type = MediaType.TV_SHOW,
-        rating = 8.5f,
-        date = LocalDate.of(2026, 3, 23),
-    ),
-)
 

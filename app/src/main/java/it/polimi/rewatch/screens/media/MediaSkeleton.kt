@@ -72,13 +72,12 @@ fun MovieSkeleton() {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 SkeletonPart(width = 200.dp, height = 16.dp) // Tagline
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
                     SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
                     SkeletonPart(Modifier.fillMaxWidth(0.6f), height = 14.dp)
                 }
             }
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
         }
 
         // 4. Stats Pill & Tabs
@@ -90,6 +89,15 @@ fun MovieSkeleton() {
                 contentAlignment = Alignment.Center,
             ) {
                 SkeletonPart(width = 250.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
+            }
+            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                SkeletonPart(width = 330.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
             }
             HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
             Row(

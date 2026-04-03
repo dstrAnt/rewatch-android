@@ -1,47 +1,53 @@
 package it.polimi.rewatch.screens.media
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import androidx.lifecycle.viewModelScope
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.BaseViewModel
+import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.Media
+import it.polimi.rewatch.common.UiFetchViewModel
 import it.polimi.rewatch.model.MediaDetail
-import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.MediaId
+import it.polimi.rewatch.model.PosterInfo
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 data class MovieData(
-    var movie: MediaDetail, var similar: List<Media>,
+    var movie: MediaDetail, var similar: List<PosterInfo>,
 )
 
 @HiltViewModel(assistedFactory = MediaViewModel.Factory::class)
 class MediaViewModel @AssistedInject constructor(
-    @Assisted("mediaId") private val mediaId: String,
-    @Assisted("mediaType") private val mediaType: MediaType,
+    @Assisted private val mediaId: MediaId,
     private val repository: TmdbRepository,
-) : BaseViewModel<MovieData>() { // <-- Changed to your unified MediaDetail class
+    persistRepo: PersistRepository,
+) : UiFetchViewModel<MovieData>() { // <-- Changed to your unified MediaDetail class
     @AssistedFactory
     interface Factory {
-        // Factory now requires both ID and Type
-        fun create(
-            @Assisted("mediaId") mediaId: String,
-            @Assisted("mediaType") mediaType: MediaType,
-        ): MediaViewModel
+        fun create(mediaId: MediaId): MediaViewModel
     }
+
+
+    val watchedListItem = persistRepo.watchedFlow.map { result -> result.getOrNull()?.find { it.id == mediaId } }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
+        initialValue = null, // The starting value while it searches
+    )
+
+
+    val watchlistItem = persistRepo.watchlistFlow.map { result -> result.getOrNull()?.find { it.id == mediaId } }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
+        initialValue = null, // The starting value while it searches
+    )
 
     init {
         executeFetch()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    override suspend fun fetchData() =
-        // Switch the repository call based on the media type
-        when (mediaType) {
-            MediaType.MOVIE -> repository.movieData(mediaId.toInt())
-            MediaType.TV_SHOW -> repository.tvData(mediaId.toInt())
-            MediaType.SEASON -> repository.seasonData(mediaId)
-            MediaType.EPISODE -> repository.episodeData(mediaId)
-        }
+
+    override suspend fun fetchData() = mediaId.getData(repository)
 }

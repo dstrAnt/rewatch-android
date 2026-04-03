@@ -9,10 +9,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -29,7 +32,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -55,8 +61,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
@@ -73,20 +81,30 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandBtn
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.OverlapIcon
 import it.polimi.rewatch.common.TabItem
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
+import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaSpecificDetails
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.PosterInfo
+import it.polimi.rewatch.model.SeasonId
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 import java.util.Locale
+import kotlin.math.max
 
 fun isDetailsAvailable(details: MediaDetail): Boolean {
     if (details.specificDetails !is MediaSpecificDetails.Movie) return false
@@ -97,30 +115,37 @@ fun isDetailsAvailable(details: MediaDetail): Boolean {
             !movie.productionCompanies.isNullOrEmpty())
 }
 
+data class TrackingItems(
+    val watchlistItem: StateFlow<WatchlistMedia?>,
+    val watchedListItem: StateFlow<WatchedMedia?>,
+)
+
+
 @Composable
 fun MediaPage(
-    movieId: String,
-    mediaType: MediaType,
+    mediaId: MediaId,
     viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
-        key = movieId,
-        creationCallback = { it.create(movieId, mediaType) },
+        key = mediaId.toString(),
+        creationCallback = { it.create(mediaId) },
     ),
     outerPadding: PaddingValues,
     actions: NavigationActions,
 ) {
+    TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
     AnimatedUiState(
         state = viewModel.uiState,
         loadingContent = ::MovieSkeleton,
     ) { data ->
         MediaContent(
             data = data,
-            mediaType = mediaType,
             padding = outerPadding,
-            mediaId = movieId,
+            mediaId = mediaId,
             actions = actions,
+            vm = viewModel,
         )
     }
 }
+
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -131,12 +156,15 @@ fun MediaContent(
     actions: NavigationActions,
     padding: PaddingValues,
     data: MovieData,
-    mediaType: MediaType,
-    mediaId: String,
+    mediaId: MediaId,
+    vm: MediaViewModel,
+    // trackingItems: TrackingItems,
 ) {
     val movie: MediaDetail = data.movie
     val scrollState = rememberLazyListState()
     val pad = 16.dp
+    val watchlistItem by vm.watchlistItem.collectAsStateWithLifecycle()
+    val watchedListItem by vm.watchedListItem.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -144,20 +172,20 @@ fun MediaContent(
     }
     val tabs: List<TabItem> = remember(
         expandedSectionIds,
-        buildTabs(movie, expandedSectionIds, handleToggle, mediaType, mediaId, pad, actions),
+        buildTabs(movie, expandedSectionIds, handleToggle, mediaId, pad, actions),
     )
     MediaScaffold(
         scrollState = scrollState,
         title = movie.title,
         onNavigateBack = actions.onNavigateBack,
-    ) { innerPadding ->
+    ) { _ ->
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
-//            contentPadding = PaddingValues(
-//                start = padding.calculateStartPadding(LayoutDirection.Ltr),
-//                end = padding.calculateEndPadding(LayoutDirection.Ltr),
-//            ),
+            contentPadding = PaddingValues(
+                start = padding.calculateStartPadding(LayoutDirection.Ltr),
+                end = padding.calculateEndPadding(LayoutDirection.Ltr),
+            ),
         ) {
             item {
                 BackdropImage(
@@ -172,6 +200,7 @@ fun MediaContent(
                     backdropImage = movie.backdropImage,
                     posterImage = movie.posterImage,
                     director = movie.director,
+                    directorId = movie.crew.find { it.job == "Director" }?.id,
                     title = movie.title,
                     runtime = movie.runtime,
                     releaseDate = movie.releaseDate,
@@ -179,17 +208,19 @@ fun MediaContent(
                     modifier = actions.onFullscreenImage(
                         movie.posterImage?.let { build(it, width = 500, height = 500) },
                     ),
+                    actions = actions,
                 )
 
                 TaglineAndOverview(
                     pad, overview = movie.overview, tagline = movie.tagline,
                 )
 
-                HorizontalDivider()
                 TmdbRatings(
                     voteCount = movie.voteCount,
                     voteAverage = movie.voteAverage,
                 )
+
+                TrackingInfo(watchlistItem, watchedListItem) { actions.onBottomSheet(PosterInfo(movie, mediaId)) }
             }
 //            println(movie.crew)
             tabbedSection(
@@ -232,8 +263,8 @@ fun MediaContent(
                 pad = pad,
             ) {
                 item {
-                    SimilarSection(data.similar.take(7)) {
-                        PosterItem(it, actions.onNavigateToMedia)
+                    SimilarSection(data.similar) {
+                        PosterItem(it, actions)
                     }
                     Spacer(Modifier.height(pad))
                 }
@@ -247,12 +278,78 @@ fun MediaContent(
 }
 
 @Composable
+private fun TrackingInfo(
+    watchlistItem: WatchlistMedia?,
+    watchedListItem: WatchedMedia?,
+    onClick: () -> Unit,
+) {
+    HorizontalDivider()
+    Column(
+        Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            Modifier
+                .width(400.dp)
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 10.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(DividerDefaults.color)
+                .clickable(onClick = onClick),
+        ) {
+            Spacer(Modifier.height(10.dp))
+            if (watchedListItem != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp),
+                ) {
+                    if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
+                    else Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
+                    if (watchedListItem.rating == 0.0f) Text("You watched this content")
+                    else {
+                        Text("You rated this content")
+                        StarRating(watchedListItem.rating / 2)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+            } else if (watchlistItem != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
+                    Text("This content is in your watchlist")
+                }
+                Spacer(Modifier.height(10.dp))
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                ) {
+                    Icon(
+                        painterResource(R.drawable.popcorn),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp),
+                    )
+                    Text("Add this content to your lists")
+                }
+                Spacer(Modifier.height(10.dp))
+            }
+        }
+    }
+}
+
+@Composable
 private fun buildTabs(
     movie: MediaDetail,
     expandedSectionIds: Set<String>,
     handleToggle: (String) -> Unit,
-    mediaType: MediaType,
-    mediaId: String,
+    mediaId: MediaId,
     pad: Dp,
     actions: NavigationActions,
 ): () -> List<TabItem> = {
@@ -264,7 +361,7 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it, { actions.onNavigateToProfile(it.id) }) },
+                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
         )
         add(
@@ -274,11 +371,11 @@ private fun buildTabs(
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
-                itemContent = { PersonItem(it) { actions.onNavigateToProfile(it.id) } },
+                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
         )
         // ... TV SHOW: Seasons tab ...
-        if (mediaType == MediaType.TV_SHOW) add(
+        if (mediaId.type == MediaType.TV_SHOW) add(
             TabItem.expandable(
                 title = "Seasons",
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
@@ -286,21 +383,18 @@ private fun buildTabs(
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
                 showDividers = true,
-                itemContent = {
+                itemContent = { season ->
                     EpisodeItem(
-                        number = it?.seasonNumber,
-                        name = it?.name,
-                        date = it?.airDate,
-                        count = it?.episodeCount?.let { "${it} episodes" }.orEmpty(),
-                        mediaType = MediaType.SEASON,
-                        mediaId,
-                        actions.onNavigateToMedia,
-                    )
+                        number = season.seasonNumber,
+                        name = season.name,
+                        date = season.airDate,
+                        count = season.episodeCount?.let { "$it episodes" }.orEmpty(),
+                    ) { SeasonId(mediaId.parentId, season.seasonNumber).onClick(actions) }
                 },
             ),
         )
         // ... SEASON: Episodes tab ...
-        if (mediaType == MediaType.SEASON) add(
+        if (mediaId.type == MediaType.SEASON) add(
             TabItem.expandable(
                 title = "Episodes",
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
@@ -308,16 +402,13 @@ private fun buildTabs(
                 onToggleSection = handleToggle,
                 initialVisibleCount = 7,
                 showDividers = true,
-                itemContent = {
+                itemContent = { episode ->
                     EpisodeItem(
-                        number = it?.episodeNumber,
-                        name = it?.name,
-                        date = it?.airDate,
-                        count = it?.runtime?.let { "${it} min" }.orEmpty(),
-                        mediaType = MediaType.EPISODE,
-                        mediaId,
-                        actions.onNavigateToMedia,
-                    )
+                        number = episode.episodeNumber,
+                        name = episode.name,
+                        date = episode.airDate,
+                        count = episode.runtime?.let { "$it min" }.orEmpty(),
+                    ) { EpisodeId(mediaId.parentId, episode.seasonNumber, episode.episodeNumber).onClick(actions) }
                 },
             ),
         )
@@ -439,7 +530,7 @@ fun TmdbRatings(
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(vertical = 10.dp),
+            .padding(bottom = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(
@@ -515,13 +606,19 @@ fun BackdropImage(
     modifier: Modifier = Modifier,
 ) {
     image?.let {
-        Box {
+        Box(
+            modifier = Modifier
+                .layoutEvade(
+                    padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
+
+            ) {
             RewatchAsyncImage(
                 model = build(it, width = 600, height = 300),
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxWidth()
-                    .height(210.dp),
+                    .height(210.dp)
             )
             Box(
                 modifier = Modifier
@@ -552,6 +649,8 @@ fun TitleAndInfoSection(
     releaseDate: LocalDate?,
     certification: String?,
     modifier: Modifier = Modifier,
+    actions: NavigationActions,
+    directorId: Int?,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -599,8 +698,17 @@ fun TitleAndInfoSection(
                 }
             }
 //            Spacer(Modifier.height(3.dp))
-            if (director != null) {
-                Text("Directed by $director")
+            if (directorId != null) {
+                Row {
+                    Text("Directed by ")
+                    Text(
+                        " $director ",
+                        Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .clickable { actions.onNavigateToPerson(directorId) }
+                            .padding(0.dp),
+                    )
+                }
             }
         }
 
@@ -747,16 +855,24 @@ fun <T> SimilarSection(
     similar: List<T>,
     content: @Composable (LazyItemScope.(T) -> Unit),
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.height(150.dp),
-    ) {
-        // Leading spacer
-        item { Spacer(Modifier.width(5.dp)) }
-        // Movie items
-        items(items = similar, itemContent = content)
-        item { Spacer(Modifier.width(5.dp)) }
+    BoxWithConstraints {
+        // 1. Define your adaptive minimum size
+        val minCellSize = 90.dp
+        // 2. Calculate the columns (Available Width / Min Cell Size)
+        // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
+        val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
+        // Now you have the exact integer to use however you want!
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.height(150.dp),
+        ) {
+            // Leading spacer
+            item { Spacer(Modifier.width(5.dp)) }
+            // Movie items
+            items(items = similar, itemContent = content)
+            item { Spacer(Modifier.width(5.dp)) }
+        }
     }
 }
 
@@ -781,11 +897,13 @@ fun PersonItem(person: TmdbAnyPerson?, function: () -> Unit) = ListItem(
         )
     },
     supportingContent = {
-        Text(
-            text = ((person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job).orEmpty(),
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
-        )
+        val text = ((person as? TmdbCast)?.character ?: (person as? TmdbCrew)?.job).orEmpty()
+        if (text.isNotBlank())
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray,
+            )
     },
     trailingContent = {
         Icon(
@@ -907,9 +1025,7 @@ fun EpisodeItem(
     name: String?,
     date: LocalDate?,
     count: String,
-    mediaType: MediaType,
-    showId: String,
-    onNavigateToMedia: (String, MediaType) -> Unit,
+    onNavigateToMedia: () -> Unit,
 ) = ListItem(
     leadingContent = {
         Text(
@@ -940,7 +1056,5 @@ fun EpisodeItem(
             )
     },
     modifier =
-        Modifier.clickable {
-            onNavigateToMedia(showId + "_" + number, mediaType)
-        },
+        Modifier.clickable(onClick = onNavigateToMedia),
 )

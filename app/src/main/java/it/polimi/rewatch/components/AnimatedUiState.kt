@@ -1,6 +1,8 @@
 package it.polimi.rewatch.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -20,6 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.UiState
 
+/**
+ * [AnimatedUiState] is a component that masks the underlying [AnimatedContent]
+ * for code readability and to ease the reuse of the [ErrorContent], that is always the same
+ */
 @Composable
 fun <T> AnimatedUiState(
     state: UiState<T>,
@@ -32,7 +38,11 @@ fun <T> AnimatedUiState(
     AnimatedContent(
         targetState = state,
         transitionSpec = {
-            fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
+            if (initialState is UiState.Success && targetState is UiState.Success) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
+            }
         },
         modifier = modifier.fillMaxSize(),
         label = "uiStateTransition",
@@ -45,6 +55,9 @@ fun <T> AnimatedUiState(
     }
 }
 
+/**
+ * [ErrorContent] displays a blank page with a customizable error message
+ */
 @Composable
 private fun ErrorContent(msg: String) {
     // Default error UI (can be overridden per screen)

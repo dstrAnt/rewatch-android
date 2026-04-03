@@ -11,36 +11,33 @@ import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import kotlinx.datetime.LocalDate
 
-// Used to show results of search, person
-data class Media(
-    val id: Int,
+// Used to show results of search, movie, tv, person
+data class PosterInfo(
+    val id: ItemId,
     val posterImage: TmdbImage?,
     val posterPath: String?,
     val releaseDate: LocalDate?,
     val title: String?,
-    val type: MediaType,
     val popularity: Float,
     val rating: Float,
 ) {
     // Constructor for Movie Data
     constructor(movie: TmdbMovie) : this(
-        id = movie.id,
+        id = MovieId(movie.id),
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
         releaseDate = movie.releaseDate,
         title = movie.title,
-        type = MediaType.MOVIE,
         popularity = movie.popularity,
         rating = movie.voteAverage,
     )
 
     constructor(movie: TmdbShow) : this(
-        id = movie.id,
+        id = TvId(movie.id),
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
         releaseDate = movie.firstAirDate,
         title = movie.name,
-        type = MediaType.TV_SHOW,
         popularity = movie.popularity,
         rating = movie.voteAverage,
     )
@@ -48,7 +45,10 @@ data class Media(
     constructor(credit: TmdbPersonCredit) : this(
         // If 'id' and 'posterPath' are shared properties on the base TmdbPersonCredit class,
         // you can call them directly like this:
-        id = credit.id,
+        id = when (credit) {
+            is Movie -> MovieId(credit.id)
+            is Show -> TvId(credit.id)
+        },
         posterImage = null,
         posterPath = credit.posterPath,
         // For properties that differ, use inline 'when' statements:
@@ -60,56 +60,58 @@ data class Media(
             is Movie -> credit.title
             is Show -> credit.name
         },
-        type = when (credit) {
-            is Movie -> MediaType.MOVIE
-            is Show -> MediaType.TV_SHOW
-        },
-        popularity = credit.popularity ?: 0.0f,
-        rating = credit.voteAverage ?: 0.0f,
+        popularity = credit.popularity ?: 0f,
+        rating = credit.voteAverage ?: 0f,
     )
 
-    constructor(movie: TmdbPerson) : this(
-        id = movie.id,
-        posterImage = movie.profileImage,
-        posterPath = movie.profilePath,
+    constructor(person: TmdbPerson) : this(
+        id = PersonId(person.id),
+        posterImage = person.profileImage,
+        posterPath = person.profilePath,
         releaseDate = null,
-        title = movie.name,
-        type = MediaType.TV_SHOW,
-        popularity = movie.popularity,
+        title = person.name,
+        popularity = person.popularity,
         rating = 0.0f,
     )
 
     constructor(movie: TmdbMovieDetail) : this(
-        id = movie.id,
+        id = MovieId(movie.id),
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
-        releaseDate = null,
+        releaseDate = movie.releaseDate,
         title = movie.title,
-        type = MediaType.MOVIE,
         popularity = movie.popularity,
         rating = movie.voteAverage,
     )
 
     constructor(movie: TmdbShowDetail) : this(
-        id = movie.id,
+        id = TvId(movie.id),
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
-        releaseDate = null,
+        releaseDate = movie.firstAirDate,
         title = movie.name,
-        type = MediaType.TV_SHOW,
         popularity = movie.popularity,
-        rating = movie.voteAverage ?: 0.0f,
+        rating = movie.voteAverage ?: 0f,
+    )
+
+    constructor(movie: MediaDetail, id: MediaId) : this(
+        id = id,
+        posterImage = movie.posterImage,
+        posterPath = movie.posterPath,
+        releaseDate = movie.releaseDate,
+        title = movie.title,
+        popularity = 0f,
+        rating = movie.voteAverage ?: 0f,
     )
 
     // empty media
-    constructor(type: MediaType) : this(
-        id = 0,
+    constructor(id: MediaId) : this(
+        id = id,
         posterImage = null,
         posterPath = "",
         releaseDate = null,
         title = "",
-        type = type,
-        popularity = 0.0f,
-        rating = 0.0f,
+        popularity = 0f,
+        rating = 0f,
     )
 }

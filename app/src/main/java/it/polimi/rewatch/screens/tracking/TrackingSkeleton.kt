@@ -4,28 +4,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.SkeletonPart
 
 @Composable
 fun TrackingSkeleton(modifier: Modifier = Modifier) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 7.dp),
+    CustomLazyGrid(
         userScrollEnabled = false,
     ) {
         // Chips Row
@@ -36,17 +28,18 @@ fun TrackingSkeleton(modifier: Modifier = Modifier) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 5.dp),
+                    .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
             ) {
-                repeat(3) {
+                repeat(4) {
                     SkeletonPart(
                         width = 60.dp,
                         height = 25.dp,
                         shape = RoundedCornerShape(5.dp),
                     )
                 }
+
             }
         }
 

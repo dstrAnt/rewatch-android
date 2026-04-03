@@ -8,6 +8,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
+//    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
@@ -26,7 +27,7 @@ android {
 
     defaultConfig {
         applicationId = "it.polimi.rewatch"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -90,6 +91,37 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
+    // Import the Firebase BoM
+    implementation(platform(libs.firebase.bom)) {
+        exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.play")
+    } // Use the latest version
+    // Add Auth and Firestore dependencies
+    implementation(libs.firebase.auth) {
+        exclude(group = "com.google.android.gms")
+        exclude(group = "com.google.android.play")
+    }
+    implementation(libs.firebase.firestore) {
+        exclude(group = "com.google.android.gms", module = "play-services-measurement")
+        exclude(group = "com.google.android.gms", module = "play-services-ads-identifier")
+        exclude(group = "com.google.android.play")
+    }
+    //implementation(libs.firebase.auth)
+    //implementation(libs.firebase.firestore)
+
+    /* TESTING */
+
+    // basic JUnit 4
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+
+    // integrate Compose and JUnit 4
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+
+    // to load composables
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
+
+    // to unlock in case of dealing with animations
+    // androidTestImplementation("androidx.compose.ui:ui-test:1.6.0")
 
 
 }
