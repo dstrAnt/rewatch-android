@@ -53,6 +53,7 @@ import it.polimi.rewatch.common.BasicTopBar
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
@@ -290,7 +291,8 @@ private fun TopTabBar(
             onClick = onClick,
             title = { it.title },
             tabState = selectedTab,
-            containerColor = Color.Black,
+            containerColor = headerColor,
+            divider = {},
         )
     }
 }

@@ -1,6 +1,6 @@
 package it.polimi.rewatch.screens.search
 
-import android.app.Activity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -42,7 +45,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,15 +55,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -69,6 +68,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.PosterItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,15 +89,6 @@ fun SearchPage(
         SearchType.TV -> "tv shows"
         SearchType.CAST -> "people"
     }
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = Color.Black.toArgb()
-            // Imposta le icone della status bar come chiare (perché lo sfondo è nero)
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
-        }
-    }
     // Intercept the back button BEFORE the SearchBar catches it,
     // and forcefully navigate back out of the page.
 //    LaunchedEffect(Unit) {
@@ -117,7 +108,11 @@ fun SearchPage(
             focusManager.clearFocus()
         }
     }
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            SearchTopBar(string, query, viewModel, focusRequester)
+        },
+    ) { padding ->
         Surface(
             color = MaterialTheme.colorScheme.surface,
         ) {
@@ -148,14 +143,6 @@ fun SearchPage(
                         }
                     },
             ) {
-                CustomExpandedSearchBar(
-                    placeholder = "Search $string...",
-                    query = query,
-                    onQueryChange = viewModel::onQueryChange,
-                    onClearQuery = { viewModel.onQueryChange("") },
-                    onTabChange = viewModel::onTabChanged,
-                    focusRequester = focusRequester,
-                )
                 // This is the 'content' slot
                 val focusManager = LocalFocusManager.current
                 val listState = rememberLazyListState()
@@ -240,7 +227,7 @@ fun CustomExpandedSearchBar(
     val focusManager = LocalFocusManager.current
 
     Surface(
-        color = Color.Black,
+        color = headerColor,
         tonalElevation = SearchBarDefaults.TonalElevation, // Gives it that slight M3 tinted look
     ) {
         Column(
@@ -253,6 +240,7 @@ fun CustomExpandedSearchBar(
                     )
                 },
         ) {
+            Spacer(Modifier.height(5.dp))
             // 1. The Input Area
             Row(
                 modifier = Modifier
@@ -272,7 +260,7 @@ fun CustomExpandedSearchBar(
                     onValueChange = onQueryChange,
                     modifier = Modifier
                         .weight(1f)
-                        //  .height(50.dp)
+//                        .height(48.dp)
                         .focusRequester(focusRequester),
                     placeholder = { Text(placeholder) },
                     colors = TextFieldDefaults.colors(
@@ -294,6 +282,9 @@ fun CustomExpandedSearchBar(
                     }
                 }
             }
+
+            Spacer(Modifier.height(4.dp))
+
             val availableTabs = SearchType.entries
             var tabState by rememberSaveable { mutableStateOf(availableTabs.getOrNull(0)) }
 
@@ -305,8 +296,33 @@ fun CustomExpandedSearchBar(
                 },
                 title = { it.title },
                 tabState = tabState,
+                divider = {},
             )
         }
+    }
+}
+
+@Composable
+private fun SearchTopBar(
+    string: String,
+    query: String,
+    viewModel: SearchViewModel,
+    focusRequester: FocusRequester,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(headerColor)
+            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
+    ) {
+        CustomExpandedSearchBar(
+            placeholder = "Search $string...",
+            query = query,
+            onQueryChange = viewModel::onQueryChange,
+            onClearQuery = { viewModel.onQueryChange("") },
+            onTabChange = viewModel::onTabChanged,
+            focusRequester = focusRequester,
+        )
     }
 }
 

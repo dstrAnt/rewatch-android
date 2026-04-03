@@ -1,6 +1,8 @@
 package it.polimi.rewatch.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -36,7 +38,11 @@ fun <T> AnimatedUiState(
     AnimatedContent(
         targetState = state,
         transitionSpec = {
-            fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
+            if (initialState is UiState.Success && targetState is UiState.Success) {
+                EnterTransition.None togetherWith ExitTransition.None
+            } else {
+                fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
+            }
         },
         modifier = modifier.fillMaxSize(),
         label = "uiStateTransition",

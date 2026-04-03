@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -35,13 +36,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import it.polimi.rewatch.R
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
@@ -73,7 +77,7 @@ fun HomePage(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Black,
+                    containerColor = headerColor,
                     scrolledContainerColor = Color.Unspecified,
                     navigationIconContentColor = Color.Unspecified,
                     titleContentColor = Color.White,
@@ -118,13 +122,13 @@ fun HomeContent(
 
     CustomLazyGrid {
         listOf(
-            Pair("Trending", data.trending),
-            Pair("Top Rated", data.popular),
-            Pair("Newest", data.recent),
+            Triple("Trending", data.trending, R.drawable.trending),
+            Triple("Top Rated", data.popular, R.drawable.stars),
+            Triple("Newest", data.recent, R.drawable.spark),
         )
-            .forEach { (title, data) ->
+            .forEach { (title, data, icon) ->
                 movieSection(
-                    title, data,
+                    title, data, icon,
                     cellsPerRow = it,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
@@ -138,6 +142,7 @@ fun HomeContent(
 fun LazyGridScope.movieSection(
     title: String,
     movies: List<PosterInfo>,
+    icon: Int,
     cellsPerRow: Int,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
@@ -147,14 +152,20 @@ fun LazyGridScope.movieSection(
     val displayedMovies = if (isExpanded) movies else movies.take(cellsPerRow * 3)
 
     item(key = "header_$title", span = { GridItemSpan(maxLineSpan) }) {
-        Text(
-            text = title,
-            color = Color.White,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier
-                .padding(vertical = 10.dp)
-                .animateItem(fadeInSpec = null, fadeOutSpec = null),
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = title,
+                color = Color.White,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier
+                    .padding(vertical = 10.dp)
+                    .animateItem(fadeInSpec = null, fadeOutSpec = null),
+            )
+            Icon(painterResource(icon), null, Modifier.size(24.dp), Color.White)
+        }
     }
     // --- Adaptive Grid ---
     items(

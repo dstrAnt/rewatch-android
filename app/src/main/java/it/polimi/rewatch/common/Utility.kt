@@ -56,6 +56,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -76,6 +77,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -111,6 +114,36 @@ import kotlin.math.max
 /*
     In this file we put some functions and composables that we reuse in many other components
  */
+
+val headerColor = Color.Black
+
+/**
+ * Aggiunge un bordo sul lato inferiore del componente.
+ * @param color Il colore del bordo (default grigio chiaro)
+ * @param width Lo spessore del bordo (default 1dp)
+ */
+fun Modifier.addBorderBottom(
+    color: Color = Color.LightGray,
+    width: Dp = 1.dp,
+): Modifier = drawWithContent {
+    // Disegna il contenuto originale del composable
+    drawContent()
+
+    // Converte lo spessore da Dp a Pixel
+    val strokeWidth = width.toPx()
+
+    // Calcola la coordinata Y (il fondo del componente)
+    // Sottraiamo metà dello spessore per assicurarci che la linea sia dentro i bordi
+    val y = size.height - strokeWidth / 2
+
+    drawLine(
+        color = color,
+        start = Offset(x = 0f, y = y),
+        end = Offset(x = size.width, y = y),
+        strokeWidth = strokeWidth,
+    )
+}
+
 
 fun String.formatDate(format: String): String {
     return try {
@@ -344,11 +377,13 @@ fun <T> CustomTabRow(
     title: (T) -> String,
     tabState: T?,
     containerColor: Color = Color.Unspecified,
+    divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
 ) = PrimaryScrollableTabRow(
     edgePadding = 0.dp,
     selectedTabIndex = availableTabs.indexOf(
         tabState,
     ),
+    divider = divider,
     containerColor = containerColor,
 ) {
     availableTabs.forEach {
@@ -591,7 +626,7 @@ fun BasicTopBar(
             Text(title)
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Black,
+            containerColor = headerColor,
             scrolledContainerColor = Color.Unspecified,
             navigationIconContentColor = Color.Unspecified,
             titleContentColor = Color.White,

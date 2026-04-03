@@ -870,7 +870,7 @@ fun <T> SimilarSection(
             // Leading spacer
             item { Spacer(Modifier.width(5.dp)) }
             // Movie items
-            items(items = similar.take(calculatedColumnCount), itemContent = content)
+            items(items = similar, itemContent = content)
             item { Spacer(Modifier.width(5.dp)) }
         }
     }
