@@ -15,6 +15,7 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -53,7 +54,6 @@ class FirebaseRepository @Inject constructor(
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
     }.stateIn(appScope, SharingStarted.WhileSubscribed(5000), AuthState.SignedOut)
-
 
     // --- Anonymous auth ---
     override suspend fun signInAnonymously(): Result<Unit> = runCatching {
@@ -236,18 +236,21 @@ class FirebaseRepository @Inject constructor(
     }
 
     // --- Observe (now reacts to any auth state, not just email) ---
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun <T> observeMedia(
         sub: String,
         mapper: (TrackingMediaDto) -> T,
     ): Flow<Result<List<T>>> = authState.flatMapLatest { state ->
         when (state) {
-            is AuthState.SignedOut -> flowOf(Result.success(emptyList()))
+            is AuthState.SignedOut -> flowOf()//Result.success(emptyList()))
             is AuthState.Anonymous,
             is AuthState.Authenticated,
                 -> {
                 callbackFlow {
                     val uid = currentUid() ?: run {
-                        trySend(Result.success(emptyList())); close(); return@callbackFlow
+                        // trySend(Result.success(emptyList()));
+                        close()
+                        return@callbackFlow
                     }
                     val ref = collectionRef(sub, uid)
                     val registration = ref.addSnapshotListener { snapshot, error ->
@@ -255,7 +258,7 @@ class FirebaseRepository @Inject constructor(
                             error != null -> trySend(Result.failure(error))
                             else -> {
                                 val models = snapshot?.toObjects(TrackingMediaDto::class.java)?.map(mapper)
-                                trySend(Result.success(models.orEmpty()))
+                                models?.let { trySend(Result.success(it)) }
                             }
                         }
                     }
@@ -270,7 +273,6 @@ class FirebaseRepository @Inject constructor(
         .shareIn(appScope, SharingStarted.WhileSubscribed(5000), replay = 1)
     override val watchedFlow = observeMedia("watched") { it.toWatchedMedia() }
         .shareIn(appScope, SharingStarted.WhileSubscribed(5000), replay = 1)
-
     private val currentWatchlist get() = watchlistFlow.replayCache.firstOrNull()?.getOrNull().orEmpty()
     private val currentWatched get() = watchedFlow.replayCache.firstOrNull()?.getOrNull().orEmpty()
 
@@ -281,6 +283,7 @@ class FirebaseRepository @Inject constructor(
 
     override fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) =
         setDoc("watched", TrackingMediaDto(WatchedMedia(id, rating = rating, date = date)))
+
     override fun removeFromWatchedList(id: MediaId) = deleteDoc("watched", id)
     override fun toggleWatchedList(id: MediaId) {
         val existing = currentWatched.find { it.id == id }
@@ -290,12 +293,14 @@ class FirebaseRepository @Inject constructor(
             addToWatchedList(id, 0.0f, LocalDateTime.now()); removeFromWatchlist(id)
         }
     }
+
     override fun setRating(id: MediaId, rating: Float) {
         val existing = currentWatched.find { it.id == id }
         if (existing != null) setDoc("watched", TrackingMediaDto(existing.copy(rating = rating)))
         else addToWatchedList(id, rating, LocalDateTime.now())
         removeFromWatchlist(id)
     }
+
     override fun setWatchDate(id: MediaId, newDate: LocalDateTime) {
         val existing = currentWatched.find { it.id == id } ?: return
         setDoc("watched", TrackingMediaDto(existing.copy(date = newDate)))

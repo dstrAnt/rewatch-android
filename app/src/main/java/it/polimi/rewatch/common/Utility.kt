@@ -374,10 +374,11 @@ fun <T> CustomTabRow(
     onClick: (T) -> Unit,
     title: (T) -> String,
     tabState: T?,
+    edgePadding: Dp = 0.dp,
     containerColor: Color = Color.Unspecified,
     divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
 ) = PrimaryScrollableTabRow(
-    edgePadding = 0.dp,
+    edgePadding = edgePadding,
     selectedTabIndex = availableTabs.indexOf(
         tabState,
     ),
@@ -402,6 +403,7 @@ fun <T> CustomTabRow(
 
 @Composable
 fun CustomLazyGrid(
+    modifier: Modifier = Modifier,
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     userScrollEnabled: Boolean = true,
@@ -422,7 +424,7 @@ fun CustomLazyGrid(
             top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp,
         ).plus(contentPadding),
         userScrollEnabled = userScrollEnabled,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .animateContentSize()
             .padding(horizontal = 7.dp),

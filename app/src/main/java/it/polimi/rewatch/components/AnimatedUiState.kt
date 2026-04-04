@@ -44,6 +44,13 @@ fun <T> AnimatedUiState(
                 fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
             }
         },
+        contentKey = { targetState ->
+            when (targetState) {
+                is UiState.Success -> "Success"
+                is UiState.Loading -> "Loading"
+                is UiState.Error -> "Error"
+            }
+        },
         modifier = modifier.fillMaxSize(),
         label = "uiStateTransition",
     ) { targetState ->

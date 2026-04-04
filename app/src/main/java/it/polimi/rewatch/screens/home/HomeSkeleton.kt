@@ -21,7 +21,7 @@ import it.polimi.rewatch.common.itemFullSpan
 @Composable
 fun HomeSkeleton() {
     CustomLazyGrid(
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = 24.dp, top = 92.dp),
         userScrollEnabled = false,
     ) { columnCount -> // <-- 1. Cattura la variabile calcolata dalla CustomLazyGrid
         repeat(3) {

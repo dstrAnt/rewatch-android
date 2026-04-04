@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -27,7 +29,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,10 +41,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
+import it.polimi.rewatch.common.CollapsingLayout
 import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.Logo
@@ -52,6 +55,7 @@ import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
+
 
 enum class HomeTabItem(val title: String) {
     MOVIES("Movies"), SHOWS("TV Shows")
@@ -67,14 +71,14 @@ private fun HomeTopBar(
     Column(
         Modifier
             .fillMaxWidth()
-            .background(Color.Black)
             .then(modifier)
+            .background(Color.Black)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                //  .padding(top = 16.dp)
                 .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -107,26 +111,48 @@ fun HomePage(
     val tabs = HomeTabItem.entries
     var selectedTab by rememberSaveable { mutableStateOf(tabs.first()) }
 
-    Scaffold(
-        topBar = {
-            HomeTopBar(
-                tabs, selectedTab, { selectedTab = it },
-                modifier = Modifier.padding(
-                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                ),
+    CollapsingLayout(
+        // 1. Define your heights
+        collapsingTopHeight = 64.dp,
+        pinnedBottomHeight = 48.dp,
+        statusBarColor = headerColor,
+        // 2. Slot in the part that vanishes
+        collapsingTopBar = {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .background(headerColor)
+                    //  .padding(top = 16.dp)
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Logo()
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    text = "ReWatch",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                )
+            }
+        },
+        // 3. Slot in the part that stays pinned (e.g., TabRow or SearchBar)
+        pinnedBottomBar = {
+            CustomTabRow(
+                availableTabs = tabs,
+                onClick = { selectedTab = it },
+                title = { it.title },
+                tabState = selectedTab,
+                edgePadding = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                containerColor = headerColor,
+                divider = {},
             )
         },
-    ) { paddingValues ->
+    ) { state, spacerHeight ->
         AnimatedUiState(
             state = viewModel.uiState,
             animationDurationMillis = 100,
-            //            contentPadding = PaddingValues(
-//                start = padding.calculateStartPadding(LayoutDirection.Ltr),
-//                end = padding.calculateEndPadding(LayoutDirection.Ltr),
-//            ),
             modifier = Modifier.padding(
-                top = paddingValues.calculateTopPadding(),
+                top = outerPadding.calculateTopPadding(),
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                 end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
                 bottom = outerPadding.calculateBottomPadding(),
@@ -137,6 +163,8 @@ fun HomePage(
                 data,
                 actions,
                 selectedTab,
+                state,
+                spacerHeight,
             )
         }
     }
@@ -147,6 +175,8 @@ fun HomeContent(
     data: HomeData,
     actions: NavigationActions,
     selectedTab: HomeTabItem,
+    state: LazyGridState,
+    spacerHeight: Dp,
 ) {
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
@@ -157,7 +187,12 @@ fun HomeContent(
         HomeTabItem.SHOWS -> data.showData
     }
 
-    CustomLazyGrid {
+    CustomLazyGrid(state = state) {
+        // 1. You must place the Spacer at the top so the list starts below the TopBar
+        item {
+            Spacer(modifier = Modifier.height(spacerHeight))
+        }
+
         listOf(
             Triple("Trending", data.trending, R.drawable.trending),
             Triple("Top Rated", data.popular, R.drawable.stars),
