@@ -280,9 +280,10 @@ private fun TopTabBar(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier
+        Modifier
             .fillMaxWidth()
             .background(Color.Black)
+            .then(modifier)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
         BasicTopBar(title, icon, false) {}

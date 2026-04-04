@@ -98,8 +98,6 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.ui.NavDisplay
 import coil3.compose.AsyncImage
 import it.polimi.rewatch.R
 import it.polimi.rewatch.model.MediaId
@@ -463,37 +461,15 @@ class NavigationActions(
     val onBackToHome: () -> Unit,
 )
 
-@Composable
-fun <T : Any> AnimatedNavDisplay(
-    backStack: List<T>,
-//    modifier: Modifier = Modifier,
-    onBack: () -> Unit = {
-        if (backStack is MutableList<T>) {
-            backStack.removeLastOrNull()
-        }
-    },
-    entryProvider: (key: T) -> NavEntry<T>,
-) = NavDisplay(
-    backStack = backStack,
-    onBack = onBack,
-    entryProvider = entryProvider,
-    transitionSpec = {
-        slideInHorizontally(standardTween) { it } togetherWith
-                slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR }
-    },
-    popTransitionSpec = { popContentTransform() },
-    predictivePopTransitionSpec = { popContentTransform() },
-)
-
 private const val ANIM_DURATION = 400
-private const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
+const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
 
 // 2. Create reusable animation specs (Note the <IntOffset> type required for slides)
-private val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
+val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
 private val cubicTween = tween<IntOffset>(ANIM_DURATION, easing = EaseInOutCubic)
 
 // 3. Create a helper function for the pop transitions
-private fun popContentTransform(): ContentTransform {
+fun popContentTransform(): ContentTransform {
     return (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } togetherWith
             slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }).apply {
         // Keeps the exiting screen hovering ON TOP of the returning screen

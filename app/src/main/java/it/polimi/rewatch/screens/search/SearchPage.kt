@@ -85,6 +85,7 @@ fun SearchPage(
     val focusManager = LocalFocusManager.current
     val type = viewModel.mediaType.collectAsStateWithLifecycle().value
     val string = when (type) {
+        SearchType.ALL -> "all"
         SearchType.MOVIES -> "movies"
         SearchType.TV -> "tv shows"
         SearchType.CAST -> "people"
@@ -110,7 +111,13 @@ fun SearchPage(
     }
     Scaffold(
         topBar = {
-            SearchTopBar(string, query, viewModel, focusRequester)
+            SearchTopBar(
+                string, query, viewModel, focusRequester,
+                modifier = Modifier.padding(
+                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
+            )
         },
     ) { padding ->
         Surface(
@@ -284,7 +291,6 @@ fun CustomExpandedSearchBar(
             }
 
             Spacer(Modifier.height(4.dp))
-
             val availableTabs = SearchType.entries
             var tabState by rememberSaveable { mutableStateOf(availableTabs.getOrNull(0)) }
 
@@ -308,11 +314,13 @@ private fun SearchTopBar(
     query: String,
     viewModel: SearchViewModel,
     focusRequester: FocusRequester,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         Modifier
             .fillMaxWidth()
             .background(headerColor)
+            .then(modifier)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
         CustomExpandedSearchBar(
@@ -327,5 +335,8 @@ private fun SearchTopBar(
 }
 
 enum class SearchType(val title: String) {
-    MOVIES("Films"), TV("Tv"), CAST("Cast, Crew, Studios"),
+    ALL("All"),
+    MOVIES("Films"),
+    TV("Tv"),
+    CAST("Cast, Crew, Studios"),
 }

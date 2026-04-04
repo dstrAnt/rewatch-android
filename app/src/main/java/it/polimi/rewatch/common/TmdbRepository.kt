@@ -241,6 +241,9 @@ class TmdbRepository @Inject constructor(
                 SearchType.CAST -> {
                     tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
                 }
+                SearchType.ALL -> {
+                    tmdb.search.findMulti(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
+                }
 
                 else -> emptyList()
             }
@@ -250,3 +253,4 @@ class TmdbRepository @Inject constructor(
         }
     }
 }
+

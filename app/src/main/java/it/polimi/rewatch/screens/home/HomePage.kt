@@ -65,9 +65,10 @@ private fun HomeTopBar(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier
+        Modifier
             .fillMaxWidth()
             .background(Color.Black)
+            .then(modifier)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
         Row(
@@ -108,7 +109,13 @@ fun HomePage(
 
     Scaffold(
         topBar = {
-            HomeTopBar(tabs, selectedTab, { selectedTab = it })
+            HomeTopBar(
+                tabs, selectedTab, { selectedTab = it },
+                modifier = Modifier.padding(
+                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                ),
+            )
         },
     ) { paddingValues ->
         AnimatedUiState(

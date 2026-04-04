@@ -79,6 +79,7 @@ class AuthViewModel @Inject constructor(
 
     fun reset() {
         uiState = AuthUiState.Idle
+        email = ""
     }
 
     fun sendMagicLink() {
@@ -151,6 +152,13 @@ fun AuthPage(
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
+    DisposableEffect(Unit) {
+        onDispose {
+            // This fires exactly when the Composable leaves the screen.
+            // In Nav3, this happens AFTER the exit transition animation finishes.
+            viewModel.reset()
+        }
+    }
 
     DisposableEffect(context) {
         val activity = context as MainActivity

@@ -15,6 +15,8 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,11 +58,14 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.metadata
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
-import it.polimi.rewatch.common.AnimatedNavDisplay
 import it.polimi.rewatch.common.FullScreenImageOverlay
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.PARALLAX_FACTOR
+import it.polimi.rewatch.common.popContentTransform
+import it.polimi.rewatch.common.standardTween
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
@@ -102,8 +107,6 @@ fun RewatchApp() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
     val currentScreen = backStack.lastOrNull()
-
-
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
@@ -136,6 +139,8 @@ fun RewatchApp() {
         )
     }
 
+
+
     BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeNavTabs) {
         // Snap the user back to the Home tab atomically
         scope.launch {
@@ -163,9 +168,22 @@ fun RewatchApp() {
         },
     ) { outerPadding ->
         // 5. Render the stack using NavDisplay
-        AnimatedNavDisplay(
+        NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
+            transitionSpec = {
+                slideInHorizontally(standardTween) { it } togetherWith
+                        slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR }
+            },
+            popTransitionSpec = { popContentTransform() },
+            predictivePopTransitionSpec = { popContentTransform() },
+            entryDecorators = listOf(
+                // 1. Keeps standard state across configuration changes (rotation)
+                rememberSaveableStateHolderNavEntryDecorator(),
+                // 2. THE FIX: Scopes ViewModels to the NavEntry lifecycle!
+                // When the entry is removed from the list, the ViewModel's onCleared() is called.
+                //   rememberViewModelStoreNavEntryDecorator(),
+            ),
             entryProvider = entryProvider {
                 entry<HomeNavTabs>(metadata = noAnimationMetadata()) {
                     // Update HomePage to accept lambdas instead of navController
@@ -181,7 +199,7 @@ fun RewatchApp() {
 
                             BottomTabs.SEARCH -> {
                                 val viewModel = hiltViewModel<SearchViewModel>()
-//                                viewModel.reset()
+                                //                                viewModel.reset()
                                 SearchPage(
                                     actions = navActions,
                                     outerPadding = outerPadding,
@@ -210,9 +228,7 @@ fun RewatchApp() {
                 entry<MediaNavPage> { key ->
                     // 4. Look how clean this is! No more backStackEntry.arguments?.getString()
                     // You just access key.movieId directly.
-                    Box(
-                        Modifier.background(MaterialTheme.colorScheme.surface),
-                    ) {
+                    Box(Modifier.background(MaterialTheme.colorScheme.surface)) {
                         MediaPage(
                             actions = navActions,
                             mediaId = key.mediaId, // Type-safe property
@@ -230,10 +246,10 @@ fun RewatchApp() {
                 }
                 entry<LoginNavPage> {
                     AuthPage(actions = navActions, outerPadding = outerPadding)
-//                    LoginPage(
-//                        actions = navActions,
-//                        outerPadding = outerPadding,
-//                    )
+                    //                    LoginPage(
+                    //                        actions = navActions,
+                    //                        outerPadding = outerPadding,
+                    //                    )
                 }
 
                 entry<SettingsNavPage> {
