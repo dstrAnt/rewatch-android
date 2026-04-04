@@ -68,6 +68,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.capitalize
 import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.PosterItem
 
@@ -85,7 +86,7 @@ fun SearchPage(
     val focusManager = LocalFocusManager.current
     val type = viewModel.mediaType.collectAsStateWithLifecycle().value
     val string = when (type) {
-        SearchType.ALL -> "all"
+        SearchType.ALL -> "anything"
         SearchType.MOVIES -> "movies"
         SearchType.TV -> "tv shows"
         SearchType.CAST -> "people"
@@ -164,11 +165,11 @@ fun SearchPage(
                     Column(
                         Modifier
                             .padding(horizontal = 16.dp)
+                            .padding(top = 60.dp)
                             .verticalScroll(rememberScrollState())
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Spacer(Modifier.height(50.dp))
                         Icon(
                             Icons.Default.SavedSearch,
                             contentDescription = null,
@@ -177,7 +178,7 @@ fun SearchPage(
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            "Find anything",
+                            "Find ${string.capitalize()}",
                             style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
                         )
                         Text(
@@ -336,7 +337,7 @@ private fun SearchTopBar(
 
 enum class SearchType(val title: String) {
     ALL("All"),
-    MOVIES("Films"),
+    MOVIES("Movies"),
     TV("Tv"),
-    CAST("Cast, Crew, Studios"),
+    CAST("People"),
 }

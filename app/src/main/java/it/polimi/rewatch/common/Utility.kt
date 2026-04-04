@@ -115,6 +115,8 @@ import kotlin.math.max
 
 val headerColor = Color.Black
 
+fun String.capitalize(): String = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+
 /**
  * Aggiunge un bordo sul lato inferiore del componente.
  * @param color Il colore del bordo (default grigio chiaro)

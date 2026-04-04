@@ -22,7 +22,7 @@ class SearchViewModel @Inject constructor(
     // Backing property for the search text
     private val _query = MutableStateFlow("")
     val query = _query.asStateFlow()
-    private val _mediaType = MutableStateFlow(SearchType.MOVIES)
+    private val _mediaType = MutableStateFlow(SearchType.ALL)
     val mediaType = _mediaType.asStateFlow()
 
     // Public immutable state that the Composable will observe

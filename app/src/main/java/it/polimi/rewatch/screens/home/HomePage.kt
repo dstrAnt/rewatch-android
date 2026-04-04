@@ -113,7 +113,7 @@ fun HomePage(
 
     CollapsingLayout(
         // 1. Define your heights
-        collapsingTopHeight = 64.dp,
+        collapsingTopHeight = 66.dp,
         pinnedBottomHeight = 48.dp,
         statusBarColor = headerColor,
         // 2. Slot in the part that vanishes
@@ -123,7 +123,7 @@ fun HomePage(
                     .fillMaxWidth()
                     .background(headerColor)
                     //  .padding(top = 16.dp)
-                    .padding(bottom = 8.dp),
+                    .padding(top = 10.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {

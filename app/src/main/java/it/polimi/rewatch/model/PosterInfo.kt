@@ -52,9 +52,13 @@ data class PosterInfo(
     )
 
     constructor(movie: TmdbShow) : this(
-        movie,
+        id = TvId(movie.id),
+        posterImage = movie.posterImage,
+        posterPath = movie.posterPath,
         releaseDate = movie.firstAirDate,
         title = movie.name,
+        popularity = movie.popularity,
+        rating = movie.voteAverage,
     )
 
     constructor(credit: TmdbPersonCredit) : this(

@@ -65,7 +65,7 @@ enum class SortOrder(val label: String) {
     DATE("Date")
 }
 
-private fun String.capitalize(): String = this.replace("_", " ").lowercase().replaceFirstChar {
+private fun String.cleanAndCapitalize(): String = this.replace("_", " ").lowercase().replaceFirstChar {
     if (it.isLowerCase()) it.titlecase() else it.toString()
 }
 
@@ -188,7 +188,7 @@ fun PersonContent(
                             CustomTabRow(
                                 availableTabs = availableTabs,
                                 onClick = { it: String -> currentTab = it },
-                                title = { it.capitalize() },
+                                title = { it.cleanAndCapitalize() },
                                 tabState = currentTab,
                             )
                         }
@@ -355,7 +355,7 @@ private fun NameAndJob(personName: String?, job: String?) {
     }
     if (job != null) {
         Text(
-            text = job.capitalize(),
+            text = job.cleanAndCapitalize(),
             style = MaterialTheme.typography.labelSmall,
             color = Color.Gray,
             textAlign = TextAlign.Center,
