@@ -304,11 +304,7 @@ private fun SearchResultsList(
                     item.id.onClick(actions)
                 },
             )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant,
-            )
+            HorizontalDivider()
         }
     }
 }
