@@ -19,7 +19,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -35,7 +34,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
@@ -84,7 +82,7 @@ import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
-@AndroidEntryPoint // 2. Add this annotation!
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -103,57 +101,41 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun RewatchApp() {
     val backStack = rememberNavBackStack(HomeNavTabs)
+    val scope = rememberCoroutineScope()
+    val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
+    // UI State for Overlays
     var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
     var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
-    val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
+    val searchViewModel = hiltViewModel<SearchViewModel>()
     val currentScreen = backStack.lastOrNull()
+    // Centralized Navigation Actions
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
             onNavigateToMedia = { id -> backStack.add(MediaNavPage(id)) },
             onNavigateBack = { backStack.removeLastOrNull() },
-            onFullscreenImage = {
-                Modifier.clickable {
-                    fullScreenImageUrl = it
-                    isOverlayVisible = true
-                }
+            onFullscreenImage = { url ->
+                fullScreenImageUrl = url
+                isOverlayVisible = true
             },
-            onBottomSheet = {
-                if (it.id is MediaId) bottomSheetMedia = it
-            },
-            onNavigateToLogin = {
-                backStack.add(LoginNavPage)
-            },
-            onNavigateToProfile = {
-                backStack.add(ProfileNavPage)
-            },
+            onBottomSheet = { info -> if (info.id is MediaId) bottomSheetMedia = info },
+            onNavigateToLogin = { backStack.add(LoginNavPage) },
+            onNavigateToProfile = { backStack.add(ProfileNavPage) },
             onClearAndNavigateToSettings = {
                 backStack.clear()
                 backStack.add(SettingsNavPage)
             },
             onBackToHome = {
-                scope.launch {
-                    pagerState.scrollToBottomTab(BottomTabs.HOME)
-                }
+                scope.launch { pagerState.scrollToBottomTab(BottomTabs.HOME) }
             },
         )
     }
-    val searchViewModel = hiltViewModel<SearchViewModel>()
-
-
-
-
+    // Handle back button when in a sub-tab of the Home pager
     BackHandler(enabled = pagerState.currentBottomTab() != BottomTabs.HOME && currentScreen == HomeNavTabs) {
-        // Snap the user back to the Home tab atomically
-        scope.launch {
-            pagerState.scrollToBottomTab(BottomTabs.HOME)
-        }
+        scope.launch { pagerState.scrollToBottomTab(BottomTabs.HOME) }
     }
-    // ---------------------------------------------------------
-    // RULE 1: Reset when swiping away to other screens
-    // ---------------------------------------------------------
+    // Reset search when navigating away
     LaunchedEffect(pagerState.settledPage) {
         if (pagerState.settledBottomTab() != BottomTabs.SEARCH) {
             searchViewModel.reset()
@@ -163,22 +145,19 @@ fun RewatchApp() {
     Scaffold(
         bottomBar = {
             BottomBar(
-                pagerState.currentBottomTab(),
-            ) {
-                scope.launch {
-                    pagerState.scrollToBottomTab(it)
-                    if (it == BottomTabs.SEARCH) {
-                        searchViewModel.reset()
+                currentTab = pagerState.currentBottomTab(),
+                onTabSelected = { tab ->
+                    scope.launch {
+                        pagerState.scrollToBottomTab(tab)
+                        if (tab == BottomTabs.SEARCH) searchViewModel.reset()
                     }
-                }
-//                    bottomBarState = it
-//
-                backStack.removeAll { true }
-                backStack.add(HomeNavTabs)
-            }
+                    // Reset stack to Home when switching tabs
+                    backStack.removeAll { true }
+                    backStack.add(HomeNavTabs)
+                },
+            )
         },
     ) { outerPadding ->
-        // 5. Render the stack using NavDisplay
         NavDisplay(
             backStack = backStack,
             onBack = { backStack.removeLastOrNull() },
@@ -189,34 +168,22 @@ fun RewatchApp() {
             popTransitionSpec = { popContentTransform() },
             predictivePopTransitionSpec = { popContentTransform() },
             entryDecorators = listOf(
-                // 1. Keeps standard state across configuration changes (rotation)
                 rememberSaveableStateHolderNavEntryDecorator(),
-                // 2. THE FIX: Scopes ViewModels to the NavEntry lifecycle!
-                // When the entry is removed from the list, the ViewModel's onCleared() is called.
-                //   rememberViewModelStoreNavEntryDecorator(),
             ),
             entryProvider = entryProvider {
                 entry<HomeNavTabs> {
-                    // Update HomePage to accept lambdas instead of navController
-                    HorizontalPager(
-                        state = pagerState,
-                        //modifier = Modifier.padding(innerPadding)
-                    ) { page ->
+                    HorizontalPager(state = pagerState) { page ->
                         when (BottomTabs.entries[page]) {
                             BottomTabs.HOME -> HomePage(
                                 actions = navActions,
                                 outerPadding = outerPadding,
                             )
-
-                            BottomTabs.SEARCH -> {
-                                //                                viewModel.reset()
-                                SearchPage(
-                                    actions = navActions,
-                                    outerPadding = outerPadding,
-                                    pagerState = pagerState,
-                                    viewModel = searchViewModel,
-                                )
-                            }
+                            BottomTabs.SEARCH -> SearchPage(
+                                actions = navActions,
+                                outerPadding = outerPadding,
+                                pagerState = pagerState,
+                                viewModel = searchViewModel,
+                            )
 
                             BottomTabs.MOVIE -> TrackingPage(
                                 actions = navActions,
@@ -229,19 +196,19 @@ fun RewatchApp() {
                                 type = MediaType.TV_SHOW,
                                 outerPadding = outerPadding,
                             )
-
-                            BottomTabs.PROFILE -> ProfilePage(outerPadding, navActions)
+                            BottomTabs.PROFILE -> ProfilePage(
+                                actions = navActions,
+                                outerPadding = outerPadding,
+                            )
                         }
                     }
                 }
 
                 entry<MediaNavPage> { key ->
-                    // 4. Look how clean this is! No more backStackEntry.arguments?.getString()
-                    // You just access key.movieId directly.
                     Box(Modifier.background(MaterialTheme.colorScheme.surface)) {
                         MediaPage(
+                            mediaId = key.mediaId,
                             actions = navActions,
-                            mediaId = key.mediaId, // Type-safe property
                             outerPadding = outerPadding,
                         )
                     }
@@ -249,17 +216,17 @@ fun RewatchApp() {
 
                 entry<PersonNavPage> { key ->
                     PersonPage(
-                        actions = navActions,
                         personId = key.personId,
+                        actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
+
                 entry<LoginNavPage> {
-                    AuthPage(actions = navActions, outerPadding = outerPadding)
-                    //                    LoginPage(
-                    //                        actions = navActions,
-                    //                        outerPadding = outerPadding,
-                    //                    )
+                    AuthPage(
+                        actions = navActions,
+                        outerPadding = outerPadding,
+                    )
                 }
 
                 entry<SettingsNavPage> {
@@ -270,9 +237,8 @@ fun RewatchApp() {
                 }
             },
         )
-        // Add your movie details route here just like before
-        // composable("movie_page/{movieId}") { ... }
     }
+    // Overlays (Bottom Sheet and Full Screen Image)
     bottomSheetMedia?.let {
         BottomSheet(media = it, onDismiss = { bottomSheetMedia = null }, actions = navActions)
     }
@@ -300,36 +266,32 @@ private fun noAnimationMetadata(): Map<String, Any> = metadata {
 
 @Composable
 private fun BottomBar(
-    currentDestination: BottomTabs,
-    onClick: (BottomTabs) -> Unit,
+    currentTab: BottomTabs,
+    onTabSelected: (BottomTabs) -> Unit,
 ) {
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
-    // Usiamo direttamente NavigationBar per avere il controllo totale
     NavigationBar(
         modifier = Modifier.height(65.dp + systemBarHeight),
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         tonalElevation = 0.dp,
-        windowInsets = NavigationBarDefaults.windowInsets,
     ) {
-        BottomTabs.entries.forEach { destination ->
-            val isSelected = destination == currentDestination
-
+        BottomTabs.entries.forEach { tab ->
+            val isSelected = tab == currentTab
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { onClick(destination) },
-                label = null, // Rimuoviamo il testo
-                alwaysShowLabel = false,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.onSurface,      // Color of the icon when active
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurface, // Color of the icon when inactive
-                ),
+                onClick = { onTabSelected(tab) },
                 icon = {
                     Icon(
-                        destination.getPainter(),
-                        destination.label,
-                        Modifier.size(destination.getSize()),
+                        painter = tab.getPainter(),
+                        contentDescription = tab.label,
+                        modifier = Modifier.size(tab.iconSize),
                     )
                 },
+                label = null,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                ),
             )
         }
     }
@@ -352,43 +314,22 @@ data class MediaNavPage(val mediaId: MediaId) : NavKey
 
 @Serializable
 data class PersonNavPage(val personId: Int) : NavKey
-enum class BottomTabs(
-    val label: String,
-    val imgVec: ImageVector? = null,
-    val intIcon: Int? = null,
-) {
-    HOME("Home", intIcon = R.drawable.popcorn),
-    SEARCH(
-        "Search", Icons.Default.Search,
-    ),
-    MOVIE(
-        "Movies",
-        intIcon = R.drawable.movie,
-    ),
-    TV(
-        "Tv Shows",
-        intIcon = R.drawable.tv,
-    ),
-    PROFILE(
-        "Profile", Icons.Default.Person,
-    );
+
+enum class BottomTabs(val label: String, val iconRes: Int? = null, val iconVector: ImageVector? = null) {
+    HOME("Home", iconRes = R.drawable.popcorn),
+    SEARCH("Search", iconVector = Icons.Default.Search),
+    MOVIE("Movies", iconRes = R.drawable.movie),
+    TV("Tv Shows", iconRes = R.drawable.tv),
+    PROFILE("Profile", iconVector = Icons.Default.Person);
 
     @Composable
-    fun getPainter(): Painter {
-        return when {
-            intIcon != null -> painterResource(intIcon)
-            imgVec != null -> rememberVectorPainter(imgVec)
-            else -> error("No icon found for $this")
-        }
+    fun getPainter(): Painter = when {
+        iconRes != null -> painterResource(iconRes)
+        iconVector != null -> rememberVectorPainter(iconVector)
+        else -> error("Icon missing for $this")
     }
 
-    fun getSize(): Dp {
-        return when {
-            intIcon != null -> 20.dp
-            imgVec != null -> 24.dp
-            else -> error("No icon found for $this")
-        }
-    }
+    val iconSize: Dp get() = if (iconRes != null) 20.dp else 24.dp
 }
 
 

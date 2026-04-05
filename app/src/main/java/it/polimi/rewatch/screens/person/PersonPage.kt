@@ -1,6 +1,7 @@
 package it.polimi.rewatch.screens.person
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -171,9 +172,9 @@ fun PersonContent(
                 ) {
                     ProfilePicture(
                         details.profileImage,
-                        modifier = actions.onFullscreenImage(
-                            details.profileImage?.let { build(it, width = 500, height = 500) },
-                        ),
+                        modifier = Modifier.clickable {
+                            details.profileImage?.let { actions.onFullscreenImage(build(it, width = 500, height = 500)) }
+                        },
                     )
 
                     Spacer(Modifier.height(10.dp))
@@ -370,9 +371,10 @@ private fun ProfilePicture(profileImage: TmdbImage?, modifier: Modifier = Modifi
             model = build(profileImage, width = 150, height = 250),
             contentDescription = null,
             contentScale = ContentScale.Fit,
-            modifier = modifier
+            modifier = Modifier
                 .height(200.dp)
-                .clip(RoundedCornerShape(10.dp)),
+                .clip(RoundedCornerShape(10.dp))
+                .then(modifier),
         )
     }
 }

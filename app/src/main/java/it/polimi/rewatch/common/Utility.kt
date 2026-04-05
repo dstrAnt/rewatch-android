@@ -453,11 +453,15 @@ fun getDeviceCornerRadius(): Dp {
     return 32.dp
 }
 
+/**
+ * Encapsulates all navigation and high-level UI actions for the app.
+ * Using a class instead of passing individual lambdas helps keep Composable signatures clean.
+ */
 class NavigationActions(
     val onNavigateToPerson: (Int) -> Unit,
     val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
-    val onFullscreenImage: (String?) -> Modifier,
+    val onFullscreenImage: (String) -> Unit,
     val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
     val onNavigateToProfile: () -> Unit,

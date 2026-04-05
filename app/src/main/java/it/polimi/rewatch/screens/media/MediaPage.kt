@@ -1,6 +1,5 @@
 package it.polimi.rewatch.screens.media
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -101,7 +100,6 @@ import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 import java.util.Locale
 import kotlin.math.max
@@ -115,128 +113,100 @@ fun isDetailsAvailable(details: MediaDetail): Boolean {
             !movie.productionCompanies.isNullOrEmpty())
 }
 
-data class TrackingItems(
-    val watchlistItem: StateFlow<WatchlistMedia?>,
-    val watchedListItem: StateFlow<WatchedMedia?>,
-)
-
-
 @Composable
 fun MediaPage(
     mediaId: MediaId,
+    outerPadding: PaddingValues,
+    actions: NavigationActions,
+    modifier: Modifier = Modifier,
     viewModel: MediaViewModel = hiltViewModel<MediaViewModel, MediaViewModel.Factory>(
         key = mediaId.toString(),
         creationCallback = { it.create(mediaId) },
     ),
-    outerPadding: PaddingValues,
-    actions: NavigationActions,
 ) {
-    TrackingItems(viewModel.watchlistItem, viewModel.watchedListItem)
+    // Hoist the state! Collect it at the screen-level composable.
+    val watchlistItem by viewModel.watchlistItem.collectAsStateWithLifecycle()
+    val watchedListItem by viewModel.watchedListItem.collectAsStateWithLifecycle()
+
     AnimatedUiState(
         state = viewModel.uiState,
         loadingContent = ::MovieSkeleton,
+        modifier = modifier,
     ) { data ->
         MediaContent(
             data = data,
+            watchlistItem = watchlistItem,
+            watchedListItem = watchedListItem,
             padding = outerPadding,
             mediaId = mediaId,
             actions = actions,
-            vm = viewModel,
         )
     }
 }
 
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-@OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
-)
 fun MediaContent(
-    actions: NavigationActions,
-    padding: PaddingValues,
     data: MovieData,
+    watchlistItem: WatchlistMedia?,
+    watchedListItem: WatchedMedia?,
+    padding: PaddingValues,
     mediaId: MediaId,
-    vm: MediaViewModel,
-    // trackingItems: TrackingItems,
+    actions: NavigationActions,
+    modifier: Modifier = Modifier,
 ) {
-    val movie: MediaDetail = data.movie
+    val movie = data.movie
     val scrollState = rememberLazyListState()
-    val pad = 16.dp
-    val watchlistItem by vm.watchlistItem.collectAsStateWithLifecycle()
-    val watchedListItem by vm.watchedListItem.collectAsStateWithLifecycle()
+    val spacing = 16.dp
     var selectedTab by remember { mutableStateOf<String?>(null) }
     var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
-    val tabs: List<TabItem> = remember(
-        expandedSectionIds,
-        buildTabs(movie, expandedSectionIds, handleToggle, mediaId, pad, actions),
-    )
+    val tabs = remember(expandedSectionIds) {
+        buildTabs(movie, expandedSectionIds, handleToggle, mediaId, spacing, actions)
+    }
+
     MediaScaffold(
         scrollState = scrollState,
         title = movie.title,
         onNavigateBack = actions.onNavigateBack,
-    ) { _ ->
+        modifier = modifier,
+    ) {
         LazyColumn(
             state = scrollState,
             verticalArrangement = Arrangement.spacedBy(3.dp),
             contentPadding = PaddingValues(
                 start = padding.calculateStartPadding(LayoutDirection.Ltr),
                 end = padding.calculateEndPadding(LayoutDirection.Ltr),
+                bottom = padding.calculateBottomPadding(),
             ),
         ) {
             item {
-                BackdropImage(
-                    movie.backdropImage, padding,
-                    modifier = actions.onFullscreenImage(
-                        movie.backdropImage?.let { build(it, width = 500, height = 500) },
-                    ),
-                )
-
-                TitleAndInfoSection(
-                    pad,
-                    backdropImage = movie.backdropImage,
-                    posterImage = movie.posterImage,
-                    director = movie.director,
-                    directorId = movie.crew.find { it.job == "Director" }?.id,
-                    title = movie.title,
-                    runtime = movie.runtime,
-                    releaseDate = movie.releaseDate,
-                    certification = movie.certification,
-                    modifier = actions.onFullscreenImage(
-                        movie.posterImage?.let { build(it, width = 500, height = 500) },
-                    ),
+                MediaHeaderSection(
+                    movie = movie,
+                    spacing = spacing,
+                    padding = padding,
+                    watchlistItem = watchlistItem,
+                    watchedListItem = watchedListItem,
+                    mediaId = mediaId,
                     actions = actions,
                 )
-
-                TaglineAndOverview(
-                    pad, overview = movie.overview, tagline = movie.tagline,
-                )
-
-                TmdbRatings(
-                    voteCount = movie.voteCount,
-                    voteAverage = movie.voteAverage,
-                )
-
-                TrackingInfo(watchlistItem, watchedListItem) { actions.onBottomSheet(PosterInfo(movie, mediaId)) }
             }
-//            println(movie.crew)
+
             tabbedSection(
                 allTabs = tabs,
                 activeTab = selectedTab,
-                // Pass the volatile state here
-                onTabSelected = {
-                    selectedTab = it
-                    expandedSectionIds = emptySet() // Clear expansions on tab switch
+                onTabSelected = { newTab ->
+                    selectedTab = newTab
+                    expandedSectionIds = emptySet()
                 },
             )
-            // 1. Reviews Section
+
             optionalTitledSection(
                 isVisible = movie.reviews.isNotEmpty(),
                 title = "Reviews",
-                pad = pad,
+                pad = spacing,
             ) {
                 expandableSection(
                     title = "reviews",
@@ -244,6 +214,7 @@ fun MediaContent(
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
                     showDividers = true,
+                    initialVisibleCount = 3,
                     divider = {
                         HorizontalDivider(
                             Modifier
@@ -251,29 +222,84 @@ fun MediaContent(
                                 .animateItem(),
                         )
                     },
-                    initialVisibleCount = 3,
-                ) {
-                    ReviewItem(it)
-                }
-            }
-// 2. Similar Movies Section
-            optionalTitledSection(
-                isVisible = data.similar.isNotEmpty(),
-                title = "Similar",
-                pad = pad,
-            ) {
-                item {
-                    SimilarSection(data.similar) {
-                        PosterItem(it, actions)
-                    }
-                    Spacer(Modifier.height(pad))
+                ) { review ->
+                    ReviewItem(review)
                 }
             }
 
-            item {
-                Spacer(Modifier.height(padding.calculateBottomPadding()))
+            optionalTitledSection(
+                isVisible = data.similar.isNotEmpty(),
+                title = "Similar",
+                pad = spacing,
+            ) {
+                item {
+                    SimilarSection(data.similar) { similarItem ->
+                        PosterItem(similarItem, actions)
+                    }
+                    Spacer(Modifier.height(spacing))
+                }
             }
         }
+    }
+}
+
+// 4. Extracted a Header component to reduce the size of the LazyColumn block
+@Composable
+private fun MediaHeaderSection(
+    movie: MediaDetail,
+    spacing: Dp,
+    padding: PaddingValues,
+    watchlistItem: WatchlistMedia?,
+    watchedListItem: WatchedMedia?,
+    mediaId: MediaId,
+    actions: NavigationActions,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        BackdropImage(
+            image = movie.backdropImage,
+            padding = padding,
+            modifier = Modifier.clickable {
+                movie.backdropImage?.let {
+                    actions.onFullscreenImage(build(it, width = 500, height = 500))
+                }
+            },
+        )
+
+        TitleAndInfoSection(
+            pad = spacing,
+            backdropImage = movie.backdropImage,
+            posterImage = movie.posterImage,
+            director = movie.director,
+            directorId = movie.crew.find { it.job == "Director" }?.id,
+            title = movie.title,
+            runtime = movie.runtime,
+            releaseDate = movie.releaseDate,
+            certification = movie.certification,
+            actions = actions,
+            modifier = Modifier.clickable {
+                movie.posterImage?.let {
+                    actions.onFullscreenImage(build(it, width = 500, height = 500))
+                }
+            },
+        )
+
+        TaglineAndOverview(
+            pad = spacing,
+            overview = movie.overview,
+            tagline = movie.tagline,
+        )
+
+        TmdbRatings(
+            voteCount = movie.voteCount,
+            voteAverage = movie.voteAverage,
+        )
+
+        TrackingInfo(
+            watchlistItem = watchlistItem,
+            watchedListItem = watchedListItem,
+            onClick = { actions.onBottomSheet(PosterInfo(movie, mediaId)) },
+        )
     }
 }
 
@@ -344,7 +370,6 @@ private fun TrackingInfo(
     }
 }
 
-@Composable
 private fun buildTabs(
     movie: MediaDetail,
     expandedSectionIds: Set<String>,
@@ -352,7 +377,7 @@ private fun buildTabs(
     mediaId: MediaId,
     pad: Dp,
     actions: NavigationActions,
-): () -> List<TabItem> = {
+): List<TabItem> =
     buildList {
         add(
             TabItem.expandable(
@@ -441,7 +466,7 @@ private fun buildTabs(
             ),
         )
     }
-}
+
 
 fun LazyListScope.optionalTitledSection(
     isVisible: Boolean,
@@ -611,14 +636,13 @@ fun BackdropImage(
                 .layoutEvade(
                     padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
                 ),
-
-            ) {
+        ) {
             RewatchAsyncImage(
                 model = build(it, width = 600, height = 300),
                 contentDescription = null,
                 modifier = modifier
                     .fillMaxWidth()
-                    .height(210.dp)
+                    .height(210.dp),
             )
             Box(
                 modifier = Modifier
@@ -860,7 +884,7 @@ fun <T> SimilarSection(
         val minCellSize = 90.dp
         // 2. Calculate the columns (Available Width / Min Cell Size)
         // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
-        val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
+        max(1, (maxWidth / minCellSize).toInt())
         // Now you have the exact integer to use however you want!
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
