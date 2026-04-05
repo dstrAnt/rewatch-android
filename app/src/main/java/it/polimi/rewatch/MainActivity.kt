@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -39,6 +40,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -133,32 +135,41 @@ fun RewatchApp() {
             },
             onBackToHome = {
                 scope.launch {
-                    pagerState.scrollToPage(0)
+                    pagerState.scrollToBottomTab(BottomTabs.HOME)
                 }
             },
         )
     }
+    val searchViewModel = hiltViewModel<SearchViewModel>()
 
 
 
-    BackHandler(enabled = pagerState.currentPage != 0 && currentScreen == HomeNavTabs) {
+
+    BackHandler(enabled = pagerState.currentBottomTab() != BottomTabs.HOME && currentScreen == HomeNavTabs) {
         // Snap the user back to the Home tab atomically
         scope.launch {
-            pagerState.scrollToPage(0)
+            pagerState.scrollToBottomTab(BottomTabs.HOME)
         }
-//        bottomBarState = AppDestinations.HOME
-//
-//        backStack.clear()
-//        backStack.add(Home)
+    }
+    // ---------------------------------------------------------
+    // RULE 1: Reset when swiping away to other screens
+    // ---------------------------------------------------------
+    LaunchedEffect(pagerState.settledPage) {
+        if (pagerState.settledBottomTab() != BottomTabs.SEARCH) {
+            searchViewModel.reset()
+        }
     }
 
     Scaffold(
         bottomBar = {
             BottomBar(
-                BottomTabs.entries[pagerState.currentPage],
+                pagerState.currentBottomTab(),
             ) {
                 scope.launch {
-                    pagerState.scrollToPage(BottomTabs.entries.indexOf(it))
+                    pagerState.scrollToBottomTab(it)
+                    if (it == BottomTabs.SEARCH) {
+                        searchViewModel.reset()
+                    }
                 }
 //                    bottomBarState = it
 //
@@ -185,7 +196,7 @@ fun RewatchApp() {
                 //   rememberViewModelStoreNavEntryDecorator(),
             ),
             entryProvider = entryProvider {
-                entry<HomeNavTabs>(metadata = noAnimationMetadata()) {
+                entry<HomeNavTabs> {
                     // Update HomePage to accept lambdas instead of navController
                     HorizontalPager(
                         state = pagerState,
@@ -198,13 +209,12 @@ fun RewatchApp() {
                             )
 
                             BottomTabs.SEARCH -> {
-                                val viewModel = hiltViewModel<SearchViewModel>()
                                 //                                viewModel.reset()
                                 SearchPage(
                                     actions = navActions,
                                     outerPadding = outerPadding,
                                     pagerState = pagerState,
-                                    viewModel = viewModel,
+                                    viewModel = searchViewModel,
                                 )
                             }
 
@@ -380,3 +390,8 @@ enum class BottomTabs(
         }
     }
 }
+
+
+fun PagerState.currentBottomTab(): BottomTabs = BottomTabs.entries[currentPage]
+suspend fun PagerState.scrollToBottomTab(tab: BottomTabs) = scrollToPage(BottomTabs.entries.indexOf(tab))
+fun PagerState.settledBottomTab(): BottomTabs = BottomTabs.entries[settledPage]

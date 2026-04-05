@@ -9,6 +9,9 @@ import app.moviebase.tmdb.model.TmdbDiscover
 import app.moviebase.tmdb.model.TmdbDiscoverMovieSortBy
 import app.moviebase.tmdb.model.TmdbDiscoverShowSortBy
 import app.moviebase.tmdb.model.TmdbDiscoverTimeRange
+import app.moviebase.tmdb.model.TmdbMovie
+import app.moviebase.tmdb.model.TmdbPerson
+import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbTimeWindow
 import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
@@ -242,7 +245,14 @@ class TmdbRepository @Inject constructor(
                     tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
                 }
                 SearchType.ALL -> {
-                    tmdb.search.findMulti(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
+                    tmdb.search.findMulti(query = query, page = 1).results.map {
+                        when (it) {
+                            is TmdbShow -> PosterInfo(it)
+                            is TmdbMovie -> PosterInfo(it)
+                            is TmdbPerson -> PosterInfo(it)
+                            else -> PosterInfo(it)
+                        }
+                    } // Maps TmdbTvShow to your Media class
                 }
 
                 else -> emptyList()
