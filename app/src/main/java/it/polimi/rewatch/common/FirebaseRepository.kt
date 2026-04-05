@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDateTime
@@ -53,7 +52,7 @@ class FirebaseRepository @Inject constructor(
         }
         auth.addAuthStateListener(listener)
         awaitClose { auth.removeAuthStateListener(listener) }
-    }.stateIn(appScope, SharingStarted.WhileSubscribed(5000), AuthState.SignedOut)
+    }.shareIn(appScope, SharingStarted.WhileSubscribed(5000), replay = 1)
 
     // --- Anonymous auth ---
     override suspend fun signInAnonymously(): Result<Unit> = runCatching {
@@ -242,7 +241,7 @@ class FirebaseRepository @Inject constructor(
         mapper: (TrackingMediaDto) -> T,
     ): Flow<Result<List<T>>> = authState.flatMapLatest { state ->
         when (state) {
-            is AuthState.SignedOut -> flowOf()//Result.success(emptyList()))
+            is AuthState.SignedOut -> flowOf(Result.success(emptyList()))
             is AuthState.Anonymous,
             is AuthState.Authenticated,
                 -> {
