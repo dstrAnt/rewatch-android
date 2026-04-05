@@ -9,45 +9,58 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
-@OptIn(FlowPreview::class)
+enum class SearchType(val title: String) {
+    ALL("All"), MOVIES("Movies"), TV("TV Shows"), CAST("People"),
+}
+
+@OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: TmdbRepository,
-) : ViewModel() {    // Initialize TMDB client here (or inject via Hilt/Koin in a real app)
-    // Backing property for the search text
+) : ViewModel() {
     private val _query = MutableStateFlow("")
-    val query = _query.asStateFlow()
+    val query: StateFlow<String> = _query.asStateFlow()
     private val _mediaType = MutableStateFlow(SearchType.ALL)
-    val mediaType = _mediaType.asStateFlow()
+    val mediaType: StateFlow<SearchType> = _mediaType.asStateFlow()
 
-    // Public immutable state that the Composable will observe
-    // Function to update the state
-    fun onTabChanged(newText: SearchType) {
-        _mediaType.value = newText
-    }
+    /**
+     * Reacts to query and type changes with a debounce to avoid excessive API calls.
+     */
+    val searchResults =
+        combine(_query, _mediaType) { query, type -> query to type }
+            .debounce { (query, _) -> if (query.isEmpty()) 0L else 200L }
+            .distinctUntilChanged().flatMapLatest { (currentQuery, currentMediaType) ->
+                if (currentQuery.isBlank()) {
+                    flowOf(emptyList())
+                } else {
+                    flow {
+                        emit(repository.searchMedia(currentQuery, currentMediaType))
+                    }
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList(),
+            )
 
-    // Automatically reacts to query changes, debounces, and fetches movies
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val media = combine(_query, _mediaType, transform = ::Pair)
-        .mapLatest { (currentQuery, currentMediaType) ->
-            // 2. mapLatest receives the updated Pair.
-            // It will cancel the previous search if a new query or type comes in quickly!
-            repository.searchMedia(currentQuery, currentMediaType)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList(),
-        )
-
-    // Called from the UI when the user types
     fun onQueryChange(newQuery: String) {
         _query.value = newQuery
     }
+
+    fun onTabChanged(newType: SearchType) {
+        _mediaType.value = newType
+    }
+
     fun reset() {
         _query.value = ""
     }

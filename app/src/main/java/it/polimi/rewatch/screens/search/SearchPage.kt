@@ -3,7 +3,7 @@ package it.polimi.rewatch.screens.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,18 +37,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBarDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -65,11 +59,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.common.capitalize
 import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.PosterItem
+import it.polimi.rewatch.model.PosterInfo
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchPage(
     viewModel: SearchViewModel = viewModel(),
@@ -78,32 +71,26 @@ fun SearchPage(
     pagerState: PagerState,
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
-    val movies by viewModel.media.collectAsStateWithLifecycle()
+    val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
+    val mediaType by viewModel.mediaType.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
-    val type = viewModel.mediaType.collectAsStateWithLifecycle().value
-    val string = when (type) {
-        SearchType.ALL -> "anything"
-        SearchType.MOVIES -> "movies"
-        SearchType.TV -> "tv shows"
-        SearchType.CAST -> "people"
-    }
-    // Intercept the back button BEFORE the SearchBar catches it,
-    // and forcefully navigate back out of the page.
-//    LaunchedEffect(Unit) {
-//        focusRequester.requestFocus()
-//    }
-
 
     LaunchedEffect(pagerState.isScrollInProgress) {
         if (pagerState.isScrollInProgress) {
             focusManager.clearFocus()
         }
     }
+
     Scaffold(
         topBar = {
             SearchTopBar(
-                string, query, viewModel, focusRequester,
+                query = query,
+                mediaType = mediaType,
+                onQueryChange = viewModel::onQueryChange,
+                onTypeChange = viewModel::onTabChanged,
+                onClearQuery = viewModel::reset,
+                focusRequester = focusRequester,
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                     end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
@@ -111,223 +98,217 @@ fun SearchPage(
             )
         },
     ) { padding ->
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-        ) {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(
-                        top = padding.calculateTopPadding(),
-                        bottom = outerPadding.calculateBottomPadding(),
-                        start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
-                        end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                    )
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                focusManager.clearFocus()
-                            },
-                        )
-                    }
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures { change, dragAmount ->
-                            // dragAmount > 0 means the user is swiping DOWN.
-                            // We use a small threshold (e.g., 10f) so a tiny jitter
-                            // doesn't accidentally trigger the keyboard.
-                            if (dragAmount > 10f) {
-                                focusRequester.requestFocus()
-                            }
-                        }
-                    },
-            ) {
-                // This is the 'content' slot
-                val focusManager = LocalFocusManager.current
-                val listState = rememberLazyListState()
-
-                LaunchedEffect(listState.isScrollInProgress) {
-                    if (listState.isScrollInProgress) {
-                        focusManager.clearFocus()
-                    }
-                }
-                // 2. The Results Area
-                if (query.isEmpty())
-                    Column(
-                        Modifier
-                            .padding(horizontal = 16.dp)
-                            .padding(top = 60.dp)
-                            .verticalScroll(rememberScrollState())
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Icon(
-                            Icons.Default.SavedSearch,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(70.dp),
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Text(
-                            "Find ${string.capitalize()}",
-                            style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
-                        )
-                        Text(
-                            "Type a query to start searching for $string",
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(
-                            onClick = { focusRequester.requestFocus() },
-                        ) {
-                            Text("Search")
-                        }
-                        Spacer(Modifier.height(50.dp))
-                    }
-                else
-                    LazyColumn(
-                        modifier = Modifier.fillMaxHeight(),
-                        state = listState,
-                    ) {
-                        items(movies) {
-                            ListItem(
-                                headlineContent = {
-                                    Text(it.title.orEmpty() + it.releaseDate?.let { ", ${it.year}" }.orEmpty())
-                                },
-                                leadingContent = {
-                                    PosterItem(it, actions, modifier = Modifier.size(60.dp, 90.dp))
-                                },
-                                modifier = Modifier.clickable {
-                                    // 2. Trigger callback with the movie ID
-                                    focusManager.clearFocus()
-                                    it.id.onClick(actions)
-                                },
-                            )
-
-                            HorizontalDivider()
-                        }
-                    }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomExpandedSearchBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onClearQuery: () -> Unit,
-    focusRequester: FocusRequester,
-    placeholder: String = "Search movies...",
-    onTabChange: (SearchType) -> Unit,
-) {
-    val focusManager = LocalFocusManager.current
-
-    Surface(
-        color = headerColor,
-        tonalElevation = SearchBarDefaults.TonalElevation, // Gives it that slight M3 tinted look
-    ) {
-        Column(
+        Box(
             modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    top = padding.calculateTopPadding(),
+                    bottom = outerPadding.calculateBottomPadding(),
+                    start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+                    end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+                )
                 .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = {
-                            focusManager.clearFocus()
-                        },
-                    )
+                    detectTapGestures(onTap = { focusManager.clearFocus() })
                 },
         ) {
-            Spacer(Modifier.height(5.dp))
-            // 1. The Input Area
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp) // Standard M3 SearchBar height
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            if (query.isEmpty()) {
+                EmptySearchState(
+                    mediaType = mediaType,
+                    onSearchClick = { focusRequester.requestFocus() },
                 )
-
-                TextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    modifier = Modifier
-                        .weight(1f)
-//                        .height(48.dp)
-                        .focusRequester(focusRequester),
-                    placeholder = { Text(placeholder) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
-                        disabledContainerColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            } else {
+                SearchResultsList(
+                    results = searchResults,
+                    actions = actions,
+                    onItemClick = { focusManager.clearFocus() },
                 )
-
-                if (query.isNotEmpty()) {
-                    IconButton(onClick = onClearQuery) {
-                        Icon(
-                            imageVector = Icons.Default.Clear, contentDescription = "Clear search",
-                        )
-                    }
-                }
             }
-
-            Spacer(Modifier.height(4.dp))
-            val availableTabs = SearchType.entries
-            var tabState by rememberSaveable { mutableStateOf(availableTabs.getOrNull(0)) }
-
-            CustomTabRow(
-                availableTabs = availableTabs,
-                onClick = {
-                    tabState = it
-                    onTabChange(it)
-                },
-                title = { it.title },
-                tabState = tabState,
-                divider = {},
-            )
         }
     }
 }
 
 @Composable
 private fun SearchTopBar(
-    string: String,
     query: String,
-    viewModel: SearchViewModel,
+    mediaType: SearchType,
+    onQueryChange: (String) -> Unit,
+    onTypeChange: (SearchType) -> Unit,
+    onClearQuery: () -> Unit,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .background(headerColor)
             .then(modifier)
-            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
+            .windowInsetsPadding(WindowInsets.statusBars),
     ) {
-        CustomExpandedSearchBar(
-            placeholder = "Search $string...",
+        Spacer(Modifier.height(5.dp))
+        SearchInputField(
             query = query,
-            onQueryChange = viewModel::onQueryChange,
-            onClearQuery = { viewModel.onQueryChange("") },
-            onTabChange = viewModel::onTabChanged,
+            placeholder = "Search ${mediaType.title.lowercase()}...",
+            onQueryChange = onQueryChange,
+            onClearQuery = onClearQuery,
             focusRequester = focusRequester,
+        )
+        Spacer(Modifier.height(4.dp))
+
+        CustomTabRow(
+            availableTabs = SearchType.entries,
+            tabState = mediaType,
+            onClick = onTypeChange,
+            title = { it.title },
+            divider = {},
         )
     }
 }
 
-enum class SearchType(val title: String) {
-    ALL("All"),
-    MOVIES("Movies"),
-    TV("Tv"),
-    CAST("People"),
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchInputField(
+    query: String,
+    placeholder: String,
+    onQueryChange: (String) -> Unit,
+    onClearQuery: () -> Unit,
+    focusRequester: FocusRequester,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(55.dp)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = Icons.Default.Search,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        TextField(
+            value = query,
+            onValueChange = onQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .focusRequester(focusRequester),
+            placeholder = { Text(placeholder) },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                disabledContainerColor = Color.Transparent,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+            ),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        )
+
+        if (query.isNotEmpty()) {
+            IconButton(onClick = onClearQuery) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Clear search",
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptySearchState(
+    mediaType: SearchType,
+    onSearchClick: () -> Unit,
+) {
+    Column(
+        Modifier
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Spacer(Modifier.height(60.dp))
+        Icon(
+            imageVector = Icons.Default.SavedSearch,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+            modifier = Modifier.size(70.dp),
+        )
+        Spacer(Modifier.height(16.dp))
+        val typeString = when (mediaType) {
+            SearchType.ALL -> "anything"
+            SearchType.MOVIES -> "movies"
+            SearchType.TV -> "TV shows"
+            SearchType.CAST -> "people"
+        }
+        Text(
+            text = "Find $typeString",
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Search for your favorite movies, TV shows, and people.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onSearchClick) {
+            Text("Start Searching")
+        }
+        Spacer(Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun SearchResultsList(
+    results: List<PosterInfo>,
+    actions: NavigationActions,
+    onItemClick: () -> Unit,
+) {
+    val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
+
+    LaunchedEffect(listState.isScrollInProgress) {
+        if (listState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp),
+    ) {
+        items(results) { item ->
+            ListItem(
+                headlineContent = {
+                    Text(
+                        text = item.title.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                },
+                supportingContent = item.releaseDate?.let { date ->
+                    { Text(text = date.year.toString()) }
+                },
+                leadingContent = {
+                    PosterItem(
+                        media = item,
+                        actions = actions,
+                        modifier = Modifier.size(60.dp, 90.dp),
+                    )
+                },
+                modifier = Modifier.clickable {
+                    onItemClick()
+                    item.id.onClick(actions)
+                },
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
+        }
+    }
 }
