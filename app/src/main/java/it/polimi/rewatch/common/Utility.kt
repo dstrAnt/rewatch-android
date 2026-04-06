@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -50,6 +51,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -102,7 +104,6 @@ import coil3.compose.AsyncImage
 import it.polimi.rewatch.R
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
-import it.polimi.rewatch.screens.media.expandableSection
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
@@ -186,7 +187,7 @@ fun ExpandBtn(
             .padding(15.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(string, style = MaterialTheme.typography.labelLarge, modifier = modifier)
+            Text(string, style = MaterialTheme.typography.labelLarge)
             if (isExpanded) Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
             else Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
         }
@@ -292,6 +293,7 @@ fun Modifier.layoutEvade(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 data class TabItem(
     val title: String,
     val isAvailable: () -> Boolean,
@@ -304,6 +306,7 @@ data class TabItem(
             itemsList: List<T>,
             expandedSectionIds: Set<String>,
             onToggleSection: (String) -> Unit,
+            key: ((T) -> Any)? = null,
             initialVisibleCount: Int = 3,
             showDividers: Boolean = false,
             itemContent: @Composable LazyItemScope.(T) -> Unit,
@@ -316,12 +319,52 @@ data class TabItem(
                     itemsList = itemsList,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = onToggleSection,
+                    key = key,
                     initialVisibleCount = initialVisibleCount,
                     showDividers = showDividers,
                     itemContent = itemContent,
                 )
             },
         )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+fun <T> LazyListScope.expandableSection(
+    title: String,
+    itemsList: List<T>,
+    expandedSectionIds: Set<String>,
+    onToggleSection: (String) -> Unit,
+    key: ((T) -> Any)? = null,
+    initialVisibleCount: Int = 3,
+    showDividers: Boolean = false,
+    divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
+    itemContent: @Composable LazyItemScope.(T) -> Unit,
+) {
+    val isExpanded = expandedSectionIds.contains(title)
+    val visibleItems = if (isExpanded) itemsList else itemsList.take(initialVisibleCount)
+
+    itemsIndexed(
+        items = visibleItems,
+    ) { idx, item ->
+        Column(Modifier.animateItem()) {
+            itemContent(item)
+            if (showDividers && idx != visibleItems.lastIndex) {
+                divider()
+            }
+        }
+    }
+
+    if (itemsList.size > initialVisibleCount || isExpanded) {
+        item(key = "btn_$title") {
+            val remaining = itemsList.size - visibleItems.size
+            ExpandBtn(
+                string = if (isExpanded) "Hide $title" else "Show $remaining more",
+                onClick = { onToggleSection(title) },
+                isExpanded = isExpanded,
+                modifier = Modifier.animateItem(),
+            )
+        }
     }
 }
 
@@ -563,8 +606,7 @@ fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
 fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
     Box(
         modifier = Modifier
-            .width(35.dp)
-            .height(30.dp),
+            .width(35.dp),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

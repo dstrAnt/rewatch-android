@@ -38,6 +38,15 @@ data class MediaDetail(
     val backdropImage: TmdbImage?,
     val specificDetails: MediaSpecificDetails,
 ) {
+    val isDetailsAvailable: Boolean
+        get() {
+            if (specificDetails !is MediaSpecificDetails.Movie) return false
+            return specificDetails.genres.isNotEmpty() ||
+                    specificDetails.budget > 0 ||
+                    specificDetails.releaseDate != null ||
+                    !specificDetails.productionCompanies.isNullOrEmpty()
+        }
+
     // Constructor for Movie Data
     constructor(movie: TmdbMovieDetail) : this(
         title = movie.title,

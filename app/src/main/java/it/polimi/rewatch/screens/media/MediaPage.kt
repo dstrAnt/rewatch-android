@@ -8,7 +8,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,12 +19,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,13 +33,13 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +53,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,11 +75,11 @@ import app.moviebase.tmdb.model.TmdbReview
 import it.polimi.rewatch.R
 import it.polimi.rewatch.common.BorderBox
 import it.polimi.rewatch.common.CustomTabRow
-import it.polimi.rewatch.common.ExpandBtn
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.OverlapIcon
 import it.polimi.rewatch.common.TabItem
+import it.polimi.rewatch.common.expandableSection
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.getShortNotation
 import it.polimi.rewatch.common.layoutEvade
@@ -102,16 +100,6 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import kotlinx.datetime.LocalDate
 import java.util.Locale
-import kotlin.math.max
-
-fun isDetailsAvailable(details: MediaDetail): Boolean {
-    if (details.specificDetails !is MediaSpecificDetails.Movie) return false
-    val movie: MediaSpecificDetails.Movie = details.specificDetails
-    return (movie.genres.isNotEmpty() ||
-            movie.budget > 0 ||
-            movie.releaseDate != null ||
-            !movie.productionCompanies.isNullOrEmpty())
-}
 
 @Composable
 fun MediaPage(
@@ -182,7 +170,7 @@ fun MediaContent(
                 bottom = padding.calculateBottomPadding(),
             ),
         ) {
-            item {
+            item(key = "header") {
                 MediaHeaderSection(
                     movie = movie,
                     spacing = spacing,
@@ -191,6 +179,7 @@ fun MediaContent(
                     watchedListItem = watchedListItem,
                     mediaId = mediaId,
                     actions = actions,
+                    modifier = Modifier.animateItem(),
                 )
             }
 
@@ -213,13 +202,12 @@ fun MediaContent(
                     itemsList = movie.reviews,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
+                    key = { it.id },
                     showDividers = true,
                     initialVisibleCount = 3,
                     divider = {
                         HorizontalDivider(
-                            Modifier
-                                .padding(start = 75.dp)
-                                .animateItem(),
+                            Modifier.padding(start = 75.dp),
                         )
                     },
                 ) { review ->
@@ -232,11 +220,13 @@ fun MediaContent(
                 title = "Similar",
                 pad = spacing,
             ) {
-                item {
-                    SimilarSection(data.similar) { similarItem ->
-                        PosterItem(similarItem, actions)
+                item(key = "similar_section") {
+                    Column(Modifier.animateItem()) {
+                        SimilarSection(data.similar) { similarItem ->
+                            PosterItem(similarItem, actions)
+                        }
+                        Spacer(Modifier.height(spacing))
                     }
-                    Spacer(Modifier.height(spacing))
                 }
             }
         }
@@ -245,7 +235,7 @@ fun MediaContent(
 
 // 4. Extracted a Header component to reduce the size of the LazyColumn block
 @Composable
-private fun MediaHeaderSection(
+private fun LazyItemScope.MediaHeaderSection(
     movie: MediaDetail,
     spacing: Dp,
     padding: PaddingValues,
@@ -255,7 +245,7 @@ private fun MediaHeaderSection(
     actions: NavigationActions,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.animateContentSize()) {
         BackdropImage(
             image = movie.backdropImage,
             padding = padding,
@@ -310,62 +300,74 @@ private fun TrackingInfo(
     onClick: () -> Unit,
 ) {
     HorizontalDivider()
-    Column(
-        Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Column(
-            Modifier
-                .width(400.dp)
-                .padding(horizontal = 16.dp)
-                .padding(vertical = 10.dp)
+        Row(
+            modifier = Modifier
+                .widthIn(max = 400.dp)
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(20.dp))
-                .background(DividerDefaults.color)
-                .clickable(onClick = onClick),
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f))
+                .clickable(onClick = onClick)
+                .padding(horizontal = 20.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Spacer(Modifier.height(10.dp))
             if (watchedListItem != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp),
-                ) {
-                    if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
-                    else Icon(Icons.Filled.Visibility, contentDescription = null, tint = Color.White)
-                    if (watchedListItem.rating == 0.0f) Text("You watched this content")
-                    else {
-                        Text("You rated this content")
-                        StarRating(watchedListItem.rating / 2)
-                    }
-                }
-                Spacer(Modifier.height(10.dp))
-            } else if (watchlistItem != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                ) {
-                    Icon(Icons.Filled.AccessTimeFilled, contentDescription = null, tint = Color.White)
-                    Text("This content is in your watchlist")
-                }
-                Spacer(Modifier.height(10.dp))
-            } else {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                ) {
-                    Icon(
-                        painterResource(R.drawable.popcorn),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp),
+                if (watchlistItem != null) OverlapIcon(Icons.Filled.Visibility, Icons.Filled.AccessTimeFilled)
+                else Icon(
+                    Icons.Filled.Visibility,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = if (watchedListItem.rating == 0.0f) "You watched this" else "Your rating",
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                if (watchedListItem.rating > 0.0f) {
+                    StarRating(
+                        watchedListItem.rating / 2,
+                        modifier = Modifier.weight(1f),
                     )
-                    Text("Add this content to your lists")
-                }
-                Spacer(Modifier.height(10.dp))
+                } else Spacer(
+                    modifier = Modifier.weight(1f),
+                )
+            } else if (watchlistItem != null) {
+                Icon(
+                    Icons.Filled.AccessTimeFilled,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    "In your watchlist",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                )
+            } else {
+                Icon(
+                    painterResource(R.drawable.popcorn),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    "Add to your lists",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                )
             }
+
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+            )
         }
     }
 }
@@ -385,6 +387,7 @@ private fun buildTabs(
                 itemsList = movie.cast,
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
+                key = { it.id },
                 initialVisibleCount = 7,
                 itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
@@ -395,6 +398,7 @@ private fun buildTabs(
                 itemsList = movie.crew.sortedByDescending { it.job == "Director" },
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
+                key = { it.id },
                 initialVisibleCount = 7,
                 itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
@@ -406,6 +410,7 @@ private fun buildTabs(
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
+                key = { it.id },
                 initialVisibleCount = 7,
                 showDividers = true,
                 itemContent = { season ->
@@ -425,6 +430,7 @@ private fun buildTabs(
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
+                key = { it.id },
                 initialVisibleCount = 7,
                 showDividers = true,
                 itemContent = { episode ->
@@ -441,10 +447,10 @@ private fun buildTabs(
         add(
             TabItem(
                 title = "Details",
-                isAvailable = { isDetailsAvailable(movie) },
+                isAvailable = { movie.isDetailsAvailable },
                 content = {
-                    item {
-                        DetailsTab(pad, movie)
+                    item(key = "details_tab") {
+                        DetailsTab(pad, movie, modifier = Modifier.animateItem())
                     }
                 },
             ),
@@ -459,8 +465,8 @@ private fun buildTabs(
                     } ?: false
                 },
                 content = {
-                    item {
-                        WatchTab(pad, movie.watchProviders["US"])
+                    item(key = "watch_tab") {
+                        WatchTab(pad, movie.watchProviders["US"], modifier = Modifier.animateItem())
                     }
                 },
             ),
@@ -475,14 +481,16 @@ fun LazyListScope.optionalTitledSection(
     content: LazyListScope.() -> Unit,
 ) {
     if (isVisible) {
-        item {
-            HorizontalDivider()
-            Text(
-                text = title,
-                modifier = Modifier.padding(pad),
-                // Add your standard typography style here if needed, e.g.:
-                // style = MaterialTheme.typography.titleMedium
-            )
+        item(key = "title_$title") {
+            Column(Modifier.animateItem()) {
+                HorizontalDivider()
+                Text(
+                    text = title,
+                    modifier = Modifier.padding(pad),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
         }
         // Execute the specific content for this section
         content()
@@ -499,23 +507,24 @@ fun LazyListScope.tabbedSection(
 
     if (availableTabs.isNotEmpty()) {
         // 2. Resolve the active tab (fallback to the first available if none selected/found)
-        //val activeTab = availableTabs.find { it == activeTab } ?: availableTabs.first()
-        val activeTab = availableTabs.find { it.title == activeTab } ?: availableTabs.first()
+        val resolvedActiveTab = availableTabs.find { it.title == activeTab } ?: availableTabs.first()
 
-        item {
-            HorizontalDivider()
+        item(key = "tabs_row") {
+            Column(Modifier.animateItem()) {
+                HorizontalDivider()
 
-            CustomTabRow(
-                availableTabs = availableTabs.map { it.title },
-                onClick = onTabSelected,
-                title = { it },
-                tabState = activeTab.title,
-            )
-            Spacer(Modifier.height(7.dp))
+                CustomTabRow(
+                    availableTabs = availableTabs.map { it.title },
+                    onClick = onTabSelected,
+                    title = { it },
+                    tabState = resolvedActiveTab.title,
+                )
+                Spacer(Modifier.height(7.dp))
+            }
         }
         // 3. Render the content seamlessly
-// Pass the state into the content execution
-        activeTab.content(this)
+        // Pass the state into the content execution
+        resolvedActiveTab.content(this)
     }
 }
 
@@ -525,21 +534,27 @@ fun TaglineAndOverview(
     overview: String?,
     tagline: String?,
 ) {
+    if (tagline.isNullOrBlank() && overview.isNullOrBlank()) return
+
     Column(
-        modifier = Modifier.padding(bottom = pad),
-        verticalArrangement = Arrangement.spacedBy(
-            10.dp,
-        ),
+        modifier = Modifier
+            .padding(horizontal = pad),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Spacer(modifier = Modifier.height(5.dp))
         if (!tagline.isNullOrEmpty()) {
             Text(
-                text = tagline, modifier = Modifier.padding(horizontal = pad),
+                text = tagline,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                //fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.primary,
             )
         }
-        if (overview != null && overview != "") {
+        if (!overview.isNullOrBlank()) {
             ExpandableText(
-                overview, modifier = Modifier.padding(horizontal = pad),
+                overview,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
@@ -550,79 +565,67 @@ fun TmdbRatings(
     voteCount: Int?,
     voteAverage: Float?,
 ) {
-    val vote = (voteAverage as? Number)?.toDouble() ?: 0.0
+    val vote = voteAverage?.toDouble() ?: 0.0
     val count = voteCount ?: 0
-    Column(
-        Modifier
+
+    if (vote == 0.0 && count == 0) return
+
+    Box(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            Modifier
-                .clip(RoundedCornerShape(20.dp))
+            modifier = Modifier
+                .clip(RoundedCornerShape(24.dp))
                 .background(Color(0xFF022441))
-                .padding(10.dp),
+                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Image(
                 painter = painterResource(id = R.drawable.tmdb_logo),
                 contentDescription = "TMDB logo",
-                modifier = Modifier.width(100.dp),
+                modifier = Modifier.width(70.dp),
             )
-            when {
-                (vote > 0 && count > 0) -> {
-                    Text(
-                        "%.1f".format(Locale.US, vote) + "/10",
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text("${count.toDouble().getShortNotation()} votes")
-                }
 
-                vote > 0 -> Text("%.1f".format(Locale.US, vote) + "/10", fontWeight = FontWeight.Bold)
-                else -> Text("No votes yet")
+            VerticalDivider(
+                modifier = Modifier.height(16.dp),
+                color = Color.White.copy(alpha = 0.3f),
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "%.1f".format(Locale.US, vote),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                )
+                Text(
+                    text = "/10",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White.copy(alpha = 0.6f),
+                )
+            }
+
+            if (count > 0) {
+                VerticalDivider(
+                    modifier = Modifier.height(16.dp),
+                    color = Color.White.copy(alpha = 0.3f),
+                )
+                Text(
+                    text = "${count.toDouble().getShortNotation()} votes",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White.copy(alpha = 0.8f),
+                )
             }
         }
     }
 }
 
-fun <T> LazyListScope.expandableSection(
-    title: String,
-    itemsList: List<T>,
-    expandedSectionIds: Set<String>,
-    onToggleSection: (String) -> Unit,
-    initialVisibleCount: Int = 3,
-    showDividers: Boolean = false,
-    divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
-    itemContent: @Composable LazyItemScope.(T) -> Unit,
-) {
-// 1. Evaluate the state internall
-    val isExpanded = expandedSectionIds.contains(title)
-    val visibleItems = if (isExpanded) itemsList else itemsList.take(initialVisibleCount)
-
-    itemsIndexed(
-        items = visibleItems,
-        itemContent = { idx, item ->
-            itemContent.invoke(this, item)
-            if (showDividers && idx != itemsList.lastIndex) divider()
-        },
-    )
-    //println(title + itemsList.size)
-    // 2. The Header / Toggle Button
-    item(key = "header_$title") {
-        // 3. Pass the sectionId back up when clicked
-        val remaining = itemsList.size - visibleItems.size
-
-        if (isExpanded || remaining > 0)
-            ExpandBtn(
-                if (isExpanded) "Hide $title" else "Show $remaining more",
-                onClick = { onToggleSection(title) },
-                isExpanded = isExpanded,
-                modifier = Modifier.animateItem(),
-            )
-    }
-}
 
 @Composable
 fun BackdropImage(
@@ -630,36 +633,37 @@ fun BackdropImage(
     padding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    image?.let {
+    if (image == null) {
+        Spacer(Modifier.height(padding.calculateTopPadding() + 60.dp))
+        return
+    }
+
+    Box(
+        modifier = Modifier
+            .layoutEvade(
+                padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
+            ),
+    ) {
+        RewatchAsyncImage(
+            model = build(image, width = 1000, height = 500),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = modifier
+                .fillMaxWidth()
+                .height(230.dp),
+        )
         Box(
             modifier = Modifier
-                .layoutEvade(
-                    padding.calculateStartPadding(LayoutDirection.Ltr) + padding.calculateEndPadding(LayoutDirection.Ltr),
-                ),
-        ) {
-            RewatchAsyncImage(
-                model = build(it, width = 600, height = 300),
-                contentDescription = null,
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(210.dp),
-            )
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            0.6f to Color.Transparent, // Stay transparent until 50% height
-                            1f to MaterialTheme.colorScheme.surface, // Fully black at the bottom
-                        ),
+                .matchParentSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        0f to Color.Transparent,
+                        0.6f to Color.Transparent,
+                        1f to MaterialTheme.colorScheme.surface,
                     ),
-            )
-        }
-    } ?: Spacer(
-        Modifier.height(
-            padding.calculateTopPadding() + 60.dp,
-        ),
-    )
+                ),
+        )
+    }
 }
 
 @Composable
@@ -677,72 +681,78 @@ fun TitleAndInfoSection(
     directorId: Int?,
 ) {
     Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = pad,
-            )
-            .relativeMove(backdropImage?.let { (-15).dp } ?: 0.dp), // Pulls the item UP by 20dp
+            .padding(horizontal = pad)
+            .relativeMove(if (backdropImage != null) (-24.dp) else 0.dp),
     ) {
         Column(
-            modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(if (backdropImage != null) 32.dp else 12.dp))
 
             Text(
-                title.orEmpty(),
-                style = MaterialTheme.typography.titleLarge, // Use the Large Title style here
-                fontWeight = FontWeight.Bold,
+                text = title.orEmpty(),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                lineHeight = MaterialTheme.typography.headlineSmall.lineHeight * 0.9f,
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(
-                    5.dp,
-                ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 4.dp),
             ) {
                 certification?.let {
                     BorderBox {
                         Text(
-                            it,
-                            modifier = Modifier.padding(
-                                horizontal = 5.dp,
-                            ),
+                            text = it,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                         )
                     }
                 }
-                if (releaseDate != null) Text(
-                    releaseDate.toString().formatDate("MMM yyyy"),
-                )
-                val intRuntime = runtime.toIntOrNull()
-                if (intRuntime != null && intRuntime > 0) {
-                    if (releaseDate != null) Text("•")
-                    Text("$runtime mins")
-                }
-            }
-//            Spacer(Modifier.height(3.dp))
-            if (directorId != null) {
-                Row {
-                    Text("Directed by ")
+                val infoText = buildList {
+                    releaseDate?.let { add(it.toString().formatDate("MMM yyyy")) }
+                    val intRuntime = runtime.toIntOrNull()
+                    if (intRuntime != null && intRuntime > 0) add("$runtime min")
+                }.joinToString("  •  ")
+
+                if (infoText.isNotEmpty()) {
                     Text(
-                        " $director ",
-                        Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .clickable { actions.onNavigateToPerson(directorId) }
-                            .padding(0.dp),
+                        text = infoText,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+            }
+
+            if (directorId != null && !director.isNullOrEmpty()) {
+                Text(
+                    text = "Directed by $director",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .padding(top = 4.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { actions.onNavigateToPerson(directorId) },
+                )
             }
         }
 
         posterImage?.let {
             BorderBox {
                 RewatchAsyncImage(
-                    model = build(it, width = 100, height = 100),
-                    contentScale = ContentScale.Fit,
-                    contentDescription = title.orEmpty(),
-                    modifier = modifier.height(150.dp),
+                    model = build(it, width = 200, height = 300),
+                    contentScale = ContentScale.Crop,
+                    contentDescription = title,
+                    modifier = modifier
+                        .width(100.dp)
+                        .height(150.dp),
                 )
             }
         }
@@ -753,10 +763,11 @@ fun TitleAndInfoSection(
 fun WatchTab(
     pad: Dp,
     providers: TmdbProviders?,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(pad),
-        modifier = Modifier.padding(vertical = 15.dp),
+        modifier = modifier.padding(vertical = 15.dp),
     ) {
         if (providers != null) {
             if (providers.flatrate.isNotEmpty()) {
@@ -782,6 +793,7 @@ fun WatchTab(
 fun DetailsTab(
     pad: Dp,
     details: MediaDetail,
+    modifier: Modifier = Modifier,
 ) {
     if (details.specificDetails !is MediaSpecificDetails.Movie) return
     val movie: MediaSpecificDetails.Movie = details.specificDetails
@@ -793,7 +805,7 @@ fun DetailsTab(
 
     Column(
         verticalArrangement = Arrangement.spacedBy(pad),
-        modifier = Modifier.padding(vertical = 15.dp),
+        modifier = modifier.padding(vertical = 15.dp),
     ) {
         if (genres.isNotEmpty()) {
             DetailRow("Genres:") {
@@ -877,31 +889,25 @@ fun CompanyItem(company: TmdbCompany) {
 @Composable
 fun <T> SimilarSection(
     similar: List<T>,
+    modifier: Modifier = Modifier,
     content: @Composable (LazyItemScope.(T) -> Unit),
 ) {
-    BoxWithConstraints {
-        // 1. Define your adaptive minimum size
-        val minCellSize = 90.dp
-        // 2. Calculate the columns (Available Width / Min Cell Size)
-        // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
-        max(1, (maxWidth / minCellSize).toInt())
-        // Now you have the exact integer to use however you want!
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(150.dp),
-        ) {
-            // Leading spacer
-            item { Spacer(Modifier.width(5.dp)) }
-            // Movie items
-            items(items = similar, itemContent = content)
-            item { Spacer(Modifier.width(5.dp)) }
-        }
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.height(160.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp),
+    ) {
+        items(items = similar, itemContent = content)
     }
 }
 
 @Composable
-fun PersonItem(person: TmdbAnyPerson?, function: () -> Unit) = ListItem(
+fun PersonItem(
+    person: TmdbAnyPerson?,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) = ListItem(
     leadingContent = {
         RewatchAsyncImage(
             model = person?.profileImage?.let { build(it, width = 70, height = 70) },
@@ -936,11 +942,9 @@ fun PersonItem(person: TmdbAnyPerson?, function: () -> Unit) = ListItem(
             tint = Color.Gray,
         )
     },
-    modifier = LocalContext.current.let {
-        Modifier
-            .fillMaxWidth()
-            .clickable(onClick = function)
-    },
+    modifier = modifier
+        .fillMaxWidth()
+        .clickable(onClick = onClick),
 )
 
 @Composable
@@ -987,7 +991,6 @@ fun LazyItemScope.ReviewItem(review: TmdbReview?) {
             )
         },
         modifier = Modifier
-            .animateItem()
             .animateContentSize()
             .clickable { isExpanded = !isExpanded },
     )
@@ -1049,6 +1052,7 @@ fun EpisodeItem(
     name: String?,
     date: LocalDate?,
     count: String,
+    modifier: Modifier = Modifier,
     onNavigateToMedia: () -> Unit,
 ) = ListItem(
     leadingContent = {
@@ -1079,6 +1083,5 @@ fun EpisodeItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
     },
-    modifier =
-        Modifier.clickable(onClick = onNavigateToMedia),
+    modifier = modifier.clickable(onClick = onNavigateToMedia),
 )
