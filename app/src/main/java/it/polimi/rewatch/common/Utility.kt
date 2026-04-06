@@ -356,7 +356,7 @@ fun <T> LazyListScope.expandableSection(
     }
 
     if (itemsList.size > initialVisibleCount || isExpanded) {
-        item(key = "btn_$title") {
+        item {
             val remaining = itemsList.size - visibleItems.size
             ExpandBtn(
                 string = if (isExpanded) "Hide $title" else "Show $remaining more",
@@ -403,7 +403,7 @@ fun ExpandableText(
             maxLines = currentMaxLines,
             overflow = if (canExpand && !isExpanded) TextOverflow.Ellipsis else TextOverflow.Clip,
             modifier = Modifier
-                .animateContentSize()
+                // REMOVED .animateContentSize()
                 .then(
                     if (canExpand) Modifier.clickable { isExpanded = !isExpanded }
                     else Modifier,

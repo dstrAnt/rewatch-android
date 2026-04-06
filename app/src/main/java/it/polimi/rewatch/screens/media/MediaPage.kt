@@ -170,18 +170,15 @@ fun MediaContent(
                 bottom = padding.calculateBottomPadding(),
             ),
         ) {
-            item(key = "header") {
-                MediaHeaderSection(
-                    movie = movie,
-                    spacing = spacing,
-                    padding = padding,
-                    watchlistItem = watchlistItem,
-                    watchedListItem = watchedListItem,
-                    mediaId = mediaId,
-                    actions = actions,
-                    modifier = Modifier.animateItem(),
-                )
-            }
+            mediaHeaderItems(
+                movie = movie,
+                spacing = spacing,
+                padding = padding,
+                watchlistItem = watchlistItem,
+                watchedListItem = watchedListItem,
+                mediaId = mediaId,
+                actions = actions,
+            )
 
             tabbedSection(
                 allTabs = tabs,
@@ -234,8 +231,7 @@ fun MediaContent(
 }
 
 // 4. Extracted a Header component to reduce the size of the LazyColumn block
-@Composable
-private fun LazyItemScope.MediaHeaderSection(
+private fun LazyListScope.mediaHeaderItems(
     movie: MediaDetail,
     spacing: Dp,
     padding: PaddingValues,
@@ -243,19 +239,22 @@ private fun LazyItemScope.MediaHeaderSection(
     watchedListItem: WatchedMedia?,
     mediaId: MediaId,
     actions: NavigationActions,
-    modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier.animateContentSize()) {
+    item(key = "header_backdrop") {
         BackdropImage(
             image = movie.backdropImage,
             padding = padding,
-            modifier = Modifier.clickable {
-                movie.backdropImage?.let {
-                    actions.onFullscreenImage(build(it, width = 500, height = 500))
-                }
-            },
+            modifier = Modifier
+                .animateItem()
+                .clickable {
+                    movie.backdropImage?.let {
+                        actions.onFullscreenImage(build(it, width = 500, height = 500))
+                    }
+                },
         )
+    }
 
+    item(key = "header_title") {
         TitleAndInfoSection(
             pad = spacing,
             backdropImage = movie.backdropImage,
@@ -267,29 +266,44 @@ private fun LazyItemScope.MediaHeaderSection(
             releaseDate = movie.releaseDate,
             certification = movie.certification,
             actions = actions,
-            modifier = Modifier.clickable {
-                movie.posterImage?.let {
-                    actions.onFullscreenImage(build(it, width = 500, height = 500))
-                }
-            },
+            modifier = Modifier
+                .animateItem()
+                .clickable {
+                    movie.posterImage?.let {
+                        actions.onFullscreenImage(build(it, width = 500, height = 500))
+                    }
+                },
         )
+    }
 
-        TaglineAndOverview(
-            pad = spacing,
-            overview = movie.overview,
-            tagline = movie.tagline,
-        )
+    item(key = "header_tagline") {
+        Box(modifier = Modifier.animateItem()) {
+            TaglineAndOverview(
+                pad = spacing,
+                overview = movie.overview,
+                tagline = movie.tagline,
+                // Ensure TaglineAndOverview no longer has .animateContentSize() inside it!
+            )
+        }
+    }
 
-        TmdbRatings(
-            voteCount = movie.voteCount,
-            voteAverage = movie.voteAverage,
-        )
+    item(key = "header_ratings") {
+        Box(modifier = Modifier.animateItem()) {
+            TmdbRatings(
+                voteCount = movie.voteCount,
+                voteAverage = movie.voteAverage,
+            )
+        }
+    }
 
-        TrackingInfo(
-            watchlistItem = watchlistItem,
-            watchedListItem = watchedListItem,
-            onClick = { actions.onBottomSheet(PosterInfo(movie, mediaId)) },
-        )
+    item(key = "header_tracking") {
+        Box(modifier = Modifier.animateItem()) {
+            TrackingInfo(
+                watchlistItem = watchlistItem,
+                watchedListItem = watchedListItem,
+                onClick = { actions.onBottomSheet(PosterInfo(movie, mediaId)) },
+            )
+        }
     }
 }
 
@@ -533,11 +547,13 @@ fun TaglineAndOverview(
     pad: Dp,
     overview: String?,
     tagline: String?,
+    modifier: Modifier = Modifier, // It's good practice to expose a modifier
 ) {
     if (tagline.isNullOrBlank() && overview.isNullOrBlank()) return
 
     Column(
-        modifier = Modifier
+        modifier = modifier
+            .animateContentSize() // <-- ADD THIS HERE
             .padding(horizontal = pad),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
