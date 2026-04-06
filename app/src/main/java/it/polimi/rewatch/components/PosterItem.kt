@@ -132,11 +132,9 @@ fun PosterItem(
     posterPath = media.posterPath,
     title = media.title,
     modifier = modifier,
-    onClick = {
-        if (media.id is MediaId) {
-            actions.onNavigateToMedia(media.id)
-        }
-    },
+    onClick = if (media.id is MediaId) {
+        { actions.onNavigateToMedia(media.id) }
+    } else null,
     { actions.onBottomSheet(media) },
 )
 
@@ -159,7 +157,7 @@ private fun PosterItem(
     posterPath: String?,
     title: String?,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit,
+    onClick: (() -> Unit)? = null,
     onLong: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(5.dp)
@@ -181,7 +179,16 @@ private fun PosterItem(
             .aspectRatio(2f / 3f)
             .clip(shape)
             .border(1.dp, Color.Gray, shape)
-            .combinedClickable(onClick = onClick, onLongClick = onLong),
+            .let { baseModifier ->
+                if (onClick != null) {
+                    baseModifier.combinedClickable(
+                        onClick = onClick, // Fallback required since onClick parameter cannot be null
+                        onLongClick = onLong,
+                    )
+                } else {
+                    baseModifier // If both are null, return the modifier without click behavior
+                }
+            },
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots
