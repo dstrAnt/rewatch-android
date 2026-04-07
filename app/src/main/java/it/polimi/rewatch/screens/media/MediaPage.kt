@@ -53,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -154,6 +155,13 @@ fun MediaContent(
     val tabs = remember(expandedSectionIds) {
         buildTabs(movie, expandedSectionIds, handleToggle, mediaId, spacing, actions)
     }
+    val windowInfo = LocalWindowInfo.current
+// containerSize is already in exact pixels!
+    val screenSize = remember(windowInfo.containerSize) {
+        maxOf(windowInfo.containerSize.width, windowInfo.containerSize.height)
+    }
+
+
 
     MediaScaffold(
         scrollState = scrollState,
@@ -178,6 +186,7 @@ fun MediaContent(
                 watchedListItem = watchedListItem,
                 mediaId = mediaId,
                 actions = actions,
+                screenSize = screenSize,
             )
 
             tabbedSection(
@@ -239,6 +248,7 @@ private fun LazyListScope.mediaHeaderItems(
     watchedListItem: WatchedMedia?,
     mediaId: MediaId,
     actions: NavigationActions,
+    screenSize: Int,
 ) {
     item(key = "header_backdrop") {
         BackdropImage(
@@ -248,7 +258,7 @@ private fun LazyListScope.mediaHeaderItems(
                 .animateItem()
                 .clickable {
                     movie.backdropImage?.let {
-                        actions.onFullscreenImage(build(it, width = 500, height = 500))
+                        actions.onFullscreenImage(build(it, width = screenSize, height = screenSize))
                     }
                 },
         )
@@ -270,7 +280,7 @@ private fun LazyListScope.mediaHeaderItems(
                 .animateItem()
                 .clickable {
                     movie.posterImage?.let {
-                        actions.onFullscreenImage(build(it, width = 500, height = 500))
+                        actions.onFullscreenImage(build(it, width = screenSize, height = screenSize))
                     }
                 },
         )
@@ -644,7 +654,6 @@ fun TmdbRatings(
     }
 }
 
-
 @Composable
 fun BackdropImage(
     image: TmdbImage?,
@@ -670,13 +679,15 @@ fun BackdropImage(
                 .fillMaxWidth()
                 .height(230.dp),
         )
+        val statusBarHeight = padding.calculateTopPadding() / 230.dp
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        0f to Color.Transparent,
-                        0.6f to Color.Transparent,
+                        0f to MaterialTheme.colorScheme.surface.copy(0.2f),
+                        statusBarHeight to Color.Transparent,
+                        0.7f to Color.Transparent,
                         1f to MaterialTheme.colorScheme.surface,
                     ),
                 ),
@@ -966,7 +977,7 @@ fun PersonItem(
 )
 
 @Composable
-fun LazyItemScope.ReviewItem(review: TmdbReview?) {
+fun ReviewItem(review: TmdbReview?) {
     var isExpanded by remember { mutableStateOf(false) }
 
     ListItem(

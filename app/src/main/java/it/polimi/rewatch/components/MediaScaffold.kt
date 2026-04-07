@@ -94,9 +94,9 @@ fun AppearingTopBar(
                     onClick = onNavigateBack,
                     Modifier
                         .padding(start = 12.dp)
-                        .size(32.dp),
+                        .size(35.dp),
                     colors = IconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.2f),
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
                         contentColor = Color.White,
                         disabledContainerColor = Color.Unspecified,
                         disabledContentColor = Color.Unspecified,

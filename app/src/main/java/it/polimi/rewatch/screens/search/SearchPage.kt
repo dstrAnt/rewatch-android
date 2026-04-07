@@ -1,5 +1,7 @@
 package it.polimi.rewatch.screens.search
 
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,7 +32,9 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.SavedSearch
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -63,6 +67,7 @@ import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SearchPage(
     viewModel: SearchViewModel = viewModel(),
@@ -117,11 +122,27 @@ fun SearchPage(
                     onSearchClick = { focusRequester.requestFocus() },
                 )
             } else {
-                SearchResultsList(
-                    results = searchResults,
-                    actions = actions,
-                    onItemClick = { focusManager.clearFocus() },
-                )
+                Crossfade(
+                    targetState = searchResults.isEmpty(),
+                    label = "searchResultsFade",
+                    animationSpec = tween(durationMillis = 600), // Matching your previous animation duration
+                ) { isResultsEmpty ->
+                    if (isResultsEmpty) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Spacer(Modifier.height(60.dp))
+                            CircularWavyProgressIndicator(color = Color.White)
+                        }
+                    } else {
+                        SearchResultsList(
+                            results = searchResults,
+                            actions = actions,
+                            onItemClick = { focusManager.clearFocus() },
+                        )
+                    }
+                }
             }
         }
     }
