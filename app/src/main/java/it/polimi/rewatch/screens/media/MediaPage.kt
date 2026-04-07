@@ -296,13 +296,15 @@ private fun LazyListScope.mediaHeaderItems(
         }
     }
 
-    item(key = "header_tracking") {
-        Box(modifier = Modifier.animateItem()) {
-            TrackingInfo(
-                watchlistItem = watchlistItem,
-                watchedListItem = watchedListItem,
-                onClick = { actions.onBottomSheet(PosterInfo(movie, mediaId)) },
-            )
+    if (mediaId.type == MediaType.MOVIE || mediaId.type == MediaType.TV_SHOW) {
+        item(key = "header_tracking") {
+            Box(modifier = Modifier.animateItem()) {
+                TrackingInfo(
+                    watchlistItem = watchlistItem,
+                    watchedListItem = watchedListItem,
+                    onClick = { actions.onBottomSheet(PosterInfo(movie, mediaId)) },
+                )
+            }
         }
     }
 }
@@ -317,7 +319,9 @@ private fun TrackingInfo(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .padding(top = 8.dp)
+            .padding(bottom = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(
@@ -367,7 +371,7 @@ private fun TrackingInfo(
                     painterResource(R.drawable.popcorn),
                     contentDescription = null,
                     modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
                     "Add to your lists",
@@ -563,8 +567,6 @@ fun TaglineAndOverview(
                 text = tagline,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                //fontStyle = FontStyle.Italic,
-                color = MaterialTheme.colorScheme.primary,
             )
         }
         if (!overview.isNullOrBlank()) {

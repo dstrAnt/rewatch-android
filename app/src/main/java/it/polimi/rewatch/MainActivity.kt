@@ -121,7 +121,6 @@ fun RewatchApp() {
             },
             onBottomSheet = { info -> if (info.id is MediaId) bottomSheetMedia = info },
             onNavigateToLogin = { backStack.add(LoginNavPage) },
-            onNavigateToProfile = { backStack.add(ProfileNavPage) },
             onClearAndNavigateToSettings = {
                 backStack.clear()
                 backStack.add(SettingsNavPage)

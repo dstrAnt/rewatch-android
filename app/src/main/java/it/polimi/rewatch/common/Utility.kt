@@ -1,8 +1,7 @@
 package it.polimi.rewatch.common
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
-import android.os.Build
-import android.view.RoundedCorner
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.animateContentSize
@@ -79,8 +78,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -90,8 +87,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -115,36 +110,6 @@ import kotlin.math.max
  */
 
 val headerColor = Color.Black
-
-fun String.capitalize(): String = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-
-/**
- * Aggiunge un bordo sul lato inferiore del componente.
- * @param color Il colore del bordo (default grigio chiaro)
- * @param width Lo spessore del bordo (default 1dp)
- */
-fun Modifier.addBorderBottom(
-    color: Color = Color.LightGray,
-    width: Dp = 1.dp,
-): Modifier = drawWithContent {
-    // Disegna il contenuto originale del composable
-    drawContent()
-
-    // Converte lo spessore da Dp a Pixel
-    val strokeWidth = width.toPx()
-
-    // Calcola la coordinata Y (il fondo del componente)
-    // Sottraiamo metà dello spessore per assicurarci che la linea sia dentro i bordi
-    val y = size.height - strokeWidth / 2
-
-    drawLine(
-        color = color,
-        start = Offset(x = 0f, y = y),
-        end = Offset(x = size.width, y = y),
-        strokeWidth = strokeWidth,
-    )
-}
-
 
 fun String.formatDate(format: String): String {
     return try {
@@ -319,7 +284,6 @@ data class TabItem(
                     itemsList = itemsList,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = onToggleSection,
-                    key = key,
                     initialVisibleCount = initialVisibleCount,
                     showDividers = showDividers,
                     itemContent = itemContent,
@@ -476,25 +440,25 @@ fun CustomLazyGrid(
         content = { content.invoke(this, calculatedColumnCount) },
     )
 }
-
-@Composable
-fun getDeviceCornerRadius(): Dp {
-    val view = LocalView.current
-    val density = LocalDensity.current
-    // Only attempt to read hardware corners on Android 12+
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val windowInsets = view.rootWindowInsets
-        val corner = windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)
-        val radiusPx = corner?.radius ?: 0
-
-        if (radiusPx > 0) {
-            // Convert the raw pixels to Compose Dp
-            return with(density) { radiusPx.toDp() }
-        }
-    }
-    // Fallback for Android 11 and below, or if the device has square corners
-    return 32.dp
-}
+//
+//@Composable
+//fun getDeviceCornerRadius(): Dp {
+//    val view = LocalView.current
+//    val density = LocalDensity.current
+//    // Only attempt to read hardware corners on Android 12+
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//        val windowInsets = view.rootWindowInsets
+//        val corner = windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)
+//        val radiusPx = corner?.radius ?: 0
+//
+//        if (radiusPx > 0) {
+//            // Convert the raw pixels to Compose Dp
+//            return with(density) { radiusPx.toDp() }
+//        }
+//    }
+//    // Fallback for Android 11 and below, or if the device has square corners
+//    return 32.dp
+//}
 
 /**
  * Encapsulates all navigation and high-level UI actions for the app.
@@ -507,7 +471,6 @@ class NavigationActions(
     val onFullscreenImage: (String) -> Unit,
     val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
-    val onNavigateToProfile: () -> Unit,
     val onClearAndNavigateToSettings: () -> Unit,
     val onBackToHome: () -> Unit,
 )
@@ -615,7 +578,7 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .size(20.dp),
-            tint = Color.Gray,
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
         )
 
         Icon(
@@ -624,7 +587,7 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .size(20.dp),
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }
@@ -674,6 +637,7 @@ fun BasicTopBar(
     )
 }
 
+@SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.fillMaxByOrientation(): Modifier = composed {
     val orientation = LocalConfiguration.current.orientation
 

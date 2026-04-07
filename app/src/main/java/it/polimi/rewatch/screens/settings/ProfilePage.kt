@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -145,8 +146,10 @@ fun ProfilePage(
                     ProfileBox(Icons.Default.Person, e)
                     Column(
                         modifier = Modifier
+                            .widthIn(max = 400.dp)
                             .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
                         ProfileBoxRow("Movies watched", "$watchedMovies", true)
@@ -197,6 +200,7 @@ private fun LogButton(
     val boxShape = RoundedCornerShape(5.dp)
     Row(
         modifier = Modifier
+            .widthIn(max = 400.dp)
             .fillMaxWidth()
             .clip(boxShape)
             .border(
