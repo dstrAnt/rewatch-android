@@ -123,11 +123,11 @@ fun ProfilePage(
         BoxWithConstraints(
             Modifier
                 .padding(
-                    top = paddingValues.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
                 )
                 .fillMaxSize(),
         ) {
+            Spacer(Modifier.height(paddingValues.calculateTopPadding()))
             Column(
                 Modifier
                     .verticalScroll(rememberScrollState())

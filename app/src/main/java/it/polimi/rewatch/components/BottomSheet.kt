@@ -36,6 +36,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -67,13 +68,11 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 // Da LocalDate a Long (Milliseconds UTC)
-
 fun LocalDate.toMillis(): Long {
     return this.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 }
 
 // Da Long (Milliseconds UTC) a LocalDate
-
 fun Long.toLocalDate(): LocalDate {
     return Instant.ofEpochMilli(this)
         .atZone(ZoneId.of("UTC"))
@@ -84,7 +83,7 @@ fun Long.toLocalDate(): LocalDate {
 class BottomSheetViewModel @AssistedInject constructor(
     @Assisted private val id: MediaId,
     val persistRepo: PersistRepository,
-    ) : ViewModel() {
+) : ViewModel() {
     @AssistedFactory
     interface Factory {
         fun create(id: MediaId): BottomSheetViewModel
@@ -98,8 +97,6 @@ class BottomSheetViewModel @AssistedInject constructor(
             started = SharingStarted.Lazily, // Keeps it alive briefly during config changes
             initialValue = null, // The starting value while it searches
         )
-
-
     val watchlistItem = persistRepo.watchlistFlow
         .onEach { list ->
             // 1. Check if the flow is even triggering
@@ -236,7 +233,7 @@ fun BottomSheet(
                 SheetIconButton(
                     onClick = { viewModel.persistRepo.toggleWatchedList(mediaId) },
                     icon = if (isWatched) Icons.Filled.Visibility else Icons.Outlined.Visibility,
-                    label = "Watched",
+                    label = if (isWatched) "Watched" else "Watch",
                 )
                 SheetIconButton(
                     onClick = { viewModel.persistRepo.toggleWatchlist(mediaId) },
@@ -255,6 +252,11 @@ fun BottomSheet(
                     .fillMaxWidth()
                     .wrapContentWidth(),
             )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                watchedItem?.rating?.takeIf { it > 0 }?.let {
+                    Text("Rated")
+                } ?: Text("Rate")
+            }
 
             HorizontalDivider(Modifier.layoutEvade(16.dp))
             // Watch Status
@@ -290,7 +292,9 @@ fun SheetIconButton(
     icon: ImageVector,
     label: String,
 ) {
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         IconButton(
             modifier = Modifier.size(60.dp),
             onClick = onClick,

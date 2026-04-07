@@ -184,7 +184,7 @@ fun AuthPage(
             BasicTopBar(
                 "",
                 rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
-                color = Color.Unspecified,
+                color = Color.Transparent,
             ) { actions.onNavigateBack() }
         },
         modifier = Modifier.padding(
