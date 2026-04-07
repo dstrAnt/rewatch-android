@@ -153,8 +153,8 @@ fun ProfilePage(
                     ) {
                         ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
                         ProfileBoxRow("Movies watched", "$watchedMovies", true)
-                        ProfileBoxRow("TV Shows in watchlist", "$watchlistShows", true)
-                        ProfileBoxRow("TV Shows watched", "$watchedShows")
+                        ProfileBoxRow("Tv Shows in watchlist", "$watchlistShows", true)
+                        ProfileBoxRow("Tv Shows watched", "$watchedShows")
                     }
                     // login / logout
                     val color = when (authState) {

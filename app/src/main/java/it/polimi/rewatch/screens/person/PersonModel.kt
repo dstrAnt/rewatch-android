@@ -73,7 +73,7 @@ class PersonViewModel @AssistedInject constructor(
                 else data.movieCredits.crew.asSequence().filter { it.department?.toString().equals(knownFor, ignoreCase = true) }
             }
 
-            "Shows" -> {
+            "Tv Shows" -> {
                 if (isActingPrimary) data.showCredits.cast.asSequence()
                 else data.showCredits.crew.asSequence().filter { it.department?.toString().equals(knownFor, ignoreCase = true) }
             }
@@ -128,7 +128,7 @@ class PersonViewModel @AssistedInject constructor(
             } else {
                 data.showCredits.crew.any { it.department?.toString().equals(knownFor, ignoreCase = true) }
             }
-            if (hasPrimaryShows) add("Shows")
+            if (hasPrimaryShows) add("Tv Shows")
 
             if (!isActingPrimary && (data.movieCredits.cast.isNotEmpty() || data.showCredits.cast.isNotEmpty())) {
                 add("Acting")
@@ -136,12 +136,17 @@ class PersonViewModel @AssistedInject constructor(
             sequenceOf(data.movieCredits.crew, data.showCredits.crew)
                 .flatten()
                 .filter { !it.department?.toString().equals(knownFor, ignoreCase = true) }
-                .mapTo(this) { it.department?.toString()?.replace("_", " ")?.replaceFirstChar { char -> char.titlecase() } ?: "" }
+                .mapTo(this) {
+                    it.department?.toString()?.replace("_", " ")
+                        ?.split(" ")?.joinToString(" ") { word ->
+                            word.lowercase().replaceFirstChar { it.uppercase() }
+                        } ?: ""
+                }
         }.filter { it.isNotEmpty() }.sortedWith(
             compareBy<String> { tabName ->
                 when (tabName) {
                     "Movies" -> 0
-                    "Shows" -> 1
+                    "Tv Shows" -> 1
                     "Acting" -> 2
                     else -> 3
                 }

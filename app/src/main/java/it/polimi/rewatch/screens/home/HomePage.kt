@@ -8,16 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
@@ -62,45 +59,45 @@ enum class HomeTabItem(val title: String) {
     MOVIES("Movies"), SHOWS("Tv Shows")
 }
 
-@Composable
-private fun HomeTopBar(
-    tabs: List<HomeTabItem>,
-    selectedTab: HomeTabItem,
-    onClick: (HomeTabItem) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .then(modifier)
-            .background(Color.Black)
-            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
-    ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                //  .padding(top = 16.dp)
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Logo()
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = "ReWatch",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-            )
-        }
-        CustomTabRow(
-            availableTabs = tabs,
-            onClick = onClick,
-            title = { it.title },
-            tabState = selectedTab,
-            containerColor = headerColor,
-            divider = {},
-        )
-    }
-}
+//@Composable
+//private fun HomeTopBar(
+//    tabs: List<HomeTabItem>,
+//    selectedTab: HomeTabItem,
+//    onClick: (HomeTabItem) -> Unit,
+//    modifier: Modifier = Modifier,
+//) {
+//    Column(
+//        Modifier
+//            .fillMaxWidth()
+//            .then(modifier)
+//            .background(Color.Black)
+//            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
+//    ) {
+//        Row(
+//            Modifier
+//                .fillMaxWidth()
+//                //  .padding(top = 16.dp)
+//                .padding(bottom = 8.dp),
+//            horizontalArrangement = Arrangement.Center,
+//            verticalAlignment = Alignment.CenterVertically,
+//        ) {
+//            Logo()
+//            Spacer(Modifier.width(10.dp))
+//            Text(
+//                text = "ReWatch",
+//                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+//            )
+//        }
+//        CustomTabRow(
+//            availableTabs = tabs,
+//            onClick = onClick,
+//            title = { it.title },
+//            tabState = selectedTab,
+//            containerColor = headerColor,
+//            divider = {},
+//        )
+//    }
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -179,7 +176,7 @@ fun HomeContent(
     state: LazyGridState,
     spacerHeight: Dp,
 ) {
-    var expandedSectionIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
+    var expandedSectionIds by rememberSaveable(selectedTab) { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
     }
@@ -249,7 +246,7 @@ fun LazyGridScope.movieSection(
         key = { index, movie ->
             "${title}_${movie.id}_${index}"
         },
-    ) { index, movie ->
+    ) { _, movie ->
         PosterItem(
             movie,
             actions,

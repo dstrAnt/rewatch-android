@@ -56,8 +56,8 @@ import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeParseException
 
-private fun String.cleanAndCapitalize(): String = this.replace("_", " ").lowercase().replaceFirstChar {
-    if (it.isLowerCase()) it.titlecase() else it.toString()
+private fun String.cleanAndCapitalize(): String = this.replace("_", " ").lowercase().split(" ").joinToString(" ") { word ->
+    word.lowercase().replaceFirstChar { it.uppercase() }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
