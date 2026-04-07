@@ -137,7 +137,7 @@ fun TrackingPage(
             ),
             loadingContent = ::TrackingSkeleton,
         ) { currentList ->
-            CustomLazyGrid {
+            CustomLazyGrid(contentPadding = PaddingValues(bottom = 5.dp)) {
                 // 1. Route to the correct list and order
                 val items = currentList.filter { it.id.type == type }
                 // 2. Sort and group the unified data structure

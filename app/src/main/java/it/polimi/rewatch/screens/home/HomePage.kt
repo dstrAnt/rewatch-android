@@ -223,7 +223,9 @@ fun LazyGridScope.movieSection(
     actions: NavigationActions,
 ) {
     val isExpanded = expandedSectionIds.contains(title)
-    val displayedMovies = if (isExpanded) movies else movies.take(cellsPerRow * 3)
+    val compressedNum: Int = 3 * cellsPerRow
+    val expandedNum: Int = (movies.size / cellsPerRow) * cellsPerRow
+    val displayedMovies = movies.take(if (isExpanded) expandedNum else compressedNum)
 
     itemFullSpan {
         Row(
@@ -256,7 +258,7 @@ fun LazyGridScope.movieSection(
     }
     // --- Dynamic Button ---
     item(key = "button_$title", span = { GridItemSpan(maxLineSpan) }) {
-        if (movies.size > cellsPerRow * 3) {
+        if (movies.size > compressedNum) {
             HomeButton(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,

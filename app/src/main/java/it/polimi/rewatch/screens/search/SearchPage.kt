@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -67,7 +69,7 @@ import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun SearchPage(
     viewModel: SearchViewModel = viewModel(),
@@ -83,6 +85,14 @@ fun SearchPage(
 
     LaunchedEffect(pagerState.isScrollInProgress) {
         if (pagerState.isScrollInProgress) {
+            focusManager.clearFocus()
+        }
+    }
+    // Tracks whether the software keyboard is currently open
+    val isImeVisible = WindowInsets.isImeVisible
+    // Listen for changes in keyboard visibility
+    LaunchedEffect(isImeVisible) {
+        if (!isImeVisible) {
             focusManager.clearFocus()
         }
     }
@@ -194,6 +204,7 @@ private fun SearchInputField(
     onClearQuery: () -> Unit,
     focusRequester: FocusRequester,
 ) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -283,6 +294,7 @@ private fun EmptySearchState(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SearchResultsList(
     results: List<PosterInfo>,
