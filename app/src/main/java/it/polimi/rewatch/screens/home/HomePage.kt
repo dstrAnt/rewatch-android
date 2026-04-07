@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -59,7 +59,7 @@ import it.polimi.rewatch.model.PosterInfo
 
 
 enum class HomeTabItem(val title: String) {
-    MOVIES("Movies"), SHOWS("TV Shows")
+    MOVIES("Movies"), SHOWS("Tv Shows")
 }
 
 @Composable
@@ -114,8 +114,8 @@ fun HomePage(
 
     CollapsingLayout(
         // 1. Define your heights
-        collapsingTopHeight = 66.dp,
-        pinnedBottomHeight = 48.dp,
+        collapsingTopHeight = 64.dp,
+        pinnedBottomHeight = 50.dp,
         statusBarColor = headerColor,
         // 2. Slot in the part that vanishes
         collapsingTopBar = {
@@ -242,12 +242,14 @@ fun LazyGridScope.movieSection(
         }
     }
     // --- Adaptive Grid ---
-    items(
+    itemsIndexed(
         items = displayedMovies,
-        key = { "${title}_${it.id}" },
-    ) { // CRUCIAL: Compose needs this to track which items are new
+        key = { index, movie ->
+            "${title}_${movie.id}_${index}"
+        },
+    ) { index, movie ->
         PosterItem(
-            it,
+            movie,
             actions,
             Modifier.animateItem(),
         )

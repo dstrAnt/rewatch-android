@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 
 enum class SearchType(val title: String) {
-    ALL("All"), MOVIES("Movies"), TV("TV Shows"), CAST("People"),
+    ALL("All"), MOVIES("Movies"), TV("Tv Shows"), CAST("People"),
 }
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)

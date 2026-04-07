@@ -330,8 +330,8 @@ private fun TrackingInfo(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .padding(top = 8.dp)
-            .padding(bottom = 4.dp),
+            .padding(top = 12.dp)
+            .padding(bottom = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(

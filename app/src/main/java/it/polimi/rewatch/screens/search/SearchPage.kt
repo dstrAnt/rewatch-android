@@ -213,7 +213,7 @@ private fun SearchInputField(
             modifier = Modifier
                 .weight(1f)
                 .focusRequester(focusRequester),
-            placeholder = { Text(placeholder) },
+            placeholder = { Text(placeholder, style = MaterialTheme.typography.labelLarge) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
@@ -223,6 +223,7 @@ private fun SearchInputField(
             ),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            textStyle = MaterialTheme.typography.labelLarge,
         )
 
         if (query.isNotEmpty()) {
@@ -252,14 +253,14 @@ private fun EmptySearchState(
         Icon(
             imageVector = Icons.Default.SavedSearch,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(70.dp),
         )
         Spacer(Modifier.height(16.dp))
         val typeString = when (mediaType) {
             SearchType.ALL -> "anything"
             SearchType.MOVIES -> "movies"
-            SearchType.TV -> "TV shows"
+            SearchType.TV -> "Tv shows"
             SearchType.CAST -> "people"
         }
         Text(
@@ -269,7 +270,7 @@ private fun EmptySearchState(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Search for your favorite movies, TV shows, and people.",
+            text = "Search for your favorite movies, Tv shows, and people.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

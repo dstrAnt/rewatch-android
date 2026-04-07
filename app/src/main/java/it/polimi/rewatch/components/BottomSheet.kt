@@ -64,6 +64,7 @@ import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
+import it.polimi.rewatch.screens.tracking.getRatingHeader
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -300,7 +301,7 @@ private fun ColumnScope.BottomSheetRating(
             .wrapContentWidth(),
     )
     Text(
-        text = if (rating > 0f) "Rated" else "Rate",
+        text = if (rating > 0f) getRatingHeader(rating) else "Rate now",
         modifier = Modifier.align(Alignment.CenterHorizontally),
     )
 }

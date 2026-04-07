@@ -27,8 +27,16 @@ import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+
+suspend fun <T> fetchMultiplePages(count: Int, block: suspend (Int) -> List<T>): List<T> = coroutineScope {
+    (1..count).map { page ->
+        async { block(page) }
+    }.awaitAll().flatten()
+}
 
 /**
  * Repository to retrieve details about the Movies, TV Shows, Seasons, Episodes and People.
@@ -40,15 +48,28 @@ class TmdbRepository @Inject constructor(
     suspend fun getHomeMovieData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
 
-        val trendingDeferred = async { tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, 1).results.map(::PosterInfo) }
-        val topDeferred = async { tmdb.movies.getTopRated().results.map(::PosterInfo) }
+
+        val trendingDeferred = async {
+            fetchMultiplePages(2) { page ->
+                tmdb.trending.getTrendingMovies(TmdbTimeWindow.DAY, page).results
+            }.map(::PosterInfo)
+        }
+
+        val topDeferred = async {
+            fetchMultiplePages(2) { page ->
+                tmdb.movies.getTopRated(page = page).results
+            }.map(::PosterInfo)
+        }
+
         val recentDeferred = async {
             val discoverParams = TmdbDiscover.Movie(
                 sortBy = TmdbDiscoverMovieSortBy.POPULARITY,
                 releaseDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
                 voteCountGte = 50,
             )
-            tmdb.discover.discoverMovie(page = 1, discover = discoverParams).results.map(::PosterInfo)
+            fetchMultiplePages(2) { page ->
+                tmdb.discover.discoverMovie(page = page, discover = discoverParams).results
+            }.map(::PosterInfo)
         }
 
         MediaData(
@@ -61,15 +82,26 @@ class TmdbRepository @Inject constructor(
     suspend fun getHomeShowData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
 
-        val trendingDeferred = async { tmdb.trending.getTrendingShows(TmdbTimeWindow.DAY, 1).results.map(::PosterInfo) }
-        val topDeferred = async { tmdb.show.getTopRated().results.map(::PosterInfo) }
+        val trendingDeferred = async {
+            fetchMultiplePages(2) { page ->
+                tmdb.trending.getTrendingShows(TmdbTimeWindow.DAY, page).results
+            }.map(::PosterInfo)
+        }
+        val topDeferred = async {
+            fetchMultiplePages(2) { page ->
+                tmdb.show.getTopRated(page = page).results
+            }.map(::PosterInfo)
+        }
+
         val recentDeferred = async {
             val discoverParams = TmdbDiscover.Show(
                 sortBy = TmdbDiscoverShowSortBy.POPULARITY,
                 firstAirDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
                 voteCountGte = 50,
             )
-            tmdb.discover.discoverShow(page = 1, discover = discoverParams).results.map(::PosterInfo)
+            fetchMultiplePages(2) { page ->
+                tmdb.discover.discoverShow(page = page, discover = discoverParams).results
+            }.map(::PosterInfo)
         }
 
         MediaData(
@@ -244,6 +276,7 @@ class TmdbRepository @Inject constructor(
                 SearchType.CAST -> {
                     tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
                 }
+
                 SearchType.ALL -> {
                     tmdb.search.findMulti(query = query, page = 1).results.map {
                         when (it) {
