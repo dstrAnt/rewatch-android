@@ -1,8 +1,6 @@
 package it.polimi.rewatch.components
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,7 +28,7 @@ import it.polimi.rewatch.common.UiState
 fun <T> AnimatedUiState(
     state: UiState<T>,
     modifier: Modifier = Modifier,
-    animationDurationMillis: Int = 1000,
+    animationDurationMillis: Int = 500,
     loadingContent: @Composable () -> Unit,
     errorContent: @Composable (String) -> Unit = ::ErrorContent,
     successContent: @Composable (T) -> Unit,
@@ -38,11 +36,7 @@ fun <T> AnimatedUiState(
     AnimatedContent(
         targetState = state,
         transitionSpec = {
-            if (initialState is UiState.Success && targetState is UiState.Success) {
-                EnterTransition.None togetherWith ExitTransition.None
-            } else {
-                fadeIn(tween(animationDurationMillis)) togetherWith fadeOut()
-            }
+            fadeIn(tween(animationDurationMillis)) togetherWith fadeOut(tween(animationDurationMillis))
         },
         contentKey = { targetState ->
             when (targetState) {

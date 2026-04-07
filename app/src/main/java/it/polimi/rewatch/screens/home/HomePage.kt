@@ -59,46 +59,6 @@ enum class HomeTabItem(val title: String) {
     MOVIES("Movies"), SHOWS("Tv Shows")
 }
 
-//@Composable
-//private fun HomeTopBar(
-//    tabs: List<HomeTabItem>,
-//    selectedTab: HomeTabItem,
-//    onClick: (HomeTabItem) -> Unit,
-//    modifier: Modifier = Modifier,
-//) {
-//    Column(
-//        Modifier
-//            .fillMaxWidth()
-//            .then(modifier)
-//            .background(Color.Black)
-//            .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
-//    ) {
-//        Row(
-//            Modifier
-//                .fillMaxWidth()
-//                //  .padding(top = 16.dp)
-//                .padding(bottom = 8.dp),
-//            horizontalArrangement = Arrangement.Center,
-//            verticalAlignment = Alignment.CenterVertically,
-//        ) {
-//            Logo()
-//            Spacer(Modifier.width(10.dp))
-//            Text(
-//                text = "ReWatch",
-//                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-//            )
-//        }
-//        CustomTabRow(
-//            availableTabs = tabs,
-//            onClick = onClick,
-//            title = { it.title },
-//            tabState = selectedTab,
-//            containerColor = headerColor,
-//            divider = {},
-//        )
-//    }
-//}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
@@ -148,7 +108,6 @@ fun HomePage(
     ) { state, spacerHeight ->
         AnimatedUiState(
             state = viewModel.uiState,
-            animationDurationMillis = 100,
             modifier = Modifier.padding(
                 top = outerPadding.calculateTopPadding(),
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),

@@ -10,18 +10,17 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.togetherWith
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
@@ -54,18 +53,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.runtime.metadata
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import it.polimi.rewatch.common.FullScreenImageOverlay
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.common.PARALLAX_FACTOR
+import it.polimi.rewatch.common.clipToDeviceCorners
 import it.polimi.rewatch.common.popContentTransform
-import it.polimi.rewatch.common.standardTween
+import it.polimi.rewatch.common.transitionSpec
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
@@ -98,6 +97,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun <T> animationSpec() = tween<T>(durationMillis = 300)
+
+
 @Composable
 fun RewatchApp() {
     val backStack = rememberNavBackStack(HomeNavTabs)
@@ -106,21 +108,30 @@ fun RewatchApp() {
     // UI State for Overlays
     var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
-    var bottomSheetMedia by rememberSaveable { mutableStateOf<PosterInfo?>(null) }
+    var bottomSheetMedia by remember { mutableStateOf<PosterInfo?>(null) }
     val searchViewModel = hiltViewModel<SearchViewModel>()
     val currentScreen = backStack.lastOrNull()
-    // Centralized Navigation Actions
+    // 1. Define a state to control the visibility of the bottom bar
+    val isBottomBarVisible = remember(currentScreen) {
+        currentScreen != LoginNavPage
+    }    // Centralized Navigation Actions
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
             onNavigateToMedia = { id -> backStack.add(MediaNavPage(id)) },
-            onNavigateBack = { backStack.removeLastOrNull() },
+            onNavigateBack = {
+                backStack.removeLastOrNull()
+//                isBottomBarVisible = true
+            },
             onFullscreenImage = { url ->
                 fullScreenImageUrl = url
                 isOverlayVisible = true
             },
             onBottomSheet = { info -> if (info.id is MediaId) bottomSheetMedia = info },
-            onNavigateToLogin = { backStack.add(LoginNavPage) },
+            onNavigateToLogin = {
+                backStack.add(LoginNavPage)
+//                isBottomBarVisible = false
+            },
             onClearAndNavigateToSettings = {
                 backStack.clear()
                 backStack.add(SettingsNavPage)
@@ -141,125 +152,167 @@ fun RewatchApp() {
         }
     }
 
+
+
     Scaffold(
         bottomBar = {
-            BottomBar(
-                currentTab = pagerState.currentBottomTab(),
-                onTabSelected = { tab ->
-                    scope.launch {
-                        pagerState.scrollToBottomTab(tab)
-                        if (tab == BottomTabs.SEARCH) searchViewModel.reset()
-                    }
-                    // Reset stack to Home when switching tabs
-                    backStack.removeAll { true }
-                    backStack.add(HomeNavTabs)
-                },
-            )
+            // 2. Wrap the BottomBar in AnimatedVisibility
+            AnimatedVisibility(
+                visible = isBottomBarVisible,
+                enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec()), // Slides in from the bottom
+                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec()),   // Slides out to the bottom
+            ) {
+                BottomBar(
+                    currentTab = pagerState.currentBottomTab(),
+                    onTabSelected = { tab ->
+                        scope.launch {
+                            pagerState.scrollToBottomTab(tab)
+                            if (tab == BottomTabs.SEARCH) searchViewModel.reset()
+                        }
+                        // Reset stack to Home when switching tabs
+                        backStack.clear()
+                        backStack.add(HomeNavTabs)
+                    },
+                )
+            }
         },
     ) { outerPadding ->
-        NavDisplay(
+        NavGraph(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            transitionSpec = {
-                slideInHorizontally(standardTween) { it } togetherWith
-                        slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR }
-            },
-            popTransitionSpec = { popContentTransform() },
-            predictivePopTransitionSpec = { popContentTransform() },
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-            ),
-            entryProvider = entryProvider {
-                entry<HomeNavTabs> {
-                    HorizontalPager(state = pagerState) { page ->
-                        when (BottomTabs.entries[page]) {
-                            BottomTabs.HOME -> HomePage(
-                                actions = navActions,
-                                outerPadding = outerPadding,
-                            )
-                            BottomTabs.SEARCH -> SearchPage(
-                                actions = navActions,
-                                outerPadding = outerPadding,
-                                pagerState = pagerState,
-                                viewModel = searchViewModel,
-                            )
+            pagerState = pagerState,
+            navActions = navActions,
+            searchViewModel = searchViewModel,
+            outerPadding = outerPadding,
+        )
+    }
+    // Extracted Overlay logic
+    Overlays(
+        bottomSheetMedia = bottomSheetMedia,
+        isOverlayVisible = isOverlayVisible,
+        fullScreenImageUrl = fullScreenImageUrl.orEmpty(),
+        navActions = navActions,
+        onDismissBottomSheet = { bottomSheetMedia = null },
+        onDismissImageOverlay = { isOverlayVisible = false },
+    )
+}
 
-                            BottomTabs.MOVIE -> TrackingPage(
-                                actions = navActions,
-                                type = MediaType.MOVIE,
-                                outerPadding = outerPadding,
-                            )
+@Composable
+private fun NavGraph(
+    backStack: NavBackStack<NavKey>,
+    pagerState: PagerState,
+    navActions: NavigationActions,
+    outerPadding: PaddingValues,
+    searchViewModel: SearchViewModel,
+) {
+    NavDisplay(
+        backStack = backStack,
+        onBack = navActions.onNavigateBack,
+        transitionSpec = { transitionSpec() },
+        popTransitionSpec = { popContentTransform() },
+        predictivePopTransitionSpec = { popContentTransform() },
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+        ),
+        entryProvider = entryProvider {
+            entry<HomeNavTabs> {
+                HorizontalPager(state = pagerState) { page ->
+                    when (BottomTabs.entries[page]) {
+                        BottomTabs.HOME -> HomePage(
+                            actions = navActions,
+                            outerPadding = outerPadding,
+                        )
 
-                            BottomTabs.TV -> TrackingPage(
-                                actions = navActions,
-                                type = MediaType.TV_SHOW,
-                                outerPadding = outerPadding,
-                            )
-                            BottomTabs.PROFILE -> ProfilePage(
-                                actions = navActions,
-                                outerPadding = outerPadding,
-                            )
-                        }
-                    }
-                }
+                        BottomTabs.SEARCH -> SearchPage(
+                            actions = navActions,
+                            outerPadding = outerPadding,
+                            pagerState = pagerState,
+                            viewModel = searchViewModel,
+                        )
 
-                entry<MediaNavPage> { key ->
-                    Box(Modifier.background(MaterialTheme.colorScheme.surface)) {
-                        MediaPage(
-                            mediaId = key.mediaId,
+                        BottomTabs.MOVIE -> TrackingPage(
+                            actions = navActions,
+                            type = MediaType.MOVIE,
+                            outerPadding = outerPadding,
+                        )
+
+                        BottomTabs.TV -> TrackingPage(
+                            actions = navActions,
+                            type = MediaType.TV_SHOW,
+                            outerPadding = outerPadding,
+                        )
+
+                        BottomTabs.PROFILE -> ProfilePage(
                             actions = navActions,
                             outerPadding = outerPadding,
                         )
                     }
                 }
-
-                entry<PersonNavPage> { key ->
+            }
+            entry<MediaNavPage> { key ->
+                ClippedNavScreen {
+                    MediaPage(
+                        mediaId = key.mediaId,
+                        actions = navActions,
+                        outerPadding = outerPadding,
+                    )
+                }
+            }
+            entry<PersonNavPage> { key ->
+                ClippedNavScreen {
                     PersonPage(
                         personId = key.personId,
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
-
-                entry<LoginNavPage> {
+            }
+            entry<LoginNavPage> {
+                ClippedNavScreen {
                     AuthPage(
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
-
-                entry<SettingsNavPage> {
+            }
+            entry<SettingsNavPage> {
+                ClippedNavScreen {
                     ProfilePage(
                         actions = navActions,
                         outerPadding = outerPadding,
                     )
                 }
-            },
-        )
-    }
-    // Overlays (Bottom Sheet and Full Screen Image)
-    bottomSheetMedia?.let {
-        BottomSheet(media = it, onDismiss = { bottomSheetMedia = null }, actions = navActions)
-    }
-    val animationSpec = tween<Float>(durationMillis = 300)
-    AnimatedVisibility(
-        visible = isOverlayVisible,
-        enter = fadeIn(animationSpec = animationSpec),
-        exit = fadeOut(animationSpec = animationSpec),
-    ) {
-        // Use lastSeenImageUrl instead of fullScreenImageUrl here!
-        FullScreenImageOverlay(
-            imageUrl = fullScreenImageUrl.orEmpty(),
-            onDismiss = { isOverlayVisible = false },
-        )
-    }
+            }
+        },
+    )
 }
 
 @Composable
-private fun noAnimationMetadata(): Map<String, Any> = metadata {
-    put(NavDisplay.TransitionKey) {
-        // Slide new content up, keeping the old content in place underneath
-        EnterTransition.None togetherWith ExitTransition.None
+private fun Overlays(
+    bottomSheetMedia: PosterInfo?,
+    isOverlayVisible: Boolean,
+    fullScreenImageUrl: String,
+    navActions: NavigationActions,
+    onDismissBottomSheet: () -> Unit,
+    onDismissImageOverlay: () -> Unit,
+) {
+    // Bottom Sheet
+    bottomSheetMedia?.let { info ->
+        BottomSheet(
+            media = info,
+            onDismiss = onDismissBottomSheet,
+            actions = navActions,
+        )
+    }
+    // Full Screen Image Overlay
+    AnimatedVisibility(
+        visible = isOverlayVisible,
+        enter = fadeIn(animationSpec = animationSpec()),
+        exit = fadeOut(animationSpec = animationSpec()),
+    ) {
+        FullScreenImageOverlay(
+            imageUrl = fullScreenImageUrl,
+            onDismiss = onDismissImageOverlay,
+        )
     }
 }
 
@@ -313,6 +366,18 @@ data class MediaNavPage(val mediaId: MediaId) : NavKey
 
 @Serializable
 data class PersonNavPage(val personId: Int) : NavKey
+
+@Composable
+fun ClippedNavScreen(content: @Composable () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clipToDeviceCorners()
+            .background(MaterialTheme.colorScheme.surface),
+    ) {
+        content()
+    }
+}
 
 enum class BottomTabs(val label: String, val iconRes: Int? = null, val iconVector: ImageVector? = null) {
     HOME("Home", iconRes = R.drawable.popcorn),

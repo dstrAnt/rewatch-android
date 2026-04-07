@@ -1,11 +1,8 @@
 package it.polimi.rewatch.screens.search
 
-import androidx.compose.animation.Crossfade
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +24,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -66,6 +64,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.headerColor
+import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
 
@@ -108,6 +107,9 @@ fun SearchPage(
                     (viewModel::reset)()
                     focusRequester.requestFocus()
                 },
+                onClearFocus = {
+                    focusManager.clearFocus()
+                },
                 focusRequester = focusRequester,
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -116,7 +118,9 @@ fun SearchPage(
             )
         },
     ) { padding ->
-        Box(
+        AnimatedUiState(
+            searchResults,
+            animationDurationMillis = 500,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
@@ -128,34 +132,34 @@ fun SearchPage(
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = { focusManager.clearFocus() })
                 },
-        ) {
-            if (query.isEmpty()) {
-                EmptySearchState(
-                    mediaType = mediaType,
-                    onSearchClick = { focusRequester.requestFocus() },
+            loadingContent = {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(Modifier.height(60.dp))
+                    CircularWavyProgressIndicator(color = Color.White)
+                }
+            },
+        ) { results ->
+            val notEmpty = remember(results) { results.isNotEmpty() }
+            if (notEmpty) {
+                SearchResultsList(
+                    results = results,
+                    actions = actions,
+                    onItemClick = { focusManager.clearFocus() },
                 )
             } else {
-                Crossfade(
-                    targetState = searchResults.isEmpty(),
-                    label = "searchResultsFade",
-                    animationSpec = tween(durationMillis = 600), // Matching your previous animation duration
-                ) { isResultsEmpty ->
-                    if (isResultsEmpty) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Spacer(Modifier.height(60.dp))
-                            CircularWavyProgressIndicator(color = Color.White)
-                        }
-                    } else {
-                        SearchResultsList(
-                            results = searchResults,
-                            actions = actions,
-                            onItemClick = { focusManager.clearFocus() },
-                        )
-                    }
+                val titleText = remember(results) {
+                    if (query.isEmpty()) "Find ${mediaType.title}"
+                    else "No results"
                 }
+
+                EmptySearchState(
+                    title = titleText,
+                    subtitile = "Search for your favorite movies, Tv shows, and people.",
+                    mediaType = mediaType, onSearchClick = { focusRequester.requestFocus() },
+                )
             }
         }
     }
@@ -170,6 +174,7 @@ private fun SearchTopBar(
     onClearQuery: () -> Unit,
     focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
+    onClearFocus: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -184,6 +189,7 @@ private fun SearchTopBar(
             placeholder = "Search ${mediaType.title.lowercase()}...",
             onQueryChange = onQueryChange,
             onClearQuery = onClearQuery,
+            onClearFocus = onClearFocus,
             focusRequester = focusRequester,
         )
         Spacer(Modifier.height(4.dp))
@@ -205,9 +211,9 @@ private fun SearchInputField(
     placeholder: String,
     onQueryChange: (String) -> Unit,
     onClearQuery: () -> Unit,
+    onClearFocus: () -> Unit,
     focusRequester: FocusRequester,
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,6 +243,13 @@ private fun SearchInputField(
             ),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    // Put your search execution logic here (if needed)
+                    // This drops the focus and hides the keyboard
+                    onClearFocus()
+                },
+            ),
             textStyle = MaterialTheme.typography.labelLarge,
         )
 
@@ -255,6 +268,8 @@ private fun SearchInputField(
 private fun EmptySearchState(
     mediaType: SearchType,
     onSearchClick: () -> Unit,
+    title: String,
+    subtitile: String,
 ) {
     Column(
         Modifier
@@ -271,20 +286,20 @@ private fun EmptySearchState(
             modifier = Modifier.size(70.dp),
         )
         Spacer(Modifier.height(16.dp))
-        val typeString = when (mediaType) {
-            SearchType.ALL -> "anything"
-            SearchType.MOVIES -> "movies"
-            SearchType.TV -> "Tv shows"
-            SearchType.CAST -> "people"
-        }
+//        val typeString = when (mediaType) {
+//            SearchType.ALL -> "anything"
+//            SearchType.MOVIES -> "movies"
+//            SearchType.TV -> "Tv shows"
+//            SearchType.CAST -> "people"
+//        }
         Text(
-            text = "Find $typeString",
+            text = title,
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = "Search for your favorite movies, Tv shows, and people.",
+            text = subtitile,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

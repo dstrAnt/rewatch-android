@@ -4,20 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.common.UiState
 import jakarta.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.withContext
 
 enum class SearchType(val title: String) {
     ALL("All"), MOVIES("Movies"), TV("Tv Shows"), CAST("People"),
@@ -38,19 +39,31 @@ class SearchViewModel @Inject constructor(
      */
     val searchResults =
         combine(_query, _mediaType) { query, type -> query to type }
-            .debounce { (query, _) -> if (query.isEmpty()) 0L else 200L }
-            .distinctUntilChanged().flatMapLatest { (currentQuery, currentMediaType) ->
+            .distinctUntilChanged()
+            .transformLatest { (currentQuery, currentMediaType) ->
                 if (currentQuery.isBlank()) {
-                    flowOf(emptyList())
+                    emit(UiState.Success(emptyList()))
                 } else {
-                    flow {
-                        emit(repository.searchMedia(currentQuery, currentMediaType))
+                    // 1. INSTANT LOADING: Emits immediately before the delay
+                    emit(UiState.Loading)
+                    // 2. MANUAL DEBOUNCE: Suspend for 200ms.
+                    // If the user types again before 200ms, 'transformLatest' cancels
+                    // this block and starts over, instantly emitting Loading again.
+                    delay(200L)
+                    // 3. EXECUTE SEARCH: Only runs if the 200ms delay finishes uninterrupted.
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val results = repository.searchMedia(currentQuery, currentMediaType)
+                            emit(UiState.Success(results))
+                        }
+                    } catch (e: Exception) {
+                        emit(UiState.Error(e.message ?: "Search failed"))
                     }
                 }
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = emptyList(),
+                initialValue = UiState.Success(emptyList()), // Start with Success(emptyList()) based on your UX
             )
 
     fun onQueryChange(newQuery: String) {

@@ -13,11 +13,14 @@ import app.moviebase.tmdb.model.TmdbSearchableListItem
 import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 // Used to show results of search, movie, tv, person
+@Serializable
 data class PosterInfo(
     val id: ItemId,
-    val posterImage: TmdbImage?,
+    @Contextual val posterImage: TmdbImage?,
     val posterPath: String?,
     val releaseDate: LocalDate?,
     val title: String?,

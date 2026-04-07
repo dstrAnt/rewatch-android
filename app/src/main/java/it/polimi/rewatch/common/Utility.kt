@@ -2,7 +2,8 @@ package it.polimi.rewatch.common
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.animation.ContentTransform
+import android.os.Build
+import android.view.RoundedCorner
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
@@ -12,6 +13,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -77,6 +80,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -85,6 +90,9 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import it.polimi.rewatch.R
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
@@ -445,6 +453,22 @@ fun CustomLazyGrid(
 //    // Fallback for Android 11 and below, or if the device has square corners
 //    return 32.dp
 //}
+fun Modifier.clipToDeviceCorners() = composed {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@composed this
+    // 1. Observe the app's lifecycle state
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val isResumed = lifecycleState != Lifecycle.State.RESUMED
+    // 2. If the app is pushed to Recents, drop the radius to 0 so the OS can handle it
+    val radiusPx = if (isResumed) {
+        LocalView.current.rootWindowInsets
+            ?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
+    } else {
+        0
+    }
+
+    clip(RoundedCornerShape(with(LocalDensity.current) { radiusPx.toDp() }))
+}
+
 /**
  * Encapsulates all navigation and high-level UI actions for the app.
  * Using a class instead of passing individual lambdas helps keep Composable signatures clean.
@@ -466,15 +490,27 @@ const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
 // 2. Create reusable animation specs (Note the <IntOffset> type required for slides)
 val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
 private val cubicTween = tween<IntOffset>(ANIM_DURATION, easing = EaseInOutCubic)
+const val SCRIM_ALPHA = 0.3f
 
 // 3. Create a helper function for the pop transitions
-fun popContentTransform(): ContentTransform {
-    return (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } togetherWith
-            slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }).apply {
+// Helper function for the pop transitions
+fun popContentTransform() = (
+        // Returning (back) screen slides in AND fades back up to 1.0 alpha
+        (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } +
+                fadeIn(tween(ANIM_DURATION, easing = EaseInOutCubic), initialAlpha = SCRIM_ALPHA)) togetherWith
+                // Exiting screen slides out normally
+                slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }
+        ).apply {
         // Keeps the exiting screen hovering ON TOP of the returning screen
         targetContentZIndex = -1f
     }
-}
+
+fun transitionSpec() = (
+        // Returning (back) screen slides in AND fades back up to 1.0 alpha
+        slideInHorizontally(standardTween) { it } togetherWith
+                // Exiting (back) screen slides back AND fades out to simulate a scrim
+                (slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR } +
+                        fadeOut(tween(ANIM_DURATION, easing = EaseOut), targetAlpha = SCRIM_ALPHA)))
 
 @Composable
 fun OverlapIcon(main: ImageVector, secondary: ImageVector) {

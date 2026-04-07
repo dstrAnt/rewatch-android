@@ -685,7 +685,7 @@ fun BackdropImage(
                 .matchParentSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        0f to MaterialTheme.colorScheme.surface.copy(0.2f),
+                        0f to MaterialTheme.colorScheme.surface.copy(0.25f),
                         statusBarHeight to Color.Transparent,
                         0.7f to Color.Transparent,
                         1f to MaterialTheme.colorScheme.surface,
