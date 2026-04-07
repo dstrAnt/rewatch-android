@@ -104,7 +104,10 @@ fun SearchPage(
                 mediaType = mediaType,
                 onQueryChange = viewModel::onQueryChange,
                 onTypeChange = viewModel::onTabChanged,
-                onClearQuery = viewModel::reset,
+                onClearQuery = {
+                    (viewModel::reset)()
+                    focusRequester.requestFocus()
+                },
                 focusRequester = focusRequester,
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),

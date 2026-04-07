@@ -1008,7 +1008,7 @@ fun ReviewItem(review: TmdbReview?) {
                     fontWeight = FontWeight.Bold,
                 )
                 review?.authorDetails?.rating?.let { rating ->
-                    StarRating(rating)
+                    StarRating(rating / 2)
                 }
             }
         },

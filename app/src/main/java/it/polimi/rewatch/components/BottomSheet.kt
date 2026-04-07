@@ -301,7 +301,7 @@ private fun ColumnScope.BottomSheetRating(
             .wrapContentWidth(),
     )
     Text(
-        text = if (rating > 0f) getRatingHeader(rating) else "Rate now",
+        text = if (rating > 0f) getRatingHeader(rating * 2) else "Rate now",
         modifier = Modifier.align(Alignment.CenterHorizontally),
     )
 }
