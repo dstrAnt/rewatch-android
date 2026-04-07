@@ -127,12 +127,12 @@ fun ProfilePage(
                 )
                 .fillMaxSize(),
         ) {
-            Spacer(Modifier.height(paddingValues.calculateTopPadding()))
             Column(
                 Modifier
                     .verticalScroll(rememberScrollState())
                     .heightIn(min = maxHeight)
                     .padding(16.dp)
+                    .padding(top = paddingValues.calculateTopPadding())
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally,

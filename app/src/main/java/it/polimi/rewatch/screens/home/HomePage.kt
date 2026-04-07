@@ -52,6 +52,7 @@ import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.headerColor
+import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
@@ -224,10 +225,11 @@ fun LazyGridScope.movieSection(
     val isExpanded = expandedSectionIds.contains(title)
     val displayedMovies = if (isExpanded) movies else movies.take(cellsPerRow * 3)
 
-    item(key = "header_$title", span = { GridItemSpan(maxLineSpan) }) {
+    itemFullSpan {
         Row(
             horizontalArrangement = Arrangement.spacedBy(5.dp),
             verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.animateItem(),
         ) {
             Icon(painterResource(icon), null, Modifier.size(24.dp), Color.White)
             Text(
@@ -235,8 +237,7 @@ fun LazyGridScope.movieSection(
                 color = Color.White,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier
-                    .padding(vertical = 10.dp)
-                    .animateItem(fadeInSpec = null, fadeOutSpec = null),
+                    .padding(vertical = 10.dp),
             )
         }
     }
@@ -248,7 +249,7 @@ fun LazyGridScope.movieSection(
         PosterItem(
             it,
             actions,
-            Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+            Modifier.animateItem(),
         )
     }
     // --- Dynamic Button ---
@@ -258,7 +259,7 @@ fun LazyGridScope.movieSection(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,
                 onClick = { onToggleSection(title) },
-                Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+                Modifier.animateItem(),
             )
         }
     }

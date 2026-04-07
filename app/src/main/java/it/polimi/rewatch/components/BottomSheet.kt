@@ -2,7 +2,9 @@ package it.polimi.rewatch.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,16 +28,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,7 +66,6 @@ import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -98,10 +105,6 @@ class BottomSheetViewModel @AssistedInject constructor(
             initialValue = null, // The starting value while it searches
         )
     val watchlistItem = persistRepo.watchlistFlow
-        .onEach { list ->
-            // 1. Check if the flow is even triggering
-            //  println("DEBUG_FLOWSHEET: Repo emitted a list with ${list.size} items")
-        }
         .map { result ->
             val foundItem = result.getOrNull()?.find { it.id == id }
             // 2. Check if our equality logic is working
@@ -131,32 +134,14 @@ fun BottomSheet(
 ) {
     val watchlistItem by viewModel.watchlistItem.collectAsStateWithLifecycle()
     val watchedItem by viewModel.watchedItem.collectAsStateWithLifecycle()
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true, // Locks the sheet to its exact content height
-    )
-    var showDatePicker by remember { mutableStateOf(false) }
-    val tomorrowMillis = LocalDate.now()
-        .plusDays(1)
-        .atStartOfDay(ZoneOffset.UTC)
-        .toInstant()
-        .toEpochMilli()
-    val selectableDates = remember {
-        object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-//                val minDate = viewModel.media?.releaseDate?.toJavaLocalDate()?.toMillis() ?: 0
-                return utcTimeMillis < tomorrowMillis //&& utcTimeMillis > minDate
-            }
-
-            override fun isSelectableYear(year: Int): Boolean {
-                return year <= LocalDate.now().year + 1
-            }
-        }
-    }
-    val datePickerState = rememberDatePickerState(
-        selectableDates = selectableDates,
-        initialSelectedDateMillis = LocalDate.now().toMillis(), // funzione extension definita prima
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val showDatePicker = remember { mutableStateOf(false) }
+    val mediaId = media.id as MediaId
+    val isWatched = watchedItem != null
+    val isWatchlisted = watchlistItem != null
+
     val navigateAndClose: (MediaId) -> Unit = { id ->
         scope.launch {
             sheetState.hide()
@@ -167,122 +152,241 @@ fun BottomSheet(
             }
         }
     }
-    val mediaId = media.id as MediaId
 
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { selectedMillis ->
-                            viewModel.persistRepo.setWatchDate(mediaId, selectedMillis.toLocalDate().atTime(LocalTime.now()))
-                        }
-                        showDatePicker = false
-                    },
-                ) {
-                    Text("Select")
-                }
+    if (showDatePicker.value) {
+        WatchDatePickerDialog(
+            initialSelectedDateMillis = LocalDate.now().toMillis(),
+            onDismiss = { showDatePicker.value = false },
+            onDateSelected = { selectedMillis ->
+                viewModel.persistRepo.setWatchDate(
+                    mediaId,
+                    selectedMillis.toLocalDate().atTime(LocalTime.now()),
+                )
             },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Dismiss")
-                }
-            },
-        ) {
-            DatePicker(state = datePickerState)
-        }
+        )
     }
-
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         scrimColor = Color.Black.copy(alpha = 0.8f),
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        //dragHandle = {  },
     ) {
-        // 1. Extract repeated casts and conditions into local variables
-        val isWatched = watchedItem != null
-        val isWatchlisted = watchlistItem != null
         val overscrollEffect = rememberOverscrollEffect()
 
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .overscroll(overscrollEffect)
-                .padding(start = 16.dp, end = 16.dp), // 2. Combine paddings
-            verticalArrangement = Arrangement.spacedBy(15.dp),
-        ) {
-            // Header
-            Column {
-                Text(
-                    text = media.title.orEmpty(),
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable { navigateAndClose(mediaId) },
-                )
-                if (media.releaseDate != null) Text(text = media.releaseDate.toString().formatDate("MMM YYYY"))
-            }
-
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
-            ) {
-                SheetIconButton(
-                    onClick = { viewModel.persistRepo.toggleWatchedList(mediaId) },
-                    icon = if (isWatched) Icons.Filled.Visibility else Icons.Outlined.Visibility,
-                    label = if (isWatched) "Watched" else "Watch",
-                )
-                SheetIconButton(
-                    onClick = { viewModel.persistRepo.toggleWatchlist(mediaId) },
-                    icon = if (isWatchlisted) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
-                    label = "Watchlist",
-                )
-            }
-
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
-            // Rating
-            StarRating(
-                rating = (watchedItem?.rating ?: 0f) / 2,
-                starSize = 45.dp,
-                onRatingChanged = { viewModel.persistRepo.setRating(mediaId, it * 2) },
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentWidth(),
-            )
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                watchedItem?.rating?.takeIf { it > 0 }?.let {
-                    Text("Rated")
-                } ?: Text("Rate")
+                    .overscroll(overscrollEffect)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(15.dp),
+            ) {
+                // Header
+                BottomSheetHeader(
+                    title = media.title.orEmpty(),
+                    releaseDate = media.releaseDate?.toString()?.formatDate("MMM YYYY"),
+                    onClick = { navigateAndClose(mediaId) },
+                )
+
+                HorizontalDivider(Modifier.layoutEvade(16.dp))
+                // Actions
+                BottomSheetActions(
+                    isWatched = isWatched,
+                    isWatchlisted = isWatchlisted,
+                    onWatchClick = {
+                        if (isWatched && (watchedItem?.rating ?: 0f) > 0f) {
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(
+                                    message = "Please remove your rating before unwatching.",
+                                    withDismissAction = true,
+                                )
+                            }
+                        } else {
+                            viewModel.persistRepo.toggleWatchedList(mediaId)
+                        }
+                    },
+                    onWatchlistClick = { viewModel.persistRepo.toggleWatchlist(mediaId) },
+                )
+
+                HorizontalDivider(Modifier.layoutEvade(16.dp))
+                // Rating
+                BottomSheetRating(
+                    rating = (watchedItem?.rating ?: 0f) / 2,
+                    onRatingChanged = { viewModel.persistRepo.setRating(mediaId, it * 2) },
+                )
+
+                HorizontalDivider(Modifier.layoutEvade(16.dp))
+                // Watch Status
+                BottomSheetWatchStatus(
+                    isWatched = isWatched,
+                    watchDate = watchedItem?.date?.toString()?.formatDate("d MMM YYYY"),
+                    onDateClick = { showDatePicker.value = true },
+                )
+
+                HorizontalDivider(Modifier.layoutEvade(16.dp))
+                // Footer Action
+                Text(
+                    text = "See content page",
+                    modifier = Modifier.clickable { navigateAndClose(mediaId) },
+                )
+
+                Spacer(modifier = Modifier.navigationBarsPadding())
             }
 
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
-            // Watch Status
-            if (isWatched) {
-                Row {
-                    Text("Content watched on ")
-                    Text(
-                        watchedItem?.date.toString().formatDate("d MMM YYYY"),
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clickable {
-                            showDatePicker = true
-                        },
-                    )
-                }
-            } else {
-                Text("You haven't watched this content yet")
-            }
-            HorizontalDivider(Modifier.layoutEvade(16.dp))
-            // Open Page Action
-            Text(
-                text = "See content page",
-                modifier = Modifier.clickable { navigateAndClose(mediaId) },
+            DismissableSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .navigationBarsPadding(),
             )
-
-            Spacer(modifier = Modifier.navigationBarsPadding())
         }
+    }
+}
+
+// --- Extracted Stateless Components ---
+@Composable
+private fun BottomSheetHeader(
+    title: String,
+    releaseDate: String?,
+    onClick: () -> Unit,
+) {
+    Column {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.clickable { onClick() },
+        )
+        if (releaseDate != null) {
+            Text(text = releaseDate)
+        }
+    }
+}
+
+@Composable
+private fun BottomSheetActions(
+    isWatched: Boolean,
+    isWatchlisted: Boolean,
+    onWatchClick: () -> Unit,
+    onWatchlistClick: () -> Unit,
+) = Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceAround,
+) {
+    SheetIconButton(
+        onClick = onWatchClick,
+        icon = if (isWatched) Icons.Filled.Visibility else Icons.Outlined.Visibility,
+        label = if (isWatched) "Watched" else "Watch",
+    )
+    SheetIconButton(
+        onClick = onWatchlistClick,
+        icon = if (isWatchlisted) Icons.Default.AccessTimeFilled else Icons.Default.AccessTime,
+        label = if (isWatchlisted) "In watchlist" else "  Watchlist  ",
+    )
+}
+
+@Composable
+private fun ColumnScope.BottomSheetRating(
+    rating: Float,
+    onRatingChanged: (Float) -> Unit,
+) {
+    StarRating(
+        rating = rating,
+        starSize = 45.dp,
+        onRatingChanged = onRatingChanged,
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentWidth(),
+    )
+    Text(
+        text = if (rating > 0f) "Rated" else "Rate",
+        modifier = Modifier.align(Alignment.CenterHorizontally),
+    )
+}
+
+@Composable
+private fun BottomSheetWatchStatus(
+    isWatched: Boolean,
+    watchDate: String?,
+    onDateClick: () -> Unit,
+) {
+    if (isWatched) {
+        Row {
+            Text("Content watched on ")
+            Text(
+                text = watchDate.orEmpty(),
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onDateClick() },
+            )
+        }
+    } else {
+        Text("You haven't watched this content yet")
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WatchDatePickerDialog(
+    initialSelectedDateMillis: Long,
+    onDismiss: () -> Unit,
+    onDateSelected: (Long) -> Unit,
+) {
+    val tomorrowMillis = remember {
+        LocalDate.now().plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    }
+    val selectableDates = remember(tomorrowMillis) {
+        object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis < tomorrowMillis
+            override fun isSelectableYear(year: Int) = year <= LocalDate.now().year + 1
+        }
+    }
+    val datePickerState = rememberDatePickerState(
+        selectableDates = selectableDates,
+        initialSelectedDateMillis = initialSelectedDateMillis,
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let { onDateSelected(it) }
+                    onDismiss()
+                },
+            ) { Text("Select") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Dismiss") }
+        },
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DismissableSnackbarHost(
+    hostState: SnackbarHostState,
+    modifier: Modifier = Modifier,
+) {
+    SnackbarHost(
+        hostState = hostState,
+        modifier = modifier,
+    ) { snackbarData ->
+        val swipeState = rememberSwipeToDismissBoxState()
+
+        LaunchedEffect(swipeState.currentValue) {
+            if (swipeState.currentValue != SwipeToDismissBoxValue.Settled) {
+                snackbarData.dismiss()
+            }
+        }
+
+        SwipeToDismissBox(
+            state = swipeState,
+            backgroundContent = {},
+            content = { Snackbar(snackbarData = snackbarData) },
+        )
     }
 }
 
