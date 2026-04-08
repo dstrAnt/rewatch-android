@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.SavedSearch
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularWavyProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +54,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
@@ -142,23 +144,31 @@ fun SearchPage(
                 }
             },
         ) { results ->
-            val notEmpty = remember(results) { results.isNotEmpty() }
+            val notEmpty = results.results.isNotEmpty()
             if (notEmpty) {
                 SearchResultsList(
-                    results = results,
+                    results = results.results,
                     actions = actions,
                     onItemClick = { focusManager.clearFocus() },
                 )
             } else {
-                val titleText = remember(results) {
-                    if (query.isEmpty()) "Find ${mediaType.title}"
+                val titleText =
+                    if (results.query.isEmpty()) "Find ${mediaType.title}"
                     else "No results"
-                }
+
+                val subtitleText =
+                    if (results.query.isEmpty()) "Search for your favorite movies, Tv shows, and people."
+                    else "Nothing matches the given query. Please, try something else"
+
+                val displayIcon =
+                    if (results.query.isEmpty()) Icons.Default.SavedSearch
+                    else Icons.Default.SearchOff
 
                 EmptySearchState(
+                    onSearchClick = { focusRequester.requestFocus() },
                     title = titleText,
-                    subtitile = "Search for your favorite movies, Tv shows, and people.",
-                    mediaType = mediaType, onSearchClick = { focusRequester.requestFocus() },
+                    subtitle = subtitleText,
+                    icon = displayIcon,
                 )
             }
         }
@@ -266,10 +276,10 @@ private fun SearchInputField(
 
 @Composable
 private fun EmptySearchState(
-    mediaType: SearchType,
     onSearchClick: () -> Unit,
+    icon: ImageVector,
     title: String,
-    subtitile: String,
+    subtitle: String,
 ) {
     Column(
         Modifier
@@ -280,18 +290,12 @@ private fun EmptySearchState(
     ) {
         Spacer(Modifier.height(60.dp))
         Icon(
-            imageVector = Icons.Default.SavedSearch,
+            imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(70.dp),
         )
         Spacer(Modifier.height(16.dp))
-//        val typeString = when (mediaType) {
-//            SearchType.ALL -> "anything"
-//            SearchType.MOVIES -> "movies"
-//            SearchType.TV -> "Tv shows"
-//            SearchType.CAST -> "people"
-//        }
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
@@ -299,7 +303,7 @@ private fun EmptySearchState(
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            text = subtitile,
+            text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,

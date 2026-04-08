@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.common.UiState
+import it.polimi.rewatch.model.PosterInfo
 import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +25,11 @@ enum class SearchType(val title: String) {
     ALL("All"), MOVIES("Movies"), TV("Tv Shows"), CAST("People"),
 }
 
+data class SearchUiState(
+    val query: String = "",
+    val results: List<PosterInfo>,
+)
+
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -35,14 +41,14 @@ class SearchViewModel @Inject constructor(
     val mediaType: StateFlow<SearchType> = _mediaType.asStateFlow()
 
     /**
-     * Reacts to query and type changes with a debounce to avoid excessive API calls.
+     * Reacts to query and type changes with debounce to avoid excessive API calls.
      */
     val searchResults =
         combine(_query, _mediaType) { query, type -> query to type }
             .distinctUntilChanged()
             .transformLatest { (currentQuery, currentMediaType) ->
                 if (currentQuery.isBlank()) {
-                    emit(UiState.Success(emptyList()))
+                    emit(UiState.Success(SearchUiState(_query.value, emptyList())))
                 } else {
                     // 1. INSTANT LOADING: Emits immediately before the delay
                     emit(UiState.Loading)
@@ -54,7 +60,7 @@ class SearchViewModel @Inject constructor(
                     try {
                         withContext(Dispatchers.IO) {
                             val results = repository.searchMedia(currentQuery, currentMediaType)
-                            emit(UiState.Success(results))
+                            emit(UiState.Success(SearchUiState(_query.value, results)))
                         }
                     } catch (e: Exception) {
                         emit(UiState.Error(e.message ?: "Search failed"))
@@ -63,7 +69,12 @@ class SearchViewModel @Inject constructor(
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = UiState.Success(emptyList()), // Start with Success(emptyList()) based on your UX
+                initialValue = UiState.Success(
+                    SearchUiState(
+                        _query.value,
+                        emptyList(),
+                    ),
+                ), // Start with Success(emptyList()) based on your UX
             )
 
     fun onQueryChange(newQuery: String) {
