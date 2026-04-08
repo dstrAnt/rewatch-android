@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -68,9 +69,16 @@ fun HomePage(
     viewModel: HomeViewModel = hiltViewModel(),
     actions: NavigationActions,
     outerPadding: PaddingValues,
+    startTab: HomeTabItem?,
 ) {
     val tabs = HomeTabItem.entries
-    var selectedTab by rememberSaveable { mutableStateOf(tabs.first()) }
+    var selectedTab by rememberSaveable { mutableStateOf(HomeTabItem.entries.first()) }
+
+    LaunchedEffect(startTab) {
+        if (startTab != null) {
+            selectedTab = startTab
+        }
+    }
 
     CollapsingLayout(
         // 1. Define your heights

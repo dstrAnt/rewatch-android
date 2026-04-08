@@ -1,7 +1,6 @@
 package it.polimi.rewatch.components
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,7 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder
-import coil3.compose.AsyncImage
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageScope
@@ -30,99 +28,132 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaId
-import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterInfo
 
-@Composable
-fun PosterItem3(
-    id: Int,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(5.dp)
-    LocalContext.current // Brought back for onMovieClick
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                //onMediaClick(id.toString(), mediaType, context)
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        if (posterPath != null) {
-            RewatchAsyncImage(
-                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
-                contentDescription = title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-            )
-        } else {
-            Text(
-                text = title.orEmpty(),
-                modifier = Modifier.padding(5.dp),
-                color = Color.Gray,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
+//@Composable
+//fun PosterItem3(
+//    id: Int,
+//    posterPath: String?,
+//    title: String?,
+//    mediaType: MediaType, // Added parameter
+//    modifier: Modifier = Modifier,
+//) {
+//    val shape = RoundedCornerShape(5.dp)
+//    LocalContext.current // Brought back for onMovieClick
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(2f / 3f)
+//            .clip(shape)
+//            .border(1.dp, Color.Gray, shape)
+//            .clickable {
+//                // Click logic is now handled internally again
+//                //onMediaClick(id.toString(), mediaType, context)
+//            },
+//        contentAlignment = Alignment.Center,
+//    ) {
+//        if (posterPath != null) {
+//            RewatchAsyncImage(
+//                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
+//                contentDescription = title,
+//                modifier = Modifier.fillMaxSize(),
+//                contentScale = ContentScale.Crop,
+//            )
+//        } else {
+//            Text(
+//                text = title.orEmpty(),
+//                modifier = Modifier.padding(5.dp),
+//                color = Color.Gray,
+//                textAlign = TextAlign.Center,
+//                style = MaterialTheme.typography.labelMedium,
+//                overflow = TextOverflow.Ellipsis,
+//            )
+//        }
+//    }
+//}
 
-@Composable
-fun PosterItem2(
-    id: Int,
-    posterPath: String?,
-    title: String?,
-    mediaType: MediaType, // Added parameter
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(5.dp)
-    LocalContext.current // Brought back for onMovieClick
-    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
-        {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = title.orEmpty(),
-                    modifier = Modifier.padding(5.dp),
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelMedium,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
-    val model = TmdbImageUrlBuilder.build(
-        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
-    )
-    Box(
-        modifier = modifier
-            .aspectRatio(2f / 3f)
-            .clip(shape)
-            .border(1.dp, Color.Gray, shape)
-            .clickable {
-                // Click logic is now handled internally again
-                //onMediaClick(id.toString(), mediaType, context)
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        // 2. Pass it directly into the built-in slots
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(model)
-                .crossfade(true)
-                .build(),
-            contentDescription = title,
-            modifier = Modifier.fillMaxSize(),
-        )
-    }
-}
+//@Composable
+//fun PosterItem2(
+//    id: Int,
+//    posterPath: String?,
+//    title: String?,
+//    mediaType: MediaType, // Added parameter
+//    modifier: Modifier = Modifier,
+//) {
+//    val shape = RoundedCornerShape(5.dp)
+//    LocalContext.current // Brought back for onMovieClick
+//    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
+//        {
+//            Box(contentAlignment = Alignment.Center) {
+//                Text(
+//                    text = title.orEmpty(),
+//                    modifier = Modifier.padding(5.dp),
+//                    color = Color.Gray,
+//                    textAlign = TextAlign.Center,
+//                    style = MaterialTheme.typography.labelMedium,
+//                    overflow = TextOverflow.Ellipsis,
+//                )
+//            }
+//        }
+//    val model = TmdbImageUrlBuilder.build(
+//        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
+//    )
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(2f / 3f)
+//            .clip(shape)
+//            .border(1.dp, Color.Gray, shape)
+//            .clickable {
+//                // Click logic is now handled internally again
+//                //onMediaClick(id.toString(), mediaType, context)
+//            },
+//        contentAlignment = Alignment.Center,
+//    ) {
+//        // 2. Pass it directly into the built-in slots
+//        AsyncImage(
+//            model = ImageRequest.Builder(LocalContext.current)
+//                .data(model)
+//                .crossfade(true)
+//                .build(),
+//            contentDescription = title,
+//            modifier = Modifier.fillMaxSize(),
+//        )
+//    }
+//}
 
+//@Composable
+//private fun PosterItem(
+//    media: PosterInfo,
+//    onNavigateToMedia: () -> Unit,
+//    modifier: Modifier = Modifier,
+//    onLong: (() -> Unit)? = null,
+//) = PosterItem(
+//    posterPath = media.posterPath,
+//    title = media.title,
+//    modifier = modifier,
+//    onNavigateToMedia,
+//    onLong = onLong,
+//)
+
+/**
+ * A standard UI component for displaying media posters in a grid or list.
+ *
+ * This component handles the transformation of [PosterInfo] into a visual poster tile,
+ * automatically managing image loading, click/long-press interactions, and fallback
+ * states if the image fails to load.
+ *
+ * ### Key Features:
+ * * **Aspect Ratio:** Enforces a standard **2:3** poster aspect ratio.
+ * * **Visuals:** Includes a [RoundedCornerShape] with a 1dp border and uses [SubcomposeAsyncImage]
+ * for seamless loading/error transitions.
+ * * **Conditional Interaction:** Only becomes clickable if the provided [media.id][MediaId]
+ * is valid. Long-pressing triggers a bottom sheet action via [NavigationActions].
+ * * **Fallback:** Displays the [media.title][PosterInfo.title] centered within the frame
+ * if the poster path is null or the image fails to download.
+ *
+ * @param media The data model containing the poster path, title, and ID.
+ * @param actions The navigation handler for click (details) and long-click (bottom sheet) events.
+ * @param modifier The [Modifier] to be applied to the outer container.
+ */
 @Composable
 fun PosterItem(
     media: PosterInfo,
@@ -135,22 +166,7 @@ fun PosterItem(
     onClick = if (media.id is MediaId) {
         { actions.onNavigateToMedia(media.id) }
     } else null,
-    { actions.onBottomSheet(media) },
-)
-
-@Composable
-private fun PosterItem(
-    media: PosterInfo,
-    onNavigateToMedia: () -> Unit,
-    modifier: Modifier = Modifier,
-    onLong: (() -> Unit)? = null,
-) = PosterItem(
-    posterPath = media.posterPath,
-    title = media.title,
-    modifier = modifier,
-    onNavigateToMedia,
-    onLong = onLong,
-)
+) { actions.onBottomSheet(media) }
 
 @Composable
 private fun PosterItem(

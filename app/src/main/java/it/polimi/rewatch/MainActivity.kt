@@ -69,6 +69,7 @@ import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.home.HomePage
+import it.polimi.rewatch.screens.home.HomeTabItem
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchPage
@@ -108,6 +109,7 @@ fun RewatchApp() {
     var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
     var isOverlayVisible by remember { mutableStateOf(false) }
     var bottomSheetMedia by remember { mutableStateOf<PosterInfo?>(null) }
+    var pendingHomeTab by remember { mutableStateOf<HomeTabItem?>(null) }
     val searchViewModel = hiltViewModel<SearchViewModel>()
     val currentScreen = backStack.lastOrNull()
     // 1. Define a state to control the visibility of the bottom bar
@@ -131,8 +133,11 @@ fun RewatchApp() {
                 backStack.add(LoginNavPage)
 //                isBottomBarVisible = false
             },
-            onBackToHome = {
-                scope.launch { pagerState.scrollToBottomTab(BottomTabs.HOME) }
+            onBackToHome = { tab ->
+                pendingHomeTab = tab
+                scope.launch {
+                    pagerState.scrollToBottomTab(BottomTabs.HOME)
+                }
             },
         )
     }
@@ -177,6 +182,8 @@ fun RewatchApp() {
             pagerState = pagerState,
             navActions = navActions,
             searchViewModel = searchViewModel,
+            pendingHomeTab = pendingHomeTab,
+            onHomeTabConsumed = { pendingHomeTab = null },
             outerPadding = outerPadding,
         )
     }
@@ -198,6 +205,8 @@ private fun NavGraph(
     navActions: NavigationActions,
     outerPadding: PaddingValues,
     searchViewModel: SearchViewModel,
+    pendingHomeTab: HomeTabItem?,
+    onHomeTabConsumed: () -> Unit,
 ) {
     NavDisplay(
         backStack = backStack,
@@ -215,7 +224,12 @@ private fun NavGraph(
                         BottomTabs.HOME -> HomePage(
                             actions = navActions,
                             outerPadding = outerPadding,
-                        )
+                            startTab = pendingHomeTab,
+                        ).also {
+                            LaunchedEffect(pendingHomeTab) {
+                                if (pendingHomeTab != null) onHomeTabConsumed()
+                            }
+                        }
 
                         BottomTabs.SEARCH -> SearchPage(
                             actions = navActions,
@@ -349,9 +363,6 @@ data object HomeNavTabs : NavKey
 
 @Serializable
 data object LoginNavPage : NavKey
-
-@Serializable
-data object ProfileNavPage : NavKey
 
 @Serializable
 data object SettingsNavPage : NavKey

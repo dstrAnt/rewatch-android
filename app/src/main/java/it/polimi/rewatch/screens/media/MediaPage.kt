@@ -208,7 +208,6 @@ fun MediaContent(
                     itemsList = movie.reviews,
                     expandedSectionIds = expandedSectionIds,
                     onToggleSection = handleToggle,
-                    key = { it.id },
                     showDividers = true,
                     initialVisibleCount = 3,
                     divider = {
@@ -415,7 +414,6 @@ private fun buildTabs(
                 itemsList = movie.cast,
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
-                key = { it.id },
                 initialVisibleCount = 7,
                 itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
@@ -426,7 +424,6 @@ private fun buildTabs(
                 itemsList = movie.crew.sortedByDescending { it.job == "Director" },
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
-                key = { it.id },
                 initialVisibleCount = 7,
                 itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
@@ -438,7 +435,6 @@ private fun buildTabs(
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
-                key = { it.id },
                 initialVisibleCount = 7,
                 showDividers = true,
                 itemContent = { season ->
@@ -458,7 +454,6 @@ private fun buildTabs(
                 itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
                 expandedSectionIds = expandedSectionIds,
                 onToggleSection = handleToggle,
-                key = { it.id },
                 initialVisibleCount = 7,
                 showDividers = true,
                 itemContent = { episode ->

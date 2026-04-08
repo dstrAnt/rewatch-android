@@ -31,6 +31,33 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
+/**
+ * A highly interactive star rating component that supports partial filling (0.5 increments).
+ *
+ * This component displays a row of stars based on a [maxRating]. It supports both
+ * read-only and interactive modes depending on whether [onRatingChanged] is provided.
+ *
+ * ### Interactive Behavior:
+ * * **Precision:** Calculates ratings based on the horizontal touch position,
+ * snapping to the nearest 0.5 increment.
+ * * **Gestures:** Supports both tapping and horizontal dragging to change the value.
+ * * **Scroll Awareness:** Uses [pointerInput] with `onTap` instead of `onPress`,
+ * ensuring that the rating only changes if the user isn't attempting to scroll
+ * vertically (e.g., within a scrollable list).
+ *
+ * ### Rendering:
+ * * Uses a [FractionalClip] to allow stars to be partially filled based on the
+ * exact [rating] value.
+ * * Automatically measures its own width via [onSizeChanged] to accurately
+ * map touch coordinates to rating values.
+ *
+ * @param rating The current rating value (e.g., 3.5).
+ * @param modifier [Modifier] to be applied to the underlying [Row].
+ * @param onRatingChanged Callback triggered when the user taps or drags.
+ * If null, the component acts as a read-only indicator.
+ * @param maxRating The total number of stars to display (default is 5).
+ * @param starSize The visual size (width and height) of each individual star icon.
+ */
 @Composable
 fun StarRating(
     rating: Float,
@@ -109,6 +136,13 @@ fun StarRating(
     }
 }
 
+/**
+ * A [Shape] that clips a composable to a specific horizontal percentage.
+ * * Used primarily by [StarRating] to render partially filled stars by
+ * drawing a rectangle from the left (0.0) to the specified [fraction].
+ *
+ * @param fraction A value between 0f and 1f representing the width percentage.
+ */
 class FractionalClip(private val fraction: Float) : Shape {
     override fun createOutline(
         size: Size,

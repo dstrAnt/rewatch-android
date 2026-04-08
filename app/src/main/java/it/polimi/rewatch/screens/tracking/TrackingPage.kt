@@ -59,9 +59,8 @@ import it.polimi.rewatch.components.StarRating
 import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
+import it.polimi.rewatch.screens.home.HomeTabItem
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
 
 enum class SortOption(val label: String) {
     POPULARITY("Popularity"),
@@ -83,6 +82,12 @@ fun getTrackingPainter(
         MediaType.TV_SHOW -> painterResource(R.drawable.tv)
         else -> error("Undefined tracking page for this media type")
     }
+}
+
+fun getHomeTab(type: MediaType): HomeTabItem? = when (type) {
+    MediaType.MOVIE -> HomeTabItem.MOVIES
+    MediaType.TV_SHOW -> HomeTabItem.SHOWS
+    else -> null
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -196,7 +201,7 @@ fun TrackingPage(
                             )
                             Spacer(Modifier.height(16.dp))
                             Button(
-                                onClick = actions.onBackToHome,
+                                onClick = { actions.onBackToHome(getHomeTab(type)) },
                             ) {
                                 Text("Explore")
                             }
@@ -349,12 +354,6 @@ fun getDateHeader(date: LocalDateTime?): String {
         date.year == today.year -> date.month.name.lowercase().replaceFirstChar { it.uppercase() }
         else -> "${date.year}"
     }
-}
-
-fun Date.toLocalDateTime(): LocalDateTime {
-    return this.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
 }
 
 fun getRatingHeader(rating: Float?): String {

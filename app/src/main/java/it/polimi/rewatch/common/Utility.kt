@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Build
 import android.view.RoundedCorner
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOut
@@ -38,6 +39,7 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -87,6 +89,8 @@ import androidx.lifecycle.compose.currentStateAsState
 import it.polimi.rewatch.R
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
+import it.polimi.rewatch.screens.home.HomeTabItem
+import it.polimi.rewatch.screens.media.MediaPage
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -273,7 +277,6 @@ data class TabItem(
             itemsList: List<T>,
             expandedSectionIds: Set<String>,
             onToggleSection: (String) -> Unit,
-            key: ((T) -> Any)? = null,
             initialVisibleCount: Int = 3,
             showDividers: Boolean = false,
             itemContent: @Composable LazyItemScope.(T) -> Unit,
@@ -304,7 +307,6 @@ fun <T> LazyListScope.expandableSection(
     itemsList: List<T>,
     expandedSectionIds: Set<String>,
     onToggleSection: (String) -> Unit,
-    key: ((T) -> Any)? = null,
     initialVisibleCount: Int = 3,
     showDividers: Boolean = false,
     divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
@@ -469,19 +471,49 @@ class NavigationActions(
     val onFullscreenImage: (String) -> Unit,
     val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
-    val onBackToHome: () -> Unit,
+    val onBackToHome: (HomeTabItem?) -> Unit,
 )
 
+/**
+ * Standard duration in milliseconds for navigation transitions.
+ */
 private const val ANIM_DURATION = 400
+
+/**
+ * The divisor used to calculate the offset for the background screen during a
+ * transition, creating a parallax effect.
+ * * For example, a value of 4 means the background screen moves 1/4th of the
+ * screen width while the foreground screen moves the full width.
+ */
 const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
 
-// 2. Create reusable animation specs (Note the <IntOffset> type required for slides)
+/**
+ * A standard animation spec using [EaseOut] for smooth deceleration.
+ * Required specifically for [IntOffset] based animations like slides.
+ */
 val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
+
+/**
+ * A cubic animation spec using [EaseInOutCubic] for a more organic,
+ * accelerated/decelerated feel.
+ */
 private val cubicTween = tween<IntOffset>(ANIM_DURATION, easing = EaseInOutCubic)
+
+/**
+ * The alpha value applied to a screen when it is being "scrimmed" or
+ * dimmed in the background.
+ */
 const val SCRIM_ALPHA = 0.3f
 
-// 3. Create a helper function for the pop transitions
-// Helper function for the pop transitions
+/**
+ * Defines the [ContentTransform] for "Pop" transitions (e.g., navigating back).
+ * * The returning screen slides in from the left with a [PARALLAX_FACTOR] offset
+ * and fades in from [SCRIM_ALPHA]. The exiting screen slides out to the right.
+ * It also ensures the exiting screen stays
+ * visually on top of the returning screen during the movement.
+ *
+ * @return A [ContentTransform] configured for a "back" or "pop" navigation feel.
+ */
 fun popContentTransform() = (
         // Returning (back) screen slides in AND fades back up to 1.0 alpha
         (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } +
@@ -493,6 +525,14 @@ fun popContentTransform() = (
         targetContentZIndex = -1f
     }
 
+/**
+ * Defines the [ContentTransform] for standard forward transitions.
+ * * The entering screen slides in from the right to cover the full width,
+ * while the exiting screen slides slightly to the left (parallax) and
+ * fades out to [SCRIM_ALPHA] to simulate depth.
+ *
+ * @return A [ContentTransform] configured for a "forward" navigation feel.
+ */
 fun transitionSpec() = (
         // Returning (back) screen slides in AND fades back up to 1.0 alpha
         slideInHorizontally(standardTween) { it } togetherWith
@@ -581,6 +621,18 @@ fun IconTopBar(
     )
 }
 
+/**
+ * Applies a conditional max-size constraint based on the current device orientation.
+ *
+ * In **Portrait** (or any non-landscape) orientation, this applies [Modifier.fillMaxWidth].
+ * In **Landscape** orientation, it applies [Modifier.fillMaxHeight].
+ *
+ * **Note:** This uses `composed` to reactively observe [LocalConfiguration]. While
+ * `UnnecessaryComposedModifier` is suppressed, this is necessary because the modifier
+ * logic depends on a CompositionLocal value that can change at runtime.
+ *
+ * @return A [Modifier] that fills the width in portrait and height in landscape.
+ */
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.fillMaxByOrientation(): Modifier = composed {
     val orientation = LocalConfiguration.current.orientation
@@ -591,7 +643,26 @@ fun Modifier.fillMaxByOrientation(): Modifier = composed {
         fillMaxHeight()
 }
 
-
+/**
+ * Adds a single item to a [LazyGridScope] that spans the entire width (all columns) of the grid.
+ *
+ * This is a convenience wrapper around [LazyGridScope.item] that sets the `span` to
+ * [LazyGridItemSpanScope.maxLineSpan]. It ensures the item occupies the full row regardless of
+ * the grid's configuration (fixed or adaptive).
+ *
+ * ### Example:
+ * ```kotlin
+ * LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+ *      itemFullSpan {
+ *          HeaderContent() // Spans all 3 columns
+ *      }
+ * }
+ * ```
+ *
+ * @param content The composable content to be rendered within the full-span grid item.
+ * @see LazyGridScope.item
+ * @see GridItemSpan
+ */
 fun LazyGridScope.itemFullSpan(
     content: @Composable (LazyGridItemScope.() -> Unit),
 ): Unit = item(
