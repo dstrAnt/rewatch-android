@@ -42,7 +42,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -106,8 +105,8 @@ fun RewatchApp() {
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
     // UI State for Overlays
-    var fullScreenImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
-    var isOverlayVisible by rememberSaveable { mutableStateOf(false) }
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
+    var isOverlayVisible by remember { mutableStateOf(false) }
     var bottomSheetMedia by remember { mutableStateOf<PosterInfo?>(null) }
     val searchViewModel = hiltViewModel<SearchViewModel>()
     val currentScreen = backStack.lastOrNull()

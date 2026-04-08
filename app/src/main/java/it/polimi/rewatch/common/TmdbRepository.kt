@@ -64,7 +64,7 @@ class TmdbRepository @Inject constructor(
         val recentDeferred = async {
             val discoverParams = TmdbDiscover.Movie(
                 sortBy = TmdbDiscoverMovieSortBy.POPULARITY,
-                releaseDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
+                primaryReleaseDate = TmdbDiscoverTimeRange.Custom(threeMonthsAgo),
                 voteCountGte = 50,
             )
             fetchMultiplePages(2) { page ->
