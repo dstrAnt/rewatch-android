@@ -30,7 +30,9 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-// Keep your other standard imports
+/**
+ * [CollapsingLayout] allows to create a top bar that hides as the user scroll down
+ */
 @Composable
 fun CollapsingLayout(
     collapsingTopHeight: Dp,

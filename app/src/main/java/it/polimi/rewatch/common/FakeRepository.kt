@@ -37,6 +37,9 @@ interface PersistRepository {
     suspend fun resolveCollision(anonymousUid: String, credential: AuthCredential, merge: Boolean): Result<Unit>
 }
 
+/**
+ * [FakeRepository] mimics Firebase's functionalities in a local context
+ */
 @Singleton
 class FakeRepository @Inject constructor() : PersistRepository {
     private val _watchlistFlow = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)

@@ -1,8 +1,6 @@
 package it.polimi.rewatch.common
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.AppendResponse
 import app.moviebase.tmdb.model.TmdbDiscover
@@ -19,9 +17,12 @@ import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
+import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.home.MediaData
+import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonDetailsData
+import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
@@ -45,6 +46,9 @@ suspend fun <T> fetchMultiplePages(count: Int, block: suspend (Int) -> List<T>):
 class TmdbRepository @Inject constructor(
     private val tmdb: Tmdb3, // Hilt delivers your API client here!
 ) {
+    /**
+     * This function retrieves 2 pages of discoverable movies to be shown in the [HomePage]
+     */
     suspend fun getHomeMovieData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
 
@@ -79,6 +83,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves 2 pages of discoverable TV shows to be shown in the [HomePage]
+     */
     suspend fun getHomeShowData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
 
@@ -111,6 +118,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves data to be displayed in the movie instance of [MediaPage]
+     */
     suspend fun movieData(movieId: Int): MovieData = withContext(Dispatchers.IO) {
 //        tmdb.show.getDetails()
         val details = tmdb.movies.getDetails(
@@ -130,6 +140,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves data to be displayed in the TV show instance of [MediaPage]
+     */
     suspend fun tvData(showId: Int): MovieData = withContext(Dispatchers.IO) {
 //        tmdb.show.getDetails()
         val details = tmdb.show.getDetails(
@@ -149,6 +162,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves data to be displayed in the TV show season instance of [MediaPage]
+     */
     suspend fun seasonData(id: SeasonId): MovieData = withContext(Dispatchers.IO) {
         val details = tmdb.showSeasons.getDetails(
             showId = id.parentId,
@@ -165,6 +181,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves data to be displayed in the TV show episode instance of [MediaPage]
+     */
     suspend fun episodeData(id: EpisodeId): MovieData = withContext(Dispatchers.IO) {
         val details = tmdb.showEpisodes.getDetails(
             showId = id.parentId,
@@ -182,6 +201,9 @@ class TmdbRepository @Inject constructor(
         )
     }
 
+    /**
+     * This function retrieves data to be displayed in [PersonPage]
+     */
     suspend fun getPersonData(personId: Int): PersonDetailsData = withContext(Dispatchers.IO) {
         val detailsDeferred = async { tmdb.people.getDetails(personId) }
         val movieCreditsDeferred = async { tmdb.people.getMovieCredits(personId) }
@@ -197,7 +219,6 @@ class TmdbRepository @Inject constructor(
     suspend fun movieDetails(id: Int): PosterInfo = tmdb.movies.getDetails(id).let(::PosterInfo)
     suspend fun showDetails(id: Int): PosterInfo = tmdb.show.getDetails(id).let(::PosterInfo)
 
-    @RequiresApi(Build.VERSION_CODES.O)
 //    suspend fun getTrackingData(fakeRepo: FakeRepository): TrackingData = coroutineScope {
 //        // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
 //        // 2. Lanciamo le chiamate API in parallelo per la Watchlist
@@ -232,7 +253,10 @@ class TmdbRepository @Inject constructor(
 //            watched = watchedDeferred.awaitAll(),
 //        )
 //    }
-    suspend fun enrichWatched(item: WatchlistMedia): WatchlistMedia {
+    /**
+     * Adds [PosterInfo] information to an empty [WatchlistMedia]
+     */
+    suspend fun enrichWatchlistItem(item: WatchlistMedia): WatchlistMedia {
         return try {
             val details = item.id.getDetails(this@TmdbRepository)
             item.copy(mediaData = details!!)
@@ -243,12 +267,21 @@ class TmdbRepository @Inject constructor(
         // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
     }
 
-    suspend fun enrichWatched(item: WatchedMedia) = withContext(Dispatchers.IO) {
+    /**
+     * Adds [PosterInfo] information to an empty [WatchedMedia]
+     */
+    suspend fun enrichWatchedItem(item: WatchedMedia) = withContext(Dispatchers.IO) {
         val details = item.id.getDetails(this@TmdbRepository)
         // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
         item.copy(mediaData = details!!) // copy mantiene gli altri campi
     }
 
+    /**
+     * Queries the API with a given query and returns a list containing the resulting content
+     * @param query String to search for
+     * @param searchType Type of content to search for
+     * @return List of [PosterInfo] representing the results of the searching operation; [emptyList] if no results were found
+     */
     suspend fun searchMedia(
         query: String,
         searchType: SearchType,
@@ -288,7 +321,7 @@ class TmdbRepository @Inject constructor(
                     } // Maps TmdbTvShow to your Media class
                 }
 
-                else -> emptyList()
+//                else -> emptyList()
             }
         } catch (e: Exception) {
             e.printStackTrace()

@@ -42,9 +42,15 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import it.polimi.rewatch.screens.media.MediaPage
+import it.polimi.rewatch.screens.person.PersonPage
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 
+/**
+ * [FullScreenImageOverlay] implements the functionality of displaying an image on the
+ * whole screen after clicking on it in [MediaPage] or [PersonPage]
+ */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FullScreenImageOverlay(

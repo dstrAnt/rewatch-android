@@ -60,6 +60,10 @@ private fun String.cleanAndCapitalize(): String = this.replace("_", " ").lowerca
     word.lowercase().replaceFirstChar { it.uppercase() }
 }
 
+/**
+ * Screen for displaying information about members of Casts and Crews,
+ * such as actors, directors, producers
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PersonPage(

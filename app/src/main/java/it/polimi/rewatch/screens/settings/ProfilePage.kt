@@ -89,7 +89,10 @@ class ProfileViewModel @Inject constructor(
 
 }
 
-
+/**
+ * Screen to display the basic information about the user (email, usage stats)
+ * and manage login and logout operations
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfilePage(

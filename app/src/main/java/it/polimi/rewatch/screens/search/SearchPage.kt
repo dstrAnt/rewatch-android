@@ -70,6 +70,9 @@ import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.PosterInfo
 
+/**
+ * Screen that allows the user to fill in a query and find movies, shows and people
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun SearchPage(

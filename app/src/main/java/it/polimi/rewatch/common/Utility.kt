@@ -103,8 +103,15 @@ import kotlin.math.max
 /*
     In this file we put some functions and composables that we reuse in many other components
  */
+
+/**
+ * Background color of all top bars in the application
+ */
 val headerColor = Color.Black
 
+/**
+ * This function turns the input string, formatted as "yyyy-MM-dd", into whatever format is passed as parameter
+ */
 fun String.formatDate(format: String): String {
     return try {
         val inputFormat =
@@ -119,6 +126,9 @@ fun String.formatDate(format: String): String {
     }
 }
 
+/**
+ * Applies a negative vertical offset to the component it is applied to
+ */
 fun Modifier.relativeMove(y: Dp) =
     this.layout { measurable, constraints ->
         val placeable = measurable.measure(constraints)
@@ -131,13 +141,18 @@ fun Modifier.relativeMove(y: Dp) =
         }
     }
 
+/**
+ * Element that displays a button for expandable sections. Based on the expansion status, it shows different labels and arrow icons
+ */
 @Composable
 fun ExpandBtn(
-    string: String,
+    compressedString: String,
+    expandedString: String,
     isExpanded: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val string = if (isExpanded) expandedString else compressedString
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -153,6 +168,9 @@ fun ExpandBtn(
     }
 }
 
+/**
+ * Element that encloses the given [content] in a slightly rounded gray rectangle, and allows to add an optional [onClick] callback
+ */
 @Composable
 fun BorderBox(
     onClick: () -> Unit = {},
@@ -196,6 +214,11 @@ fun BorderBox(
 //    mediaId: String,
 //    navController: NavHostController,
 //) = navController.navigate("movie_page/$mediaId")
+
+/**
+ * Function that applies on a given [Double] value, returning a string that represents the same number
+ * in a shorter and more human-readable format
+ */
 fun Double.getShortNotation(): String {
     return when {
         this >= 1_000_000_000 -> String.format(Locale.US, "%.1f billion", this / 1_000_000_000)
@@ -206,6 +229,9 @@ fun Double.getShortNotation(): String {
     }.replace(".0", "") // Toglie il decimale se è zero (es: 50.0 -> 50)
 }
 
+/**
+ * Basic block of all skeleton screens, displays a pulsating rectangle with entirely customizable size and shape
+ */
 @Composable
 fun SkeletonPart(
     modifier: Modifier = Modifier,
@@ -222,6 +248,9 @@ fun SkeletonPart(
     )
 }
 
+/**
+ * Custom animation effect applied to every [SkeletonPart] in this application
+ */
 fun Modifier.pulseEffect(): Modifier = composed {
     val transition = rememberInfiniteTransition(label = "pulse")
     // Animate alpha from 0.4 to 0.8 and back
@@ -237,6 +266,9 @@ fun Modifier.pulseEffect(): Modifier = composed {
     background(Color.LightGray.copy(alpha = alpha))
 }
 
+/**
+ * Modifier that allow its component to ignore the horizontal padding of its father
+ */
 fun Modifier.layoutEvade(
     padding: Dp = 7.dp,
 ) = this.layout { measurable, constraints ->
@@ -252,6 +284,9 @@ fun Modifier.layoutEvade(
     }
 }
 
+/**
+ * Data class to manage information about tabs in [MediaPage]
+ */
 @OptIn(ExperimentalFoundationApi::class)
 data class TabItem(
     val title: String,
@@ -287,6 +322,9 @@ data class TabItem(
     }
 }
 
+/**
+ * Initially displays a subset of all the elements passed, and allows to see them all after clicking on a [ExpandBtn]
+ */
 @OptIn(ExperimentalFoundationApi::class)
 fun <T> LazyListScope.expandableSection(
     title: String,
@@ -317,15 +355,19 @@ fun <T> LazyListScope.expandableSection(
         item {
             val remaining = itemsList.size - visibleItems.size
             ExpandBtn(
-                string = if (isExpanded) "Hide $title" else "Show $remaining more",
-                onClick = { onToggleSection(title) },
-                isExpanded = isExpanded,
-                modifier = Modifier.animateItem(),
+                "Show $remaining more",
+                "Hide $title",
+                isExpanded,
+                { onToggleSection(title) },
+                Modifier.animateItem(),
             )
         }
     }
 }
 
+/**
+ * Text box that displays up to 3 lines of text, and shows the full content after clicking on it
+ */
 @Composable
 fun ExpandableText(
     text: String,
@@ -371,6 +413,9 @@ fun ExpandableText(
     }
 }
 
+/**
+ * Component to display a customizable [PrimaryScrollableTabRow]
+ */
 @Composable
 fun <T> CustomTabRow(
     availableTabs: List<T>,
@@ -404,6 +449,9 @@ fun <T> CustomTabRow(
     }
 }
 
+/**
+ * Component to display a customizable [LazyVerticalGrid]
+ */
 @Composable
 fun CustomLazyGrid(
     modifier: Modifier = Modifier,
@@ -453,6 +501,9 @@ fun CustomLazyGrid(
 //    // Fallback for Android 11 and below, or if the device has square corners
 //    return 32.dp
 //}
+/**
+ * Clips the content to the shape of the device on which the app is running
+ */
 fun Modifier.clipToDeviceCorners() = composed {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@composed this
     // 1. Observe the app's lifecycle state
@@ -512,6 +563,9 @@ fun transitionSpec() = (
                 (slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR } +
                         fadeOut(tween(ANIM_DURATION, easing = EaseOut), targetAlpha = SCRIM_ALPHA)))
 
+/**
+ * Component to display two icons slightly overlapped on the same row
+ */
 @Composable
 fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
     Box(
@@ -539,6 +593,9 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
     }
 }
 
+/**
+ * Displays the monochrome logo of the application
+ */
 @Composable
 fun Logo() {
     Icon(
@@ -549,6 +606,9 @@ fun Logo() {
     )
 }
 
+/**
+ * Basic template for application top bar
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BasicTopBar(

@@ -59,6 +59,9 @@ enum class HomeTabItem(val title: String) {
     MOVIES("Movies"), SHOWS("Tv Shows")
 }
 
+/**
+ * First screen of the application, where users can explore lists of relevant contents
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
