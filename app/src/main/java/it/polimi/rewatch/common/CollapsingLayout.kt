@@ -4,14 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
@@ -21,22 +21,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
-// Make sure you have your other standard imports
+// Keep your other standard imports
 @Composable
 fun CollapsingLayout(
     collapsingTopHeight: Dp,
     pinnedBottomHeight: Dp,
     modifier: Modifier = Modifier,
     listState: LazyGridState = rememberLazyGridState(),
-    statusBarColor: Color = Color.Transparent,
+    // 1. THE UPGRADE: Changed from 'Color' to 'Brush' to support gradients
+    statusBarBrush: Brush = Brush.verticalGradient(
+        colors = listOf(Color.Black, Color.Transparent),
+    ),
     collapsingTopBar: @Composable () -> Unit,
     pinnedBottomBar: @Composable () -> Unit = {},
     content: @Composable (listState: LazyGridState, spacerHeight: Dp) -> Unit,
@@ -77,40 +81,66 @@ fun CollapsingLayout(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // 1. YOUR CUSTOM SCROLLABLE CONTENT
+        // LAYER 1: YOUR CUSTOM SCROLLABLE CONTENT (Bottom Layer)
         content(listState, spacerHeight)
-        // 2. THE TOP BAR CONTAINER
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(
+        // LAYER 2: THE TOP BAR CONTAINER (Middle Layer)
+        // This entire block offsets up and down when scrolling
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
+                .background(headerColor)
+                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
+        ) {
+            // THE "REAL" SPACER:
+            // Transparent layout spacer. It pushes the top bar down so it
+            // doesn't overlap the status bar when fully expanded.
+            // The actual top bar UI
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(statusBarColor)
-                    .windowInsetsTopHeight(WindowInsets.statusBars),
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clipToBounds()
-                    .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) },
+                    .height(collapsingTopHeight)
+                    .graphicsLayer {
+                        // SETTING: 0.7f means the fade finishes when the bar is 70% compressed.
+                        // Lower the number (e.g., 0.5f) to make it fade out even faster.
+                        val fadeThreshold = 0.8f
+                        // 1. Calculate standard progress (0.0 to 1.0)
+                        val rawCollapseFraction = if (collapsingHeightPx > 0f) {
+                            (-topBarOffsetHeightPx) / collapsingHeightPx
+                        } else {
+                            0f
+                        }
+                        // 2. Accelerate the fraction so it hits 1.0 at our threshold
+                        val acceleratedFraction = rawCollapseFraction / fadeThreshold
+                        // 3. Apply to alpha
+                        alpha = (1f - acceleratedFraction).coerceIn(0f, 1f)
+                    },
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(collapsingTopHeight)
-                        .background(statusBarColor),
-                ) {
-                    collapsingTopBar()
-                }
+                collapsingTopBar()
+            }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(pinnedBottomHeight),
-                ) {
-                    pinnedBottomBar()
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(pinnedBottomHeight),
+            ) {
+                pinnedBottomBar()
             }
         }
+//        // LAYER 3: THE GRADIENT OVERLAY (Top Layer)
+//        // Because it's the last item in the Box, it naturally draws OVER the content
+//        // and the scrolling top bar. No zIndex hack required.
+//        Spacer(
+//            modifier = Modifier
+//                .align(Alignment.TopCenter)
+//                .fillMaxWidth()
+//                .windowInsetsTopHeight(WindowInsets.statusBars.add(WindowInsets(top = 5.dp)))
+//                .background(
+//                    brush = Brush.verticalGradient(
+//                        0.8f to headerColor,
+//                        1f to headerColor.copy(alpha = 0f),
+//                    ),
+//                ),
+//        )
     }
 }

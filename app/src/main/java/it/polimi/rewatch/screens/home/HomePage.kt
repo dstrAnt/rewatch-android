@@ -73,7 +73,6 @@ fun HomePage(
         // 1. Define your heights
         collapsingTopHeight = 64.dp,
         pinnedBottomHeight = 50.dp,
-        statusBarColor = headerColor,
         // 2. Slot in the part that vanishes
         collapsingTopBar = {
             Row(
