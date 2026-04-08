@@ -53,7 +53,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
-import it.polimi.rewatch.common.BasicTopBar
+import it.polimi.rewatch.common.IconTopBar
 import it.polimi.rewatch.common.LinkResult
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
@@ -181,7 +181,7 @@ fun AuthPage(
 
     Scaffold(
         topBar = {
-            BasicTopBar(
+            IconTopBar(
                 "",
                 rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
                 color = Color.Transparent,

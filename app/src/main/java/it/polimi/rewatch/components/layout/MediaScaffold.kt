@@ -1,4 +1,4 @@
-package it.polimi.rewatch.components
+package it.polimi.rewatch.components.layout
 
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.PaddingValues

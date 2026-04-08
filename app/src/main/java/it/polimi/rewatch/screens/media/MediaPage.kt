@@ -86,10 +86,10 @@ import it.polimi.rewatch.common.getShortNotation
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
 import it.polimi.rewatch.components.AnimatedUiState
-import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.components.layout.MediaScaffold
 import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaId

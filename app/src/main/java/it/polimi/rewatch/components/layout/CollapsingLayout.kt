@@ -1,4 +1,4 @@
-package it.polimi.rewatch.common
+package it.polimi.rewatch.components.layout
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import it.polimi.rewatch.common.headerColor
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 

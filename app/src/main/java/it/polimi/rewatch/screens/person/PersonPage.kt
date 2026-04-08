@@ -39,7 +39,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.moviebase.tmdb.image.TmdbImage
 import app.moviebase.tmdb.image.TmdbImageUrlBuilder.build
-import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.ExpandableText
 import it.polimi.rewatch.common.NavigationActions
@@ -47,9 +46,10 @@ import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.components.AnimatedUiState
-import it.polimi.rewatch.components.MediaScaffold
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.RewatchAsyncImage
+import it.polimi.rewatch.components.layout.CustomLazyGrid
+import it.polimi.rewatch.components.layout.MediaScaffold
 import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.tracking.SortFilterChips
 import java.time.LocalDate

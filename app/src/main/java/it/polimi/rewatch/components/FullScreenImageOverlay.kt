@@ -1,4 +1,4 @@
-package it.polimi.rewatch.common
+package it.polimi.rewatch.components
 
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.Crossfade
@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
+import it.polimi.rewatch.common.fillMaxByOrientation
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.person.PersonPage
 import kotlin.coroutines.cancellation.CancellationException

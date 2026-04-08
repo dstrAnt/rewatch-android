@@ -48,15 +48,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.polimi.rewatch.R
-import it.polimi.rewatch.common.BasicTopBar
-import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
+import it.polimi.rewatch.common.IconTopBar
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
 import java.time.LocalDateTime
@@ -286,7 +286,7 @@ private fun TopTabBar(
             .then(modifier)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
-        BasicTopBar(title, icon, false) {}
+        IconTopBar(title, icon, false) {}
         CustomTabRow(
             availableTabs = tabs,
             onClick = onClick,

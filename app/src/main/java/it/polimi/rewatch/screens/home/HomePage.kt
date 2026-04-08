@@ -43,8 +43,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.R
-import it.polimi.rewatch.common.CollapsingLayout
-import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
@@ -52,6 +50,8 @@ import it.polimi.rewatch.common.headerColor
 import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
+import it.polimi.rewatch.components.layout.CollapsingLayout
+import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.model.PosterInfo
 
 

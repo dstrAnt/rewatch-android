@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Build
 import android.view.RoundedCorner
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOut
@@ -24,30 +23,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.grid.GridCells.Fixed
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -98,7 +89,6 @@ import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.math.max
 
 /*
     In this file we put some functions and composables that we reuse in many other components
@@ -432,40 +422,6 @@ fun <T> CustomTabRow(
     }
 }
 
-/**
- * Component to display a customizable [LazyVerticalGrid]
- */
-@Composable
-fun CustomLazyGrid(
-    modifier: Modifier = Modifier,
-    state: LazyGridState = rememberLazyGridState(),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    userScrollEnabled: Boolean = true,
-    content: LazyGridScope.(Int) -> Unit,
-) = BoxWithConstraints {
-    // 1. Define your adaptive minimum size
-    val minCellSize = 90.dp
-    // 2. Calculate the columns (Available Width / Min Cell Size)
-    // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
-    val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
-    // Now you have the exact integer to use however you want!
-    LazyVerticalGrid(
-        columns = Fixed(calculatedColumnCount),
-        state = state,
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-        contentPadding = PaddingValues(
-            top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp,
-        ).plus(contentPadding),
-        userScrollEnabled = userScrollEnabled,
-        modifier = modifier
-            .fillMaxSize()
-            .animateContentSize()
-            .padding(horizontal = 7.dp),
-        content = { content.invoke(this, calculatedColumnCount) },
-    )
-}
-
 @Composable
 fun getDeviceCornerRadius(): Dp {
     val view = LocalView.current
@@ -592,7 +548,7 @@ fun Logo() {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BasicTopBar(
+fun IconTopBar(
     title: String,
     icon: Painter,
     clickEnabled: Boolean = true,
