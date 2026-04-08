@@ -214,11 +214,11 @@ fun AuthPage(
                 is AuthUiState.MergePrompt -> MergePromptContent(
                     onMerge = {
                         viewModel.resolveCollision(merge = true)
-                        actions.onClearAndNavigateToSettings()
+                        actions.onNavigateBack()
                     },
                     onDiscard = {
                         viewModel.resolveCollision(merge = false)
-                        actions.onClearAndNavigateToSettings()
+                        actions.onNavigateBack()
                     },
                 )
 

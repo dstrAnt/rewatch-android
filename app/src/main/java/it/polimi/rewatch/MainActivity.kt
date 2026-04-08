@@ -131,10 +131,6 @@ fun RewatchApp() {
                 backStack.add(LoginNavPage)
 //                isBottomBarVisible = false
             },
-            onClearAndNavigateToSettings = {
-                backStack.clear()
-                backStack.add(SettingsNavPage)
-            },
             onBackToHome = {
                 scope.launch { pagerState.scrollToBottomTab(BottomTabs.HOME) }
             },

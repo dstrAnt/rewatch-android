@@ -198,23 +198,6 @@ fun BorderBox(
     }
 }
 
-//fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
-//    val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
-//    val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
-//    val mediaType = try {
-//        typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
-//    } catch (_: IllegalArgumentException) {
-//        MediaType.MOVIE
-//    }
-//
-//    return Pair(mediaId, mediaType)
-//}
-//
-//fun onMediaClickNav(
-//    mediaId: String,
-//    navController: NavHostController,
-//) = navController.navigate("movie_page/$mediaId")
-
 /**
  * Function that applies on a given [Double] value, returning a string that represents the same number
  * in a shorter and more human-readable format
@@ -482,25 +465,25 @@ fun CustomLazyGrid(
         content = { content.invoke(this, calculatedColumnCount) },
     )
 }
-//
-//@Composable
-//fun getDeviceCornerRadius(): Dp {
-//    val view = LocalView.current
-//    val density = LocalDensity.current
-//    // Only attempt to read hardware corners on Android 12+
-//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//        val windowInsets = view.rootWindowInsets
-//        val corner = windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)
-//        val radiusPx = corner?.radius ?: 0
-//
-//        if (radiusPx > 0) {
-//            // Convert the raw pixels to Compose Dp
-//            return with(density) { radiusPx.toDp() }
-//        }
-//    }
-//    // Fallback for Android 11 and below, or if the device has square corners
-//    return 32.dp
-//}
+
+@Composable
+fun getDeviceCornerRadius(): Dp {
+    val view = LocalView.current
+    val density = LocalDensity.current
+    // Only attempt to read hardware corners on Android 12+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val windowInsets = view.rootWindowInsets
+        val corner = windowInsets?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)
+        val radiusPx = corner?.radius ?: 0
+
+        if (radiusPx > 0) {
+            // Convert the raw pixels to Compose Dp
+            return with(density) { radiusPx.toDp() }
+        }
+    }
+    // Fallback for Android 11 and below, or if the device has square corners
+    return 32.dp
+}
 /**
  * Clips the content to the shape of the device on which the app is running
  */
@@ -510,14 +493,13 @@ fun Modifier.clipToDeviceCorners() = composed {
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val isResumed = lifecycleState != Lifecycle.State.RESUMED
     // 2. If the app is pushed to Recents, drop the radius to 0 so the OS can handle it
-    val radiusPx = if (isResumed) {
-        LocalView.current.rootWindowInsets
-            ?.getRoundedCorner(RoundedCorner.POSITION_TOP_LEFT)?.radius ?: 0
+    val radiusDp = if (isResumed) {
+        getDeviceCornerRadius()
     } else {
-        0
+        0.dp
     }
 
-    clip(RoundedCornerShape(with(LocalDensity.current) { radiusPx.toDp() }))
+    clip(RoundedCornerShape(radiusDp))
 }
 
 /**
@@ -531,7 +513,6 @@ class NavigationActions(
     val onFullscreenImage: (String) -> Unit,
     val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
-    val onClearAndNavigateToSettings: () -> Unit,
     val onBackToHome: () -> Unit,
 )
 
