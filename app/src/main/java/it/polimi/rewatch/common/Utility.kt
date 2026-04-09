@@ -1,58 +1,49 @@
 package it.polimi.rewatch.common
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.os.Build
 import android.view.RoundedCorner
-import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.ContentTransform
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutCubic
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.grid.GridCells.Fixed
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridItemSpanScope
 import androidx.compose.foundation.lazy.grid.LazyGridScope
-import androidx.compose.foundation.lazy.grid.LazyGridState
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -69,7 +60,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -77,15 +67,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -98,53 +83,29 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.ui.NavDisplay
-import coil3.compose.AsyncImage
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import it.polimi.rewatch.R
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
-import it.polimi.rewatch.screens.media.expandableSection
+import it.polimi.rewatch.screens.home.HomeTabItem
+import it.polimi.rewatch.screens.media.MediaPage
 import java.text.SimpleDateFormat
 import java.util.Locale
-import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.abs
-import kotlin.math.max
 
 /*
     In this file we put some functions and composables that we reuse in many other components
  */
 
+/**
+ * Background color of all top bars in the application
+ */
 val headerColor = Color.Black
 
 /**
- * Aggiunge un bordo sul lato inferiore del componente.
- * @param color Il colore del bordo (default grigio chiaro)
- * @param width Lo spessore del bordo (default 1dp)
+ * This function turns the input string, formatted as "yyyy-MM-dd", into whatever format is passed as parameter
  */
-fun Modifier.addBorderBottom(
-    color: Color = Color.LightGray,
-    width: Dp = 1.dp,
-): Modifier = drawWithContent {
-    // Disegna il contenuto originale del composable
-    drawContent()
-
-    // Converte lo spessore da Dp a Pixel
-    val strokeWidth = width.toPx()
-
-    // Calcola la coordinata Y (il fondo del componente)
-    // Sottraiamo metà dello spessore per assicurarci che la linea sia dentro i bordi
-    val y = size.height - strokeWidth / 2
-
-    drawLine(
-        color = color,
-        start = Offset(x = 0f, y = y),
-        end = Offset(x = size.width, y = y),
-        strokeWidth = strokeWidth,
-    )
-}
-
-
 fun String.formatDate(format: String): String {
     return try {
         val inputFormat =
@@ -159,6 +120,9 @@ fun String.formatDate(format: String): String {
     }
 }
 
+/**
+ * Applies a negative vertical offset to the component it is applied to
+ */
 fun Modifier.relativeMove(y: Dp) =
     this.layout { measurable, constraints ->
         val placeable = measurable.measure(constraints)
@@ -171,13 +135,18 @@ fun Modifier.relativeMove(y: Dp) =
         }
     }
 
+/**
+ * Element that displays a button for expandable sections. Based on the expansion status, it shows different labels and arrow icons
+ */
 @Composable
 fun ExpandBtn(
-    string: String,
+    compressedString: String,
+    expandedString: String,
     isExpanded: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val string = if (isExpanded) expandedString else compressedString
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
@@ -186,13 +155,16 @@ fun ExpandBtn(
             .padding(15.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(string, style = MaterialTheme.typography.labelLarge, modifier = modifier)
+            Text(string, style = MaterialTheme.typography.labelLarge)
             if (isExpanded) Icon(Icons.Default.KeyboardArrowUp, contentDescription = null)
             else Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
         }
     }
 }
 
+/**
+ * Element that encloses the given [content] in a slightly rounded gray rectangle, and allows to add an optional [onClick] callback
+ */
 @Composable
 fun BorderBox(
     onClick: () -> Unit = {},
@@ -220,22 +192,10 @@ fun BorderBox(
     }
 }
 
-//fun movieFromIntent(intent: Intent): Pair<String, MediaType> {
-//    val mediaId = intent.getStringExtra("EXTRA_MEDIA_ID") ?: "-1"
-//    val typeString = intent.getStringExtra("EXTRA_MEDIA_TYPE")
-//    val mediaType = try {
-//        typeString?.let { enumValueOf<MediaType>(it) } ?: MediaType.MOVIE
-//    } catch (_: IllegalArgumentException) {
-//        MediaType.MOVIE
-//    }
-//
-//    return Pair(mediaId, mediaType)
-//}
-//
-//fun onMediaClickNav(
-//    mediaId: String,
-//    navController: NavHostController,
-//) = navController.navigate("movie_page/$mediaId")
+/**
+ * Function that applies on a given [Double] value, returning a string that represents the same number
+ * in a shorter and more human-readable format
+ */
 fun Double.getShortNotation(): String {
     return when {
         this >= 1_000_000_000 -> String.format(Locale.US, "%.1f billion", this / 1_000_000_000)
@@ -246,6 +206,9 @@ fun Double.getShortNotation(): String {
     }.replace(".0", "") // Toglie il decimale se è zero (es: 50.0 -> 50)
 }
 
+/**
+ * Basic block of all skeleton screens, displays a pulsating rectangle with entirely customizable size and shape
+ */
 @Composable
 fun SkeletonPart(
     modifier: Modifier = Modifier,
@@ -262,6 +225,9 @@ fun SkeletonPart(
     )
 }
 
+/**
+ * Custom animation effect applied to every [SkeletonPart] in this application
+ */
 fun Modifier.pulseEffect(): Modifier = composed {
     val transition = rememberInfiniteTransition(label = "pulse")
     // Animate alpha from 0.4 to 0.8 and back
@@ -277,6 +243,9 @@ fun Modifier.pulseEffect(): Modifier = composed {
     background(Color.LightGray.copy(alpha = alpha))
 }
 
+/**
+ * Modifier that allow its component to ignore the horizontal padding of its father
+ */
 fun Modifier.layoutEvade(
     padding: Dp = 7.dp,
 ) = this.layout { measurable, constraints ->
@@ -292,6 +261,10 @@ fun Modifier.layoutEvade(
     }
 }
 
+/**
+ * Data class to manage information about tabs in [MediaPage]
+ */
+@OptIn(ExperimentalFoundationApi::class)
 data class TabItem(
     val title: String,
     val isAvailable: () -> Boolean,
@@ -325,6 +298,51 @@ data class TabItem(
     }
 }
 
+/**
+ * Initially displays a subset of all the elements passed, and allows to see them all after clicking on a [ExpandBtn]
+ */
+@OptIn(ExperimentalFoundationApi::class)
+fun <T> LazyListScope.expandableSection(
+    title: String,
+    itemsList: List<T>,
+    expandedSectionIds: Set<String>,
+    onToggleSection: (String) -> Unit,
+    initialVisibleCount: Int = 3,
+    showDividers: Boolean = false,
+    divider: @Composable LazyItemScope.() -> Unit = { HorizontalDivider() },
+    itemContent: @Composable LazyItemScope.(T) -> Unit,
+) {
+    val isExpanded = expandedSectionIds.contains(title)
+    val visibleItems = if (isExpanded) itemsList else itemsList.take(initialVisibleCount)
+
+    itemsIndexed(
+        items = visibleItems,
+    ) { idx, item ->
+        Column(Modifier.animateItem()) {
+            itemContent(item)
+            if (showDividers && idx != visibleItems.lastIndex) {
+                divider()
+            }
+        }
+    }
+
+    if (itemsList.size > initialVisibleCount || isExpanded) {
+        item {
+            val remaining = itemsList.size - visibleItems.size
+            ExpandBtn(
+                "Show $remaining more",
+                "Hide $title",
+                isExpanded,
+                { onToggleSection(title) },
+                Modifier.animateItem(),
+            )
+        }
+    }
+}
+
+/**
+ * Text box that displays up to 3 lines of text, and shows the full content after clicking on it
+ */
 @Composable
 fun ExpandableText(
     text: String,
@@ -360,7 +378,7 @@ fun ExpandableText(
             maxLines = currentMaxLines,
             overflow = if (canExpand && !isExpanded) TextOverflow.Ellipsis else TextOverflow.Clip,
             modifier = Modifier
-                .animateContentSize()
+                // REMOVED .animateContentSize()
                 .then(
                     if (canExpand) Modifier.clickable { isExpanded = !isExpanded }
                     else Modifier,
@@ -370,16 +388,20 @@ fun ExpandableText(
     }
 }
 
+/**
+ * Component to display a customizable [PrimaryScrollableTabRow]
+ */
 @Composable
 fun <T> CustomTabRow(
     availableTabs: List<T>,
     onClick: (T) -> Unit,
     title: (T) -> String,
     tabState: T?,
+    edgePadding: Dp = 0.dp,
     containerColor: Color = Color.Unspecified,
     divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
 ) = PrimaryScrollableTabRow(
-    edgePadding = 0.dp,
+    edgePadding = edgePadding,
     selectedTabIndex = availableTabs.indexOf(
         tabState,
     ),
@@ -403,36 +425,6 @@ fun <T> CustomTabRow(
 }
 
 @Composable
-fun CustomLazyGrid(
-    state: LazyGridState = rememberLazyGridState(),
-    contentPadding: PaddingValues = PaddingValues(0.dp),
-    userScrollEnabled: Boolean = true,
-    content: LazyGridScope.(Int) -> Unit,
-) = BoxWithConstraints {
-    // 1. Define your adaptive minimum size
-    val minCellSize = 90.dp
-    // 2. Calculate the columns (Available Width / Min Cell Size)
-    // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
-    val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
-    // Now you have the exact integer to use however you want!
-    LazyVerticalGrid(
-        columns = Fixed(calculatedColumnCount),
-        state = state,
-        horizontalArrangement = Arrangement.spacedBy(7.dp),
-        verticalArrangement = Arrangement.spacedBy(7.dp),
-        contentPadding = PaddingValues(
-            top = 10.dp, bottom = 5.dp, start = 5.dp, end = 5.dp,
-        ).plus(contentPadding),
-        userScrollEnabled = userScrollEnabled,
-        modifier = Modifier
-            .fillMaxSize()
-            .animateContentSize()
-            .padding(horizontal = 7.dp),
-        content = { content.invoke(this, calculatedColumnCount) },
-    )
-}
-
-@Composable
 fun getDeviceCornerRadius(): Dp {
     val view = LocalView.current
     val density = LocalDensity.current
@@ -450,137 +442,112 @@ fun getDeviceCornerRadius(): Dp {
     // Fallback for Android 11 and below, or if the device has square corners
     return 32.dp
 }
+/**
+ * Clips the content to the shape of the device on which the app is running
+ */
+fun Modifier.clipToDeviceCorners() = composed {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@composed this
+    // 1. Observe the app's lifecycle state
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    val isResumed = lifecycleState != Lifecycle.State.RESUMED
+    // 2. If the app is pushed to Recents, drop the radius to 0 so the OS can handle it
+    val radiusDp = if (isResumed) {
+        getDeviceCornerRadius()
+    } else {
+        0.dp
+    }
 
+    clip(RoundedCornerShape(radiusDp))
+}
+
+/**
+ * Encapsulates all navigation and high-level UI actions for the app.
+ * Using a class instead of passing individual lambdas helps keep Composable signatures clean.
+ */
 class NavigationActions(
     val onNavigateToPerson: (Int) -> Unit,
     val onNavigateToMedia: (MediaId) -> Unit,
     val onNavigateBack: () -> Unit,
-    val onFullscreenImage: (String?) -> Modifier,
+    val onFullscreenImage: (String) -> Unit,
     val onBottomSheet: (PosterInfo) -> Unit,
     val onNavigateToLogin: () -> Unit,
-    val onNavigateToProfile: () -> Unit,
-    val onClearAndNavigateToSettings: () -> Unit,
-    val onBackToHome: () -> Unit,
+    val onBackToHome: (HomeTabItem?) -> Unit,
 )
 
-@Composable
-fun <T : Any> AnimatedNavDisplay(
-    backStack: List<T>,
-//    modifier: Modifier = Modifier,
-    onBack: () -> Unit = {
-        if (backStack is MutableList<T>) {
-            backStack.removeLastOrNull()
-        }
-    },
-    entryProvider: (key: T) -> NavEntry<T>,
-) = NavDisplay(
-    backStack = backStack,
-    onBack = onBack,
-    entryProvider = entryProvider,
-    transitionSpec = {
-        slideInHorizontally(standardTween) { it } togetherWith
-                slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR }
-    },
-    popTransitionSpec = { popContentTransform() },
-    predictivePopTransitionSpec = { popContentTransform() },
-)
-
+/**
+ * Standard duration in milliseconds for navigation transitions.
+ */
 private const val ANIM_DURATION = 400
-private const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
 
-// 2. Create reusable animation specs (Note the <IntOffset> type required for slides)
-private val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
+/**
+ * The divisor used to calculate the offset for the background screen during a
+ * transition, creating a parallax effect.
+ * * For example, a value of 4 means the background screen moves 1/4th of the
+ * screen width while the foreground screen moves the full width.
+ */
+const val PARALLAX_FACTOR = 4 // For the -fullWidth / 4 effect
+
+/**
+ * A standard animation spec using [EaseOut] for smooth deceleration.
+ * Required specifically for [IntOffset] based animations like slides.
+ */
+val standardTween = tween<IntOffset>(ANIM_DURATION, easing = EaseOut)
+
+/**
+ * A cubic animation spec using [EaseInOutCubic] for a more organic,
+ * accelerated/decelerated feel.
+ */
 private val cubicTween = tween<IntOffset>(ANIM_DURATION, easing = EaseInOutCubic)
 
-// 3. Create a helper function for the pop transitions
-private fun popContentTransform(): ContentTransform {
-    return (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } togetherWith
-            slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }).apply {
+/**
+ * The alpha value applied to a screen when it is being "scrimmed" or
+ * dimmed in the background.
+ */
+const val SCRIM_ALPHA = 0.3f
+
+/**
+ * Defines the [ContentTransform] for "Pop" transitions (e.g., navigating back).
+ * * The returning screen slides in from the left with a [PARALLAX_FACTOR] offset
+ * and fades in from [SCRIM_ALPHA]. The exiting screen slides out to the right.
+ * It also ensures the exiting screen stays
+ * visually on top of the returning screen during the movement.
+ *
+ * @return A [ContentTransform] configured for a "back" or "pop" navigation feel.
+ */
+fun popContentTransform() = (
+        // Returning (back) screen slides in AND fades back up to 1.0 alpha
+        (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } +
+                fadeIn(tween(ANIM_DURATION, easing = EaseInOutCubic), initialAlpha = SCRIM_ALPHA)) togetherWith
+                // Exiting screen slides out normally
+                slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }
+        ).apply {
         // Keeps the exiting screen hovering ON TOP of the returning screen
         targetContentZIndex = -1f
     }
-}
 
-@Composable
-fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
-    var offsetY by remember { mutableFloatStateOf(0f) }
-    var backProgress by remember { mutableFloatStateOf(0f) }
-    val animatedOffsetY by animateFloatAsState(targetValue = offsetY, label = "offsetY")
-    val scale = 1f - (backProgress * 0.15f)
-    val animatedScale by animateFloatAsState(targetValue = scale, label = "scale")
+/**
+ * Defines the [ContentTransform] for standard forward transitions.
+ * * The entering screen slides in from the right to cover the full width,
+ * while the exiting screen slides slightly to the left (parallax) and
+ * fades out to [SCRIM_ALPHA] to simulate depth.
+ *
+ * @return A [ContentTransform] configured for a "forward" navigation feel.
+ */
+fun transitionSpec() = (
+        // Returning (back) screen slides in AND fades back up to 1.0 alpha
+        slideInHorizontally(standardTween) { it } togetherWith
+                // Exiting (back) screen slides back AND fades out to simulate a scrim
+                (slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR } +
+                        fadeOut(tween(ANIM_DURATION, easing = EaseOut), targetAlpha = SCRIM_ALPHA)))
 
-    PredictiveBackHandler { progressFlow ->
-        try {
-            progressFlow.collect { backEvent ->
-                backProgress = backEvent.progress
-            }
-            onDismiss()
-        } catch (_: CancellationException) {
-            backProgress = 0f
-        }
-    }
-
-    Box(
-        // 1. Center the image inside the Box now that it doesn't fillMaxSize
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.8f))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onDismiss, // This handles clicks on the gray background
-            ),
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "Full Screen",
-            contentScale = ContentScale.Fit,
-            modifier = Modifier
-                // 2. Removed .fillMaxSize() so the gesture bounds strictly match the scaled image
-                .fillMaxByOrientation() // <--- Your custom modifier
-                .graphicsLayer {
-                    translationY = animatedOffsetY
-                    scaleX = animatedScale
-                    scaleY = animatedScale
-                }
-                .clip(RoundedCornerShape(5.dp)) // Set the corner radius
-                .pointerInput(Unit) {
-                    // 3. Swallow taps on the image so they don't trigger the Box's dismiss click
-                    detectTapGestures(onTap = { /* Do nothing */ })
-                }
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures(
-                        onDragEnd = {
-                            if (abs(offsetY) > 300f) onDismiss() else offsetY = 0f
-                        },
-                        onDragCancel = { offsetY = 0f },
-                        onVerticalDrag = { change, dragAmount ->
-                            change.consume()
-                            offsetY += dragAmount
-                        },
-                    )
-                },
-        )
-
-        IconButton(
-            onClick = onDismiss,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(16.dp),
-        ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
-        }
-    }
-}
-
+/**
+ * Component to display two icons slightly overlapped on the same row
+ */
 @Composable
 fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
     Box(
         modifier = Modifier
-            .width(35.dp)
-            .height(30.dp),
+            .width(35.dp),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
@@ -589,7 +556,7 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .size(20.dp),
-            tint = Color.Gray,
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
         )
 
         Icon(
@@ -598,11 +565,14 @@ fun OverlapIcon(main: ImageVector, secondary: ImageVector) {
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .size(20.dp),
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.primary,
         )
     }
 }
 
+/**
+ * Displays the monochrome logo of the application
+ */
 @Composable
 fun Logo() {
     Icon(
@@ -613,9 +583,12 @@ fun Logo() {
     )
 }
 
+/**
+ * Basic template for application top bar
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BasicTopBar(
+fun IconTopBar(
     title: String,
     icon: Painter,
     clickEnabled: Boolean = true,
@@ -648,6 +621,19 @@ fun BasicTopBar(
     )
 }
 
+/**
+ * Applies a conditional max-size constraint based on the current device orientation.
+ *
+ * In **Portrait** (or any non-landscape) orientation, this applies [Modifier.fillMaxWidth].
+ * In **Landscape** orientation, it applies [Modifier.fillMaxHeight].
+ *
+ * **Note:** This uses `composed` to reactively observe [LocalConfiguration]. While
+ * `UnnecessaryComposedModifier` is suppressed, this is necessary because the modifier
+ * logic depends on a CompositionLocal value that can change at runtime.
+ *
+ * @return A [Modifier] that fills the width in portrait and height in landscape.
+ */
+@SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.fillMaxByOrientation(): Modifier = composed {
     val orientation = LocalConfiguration.current.orientation
 
@@ -657,7 +643,26 @@ fun Modifier.fillMaxByOrientation(): Modifier = composed {
         fillMaxHeight()
 }
 
-
+/**
+ * Adds a single item to a [LazyGridScope] that spans the entire width (all columns) of the grid.
+ *
+ * This is a convenience wrapper around [LazyGridScope.item] that sets the `span` to
+ * [LazyGridItemSpanScope.maxLineSpan]. It ensures the item occupies the full row regardless of
+ * the grid's configuration (fixed or adaptive).
+ *
+ * ### Example:
+ * ```kotlin
+ * LazyVerticalGrid(columns = GridCells.Fixed(3)) {
+ *      itemFullSpan {
+ *          HeaderContent() // Spans all 3 columns
+ *      }
+ * }
+ * ```
+ *
+ * @param content The composable content to be rendered within the full-span grid item.
+ * @see LazyGridScope.item
+ * @see GridItemSpan
+ */
 fun LazyGridScope.itemFullSpan(
     content: @Composable (LazyGridItemScope.() -> Unit),
 ): Unit = item(

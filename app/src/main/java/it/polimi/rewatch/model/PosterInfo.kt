@@ -1,35 +1,57 @@
 package it.polimi.rewatch.model
 
 import app.moviebase.tmdb.image.TmdbImage
+import app.moviebase.tmdb.model.TmdbKeywordDetail
+import app.moviebase.tmdb.model.TmdbMediaListItem
 import app.moviebase.tmdb.model.TmdbMovie
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbPerson
 import app.moviebase.tmdb.model.TmdbPersonCredit
 import app.moviebase.tmdb.model.TmdbPersonCredit.Movie
 import app.moviebase.tmdb.model.TmdbPersonCredit.Show
+import app.moviebase.tmdb.model.TmdbSearchableListItem
 import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 
 // Used to show results of search, movie, tv, person
+@Serializable
 data class PosterInfo(
     val id: ItemId,
-    val posterImage: TmdbImage?,
+    @Contextual val posterImage: TmdbImage?,
     val posterPath: String?,
     val releaseDate: LocalDate?,
     val title: String?,
     val popularity: Float,
     val rating: Float,
 ) {
+    constructor(movie: TmdbSearchableListItem) : this(
+        id = MovieId(movie.id),
+        posterImage = null,
+        posterPath = (movie as TmdbKeywordDetail).posterPath,
+        releaseDate = null,
+        title = movie.name,
+        popularity = 0f,
+        rating = 0f,
+    )
+
     // Constructor for Movie Data
-    constructor(movie: TmdbMovie) : this(
+    constructor(movie: TmdbMediaListItem, releaseDate: LocalDate?, title: String?) : this(
         id = MovieId(movie.id),
         posterImage = movie.posterImage,
         posterPath = movie.posterPath,
+        releaseDate = releaseDate,
+        title = title,
+        popularity = movie.popularity,
+        rating = movie.voteAverage ?: 0.0f,
+    )
+
+    constructor(movie: TmdbMovie) : this(
+        movie,
         releaseDate = movie.releaseDate,
         title = movie.title,
-        popularity = movie.popularity,
-        rating = movie.voteAverage,
     )
 
     constructor(movie: TmdbShow) : this(

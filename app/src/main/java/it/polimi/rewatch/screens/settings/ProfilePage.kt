@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -88,7 +89,10 @@ class ProfileViewModel @Inject constructor(
 
 }
 
-
+/**
+ * Screen to display the basic information about the user (email, usage stats)
+ * and manage login and logout operations
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfilePage(
@@ -122,7 +126,6 @@ fun ProfilePage(
         BoxWithConstraints(
             Modifier
                 .padding(
-                    top = paddingValues.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
                 )
                 .fillMaxSize(),
@@ -132,6 +135,7 @@ fun ProfilePage(
                     .verticalScroll(rememberScrollState())
                     .heightIn(min = maxHeight)
                     .padding(16.dp)
+                    .padding(top = paddingValues.calculateTopPadding())
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -145,13 +149,15 @@ fun ProfilePage(
                     ProfileBox(Icons.Default.Person, e)
                     Column(
                         modifier = Modifier
+                            .widthIn(max = 400.dp)
                             .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         ProfileBoxRow("Movies in watchlist", "$watchlistMovies", true)
                         ProfileBoxRow("Movies watched", "$watchedMovies", true)
-                        ProfileBoxRow("TV Shows in watchlist", "$watchlistShows", true)
-                        ProfileBoxRow("TV Shows watched", "$watchedShows")
+                        ProfileBoxRow("Tv Shows in watchlist", "$watchlistShows", true)
+                        ProfileBoxRow("Tv Shows watched", "$watchedShows")
                     }
                     // login / logout
                     val color = when (authState) {
@@ -197,6 +203,7 @@ private fun LogButton(
     val boxShape = RoundedCornerShape(5.dp)
     Row(
         modifier = Modifier
+            .widthIn(max = 400.dp)
             .fillMaxWidth()
             .clip(boxShape)
             .border(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -52,7 +53,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import it.polimi.rewatch.MainActivity
-import it.polimi.rewatch.common.BasicTopBar
+import it.polimi.rewatch.common.IconTopBar
 import it.polimi.rewatch.common.LinkResult
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.NavigationActions
@@ -70,7 +71,6 @@ fun String.isValidEmail(): Boolean {
 class AuthViewModel @Inject constructor(
     private val repo: PersistRepository,
 ) : ViewModel() {
-    val authState = repo.authState
     var email by mutableStateOf("")
     var uiState by mutableStateOf<AuthUiState>(AuthUiState.Idle)
 
@@ -79,6 +79,7 @@ class AuthViewModel @Inject constructor(
 
     fun reset() {
         uiState = AuthUiState.Idle
+        email = ""
     }
 
     fun sendMagicLink() {
@@ -141,16 +142,16 @@ fun AuthPage(
     viewModel: AuthViewModel = hiltViewModel(),
     actions: NavigationActions,
 ) {
-    // If authenticated (non-anonymous), navigate away
-//    LaunchedEffect(authState) {
-//        if (authState is AuthState.Authenticated) {
-//            delay(400L) // Wait for 1 second (1000 milliseconds)
-//            //        actions.onNavigateBack()
-//        }
-//    }
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
+    DisposableEffect(Unit) {
+        onDispose {
+            // This fires exactly when the Composable leaves the screen.
+            // In Nav3, this happens AFTER the exit transition animation finishes.
+            viewModel.reset()
+        }
+    }
 
     DisposableEffect(context) {
         val activity = context as MainActivity
@@ -158,11 +159,9 @@ fun AuthPage(
         // Function to process the link if we find one
         fun processIntent(intent: Intent) {
             intent.data?.toString()?.let { link ->
-                // if (Firebase.auth.isSignInWithEmailLink(link)) {
                 // Route this to your AuthViewModel — via shared state,
                 // navigation argument, or a SavedStateHandle
                 viewModel.handleDeepLink(link)
-                //     }
             }
         }
 
@@ -182,10 +181,10 @@ fun AuthPage(
 
     Scaffold(
         topBar = {
-            BasicTopBar(
+            IconTopBar(
                 "",
                 rememberVectorPainter(Icons.AutoMirrored.Filled.ArrowBack),
-                color = Color.Unspecified,
+                color = Color.Transparent,
             ) { actions.onNavigateBack() }
         },
         modifier = Modifier.padding(
@@ -199,7 +198,7 @@ fun AuthPage(
                 .verticalScroll(scrollState)
                 .imePadding()     // handle keyboard space need
                 .padding(
-                    top = padding.calculateTopPadding() + 25.dp,
+                    top = padding.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
                 )
                 .padding(horizontal = 16.dp),
@@ -215,11 +214,11 @@ fun AuthPage(
                 is AuthUiState.MergePrompt -> MergePromptContent(
                     onMerge = {
                         viewModel.resolveCollision(merge = true)
-                        actions.onClearAndNavigateToSettings()
+                        actions.onNavigateBack()
                     },
                     onDiscard = {
                         viewModel.resolveCollision(merge = false)
-                        actions.onClearAndNavigateToSettings()
+                        actions.onNavigateBack()
                     },
                 )
 
@@ -229,12 +228,9 @@ fun AuthPage(
                 )
 
                 is AuthUiState.Idle -> IdleContent(
-//                    authState = authState,
                     email = viewModel.email,
                     onEmailChange = { viewModel.email = it },
                     onSendLink = { viewModel.sendMagicLink() },
-//                    onSkip = { viewModel.signInAnonymously() },
-//                    onLogout = { viewModel.logout() },
                 )
             }
         }
@@ -243,14 +239,14 @@ fun AuthPage(
 
 @Composable
 private fun IdleContent(
-//    authState: AuthState,
     email: String,
     onEmailChange: (String) -> Unit,
     onSendLink: () -> Unit,
-//    onSkip: () -> Unit,
-//    onLogout: () -> Unit,
 ) {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -300,6 +296,9 @@ private fun SuccessContent(
     onMerge: () -> Unit,
 ) {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -315,16 +314,19 @@ private fun SuccessContent(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-//        TextButton(onClick = onMerge) { Text("Done") }
         Button(onClick = onMerge, modifier = Modifier.fillMaxWidth()) {
             Text("Done")
         }
+        Spacer(Modifier.height(16.dp))
     }
 }
 
 @Composable
 private fun LinkSentContent() {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -349,6 +351,9 @@ private fun MergePromptContent(
     onDiscard: () -> Unit,
 ) {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -364,12 +369,16 @@ private fun MergePromptContent(
         OutlinedButton(onClick = onDiscard, modifier = Modifier.fillMaxWidth()) {
             Text("Discard guest lists")
         }
+        Spacer(Modifier.height(16.dp))
     }
 }
 
 @Composable
 private fun LoadingContent(message: String) {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -381,6 +390,9 @@ private fun LoadingContent(message: String) {
 @Composable
 private fun ErrorContent(message: String, onRetry: () -> Unit) {
     Column(
+        Modifier
+            .widthIn(max = 400.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {

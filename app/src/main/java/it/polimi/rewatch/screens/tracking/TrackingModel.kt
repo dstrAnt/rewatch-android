@@ -30,7 +30,7 @@ class TrackingViewModel @Inject constructor(
         .map { result ->
             result.fold(
                 onSuccess = { list ->
-                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                    UiState.Success(list.map { tmdbRepo.enrichWatchlistItem(it) })
                 },
                 onFailure = { error ->
                     UiState.Error(error.message ?: "Unknown error")
@@ -58,7 +58,7 @@ class TrackingViewModel @Inject constructor(
         .map { result ->
             result.fold(
                 onSuccess = { list ->
-                    UiState.Success(list.map { tmdbRepo.enrichWatched(it) })
+                    UiState.Success(list.map { tmdbRepo.enrichWatchedItem(it) })
                 },
                 onFailure = { error ->
                     UiState.Error(error.message ?: "Unknown error")

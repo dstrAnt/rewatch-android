@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
@@ -49,19 +48,19 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import it.polimi.rewatch.R
-import it.polimi.rewatch.common.BasicTopBar
-import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.CustomTabRow
+import it.polimi.rewatch.common.IconTopBar
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.headerColor
+import it.polimi.rewatch.common.itemFullSpan
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.StarRating
+import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
+import it.polimi.rewatch.screens.home.HomeTabItem
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
 
 enum class SortOption(val label: String) {
     POPULARITY("Popularity"),
@@ -83,6 +82,12 @@ fun getTrackingPainter(
         MediaType.TV_SHOW -> painterResource(R.drawable.tv)
         else -> error("Undefined tracking page for this media type")
     }
+}
+
+fun getHomeTab(type: MediaType): HomeTabItem? = when (type) {
+    MediaType.MOVIE -> HomeTabItem.MOVIES
+    MediaType.TV_SHOW -> HomeTabItem.SHOWS
+    else -> null
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,7 +115,6 @@ fun TrackingPage(
     val activeOrder = tabSortOrders.getValue(selectedTab)
     val watchlist by viewModel.watchlist.collectAsStateWithLifecycle()
     val watched by viewModel.watchedList.collectAsStateWithLifecycle()
-
     val currentUiState = when (selectedTab) {
         WatchTabItem.WATCHLIST -> watchlist
         WatchTabItem.WATCHED -> watched
@@ -138,7 +142,7 @@ fun TrackingPage(
             ),
             loadingContent = ::TrackingSkeleton,
         ) { currentList ->
-            CustomLazyGrid {
+            CustomLazyGrid(contentPadding = PaddingValues(bottom = 5.dp)) {
                 // 1. Route to the correct list and order
                 val items = currentList.filter { it.id.type == type }
                 // 2. Sort and group the unified data structure
@@ -162,47 +166,49 @@ fun TrackingPage(
                     }
                 }
                 val tab = if (type == MediaType.MOVIE) "Movies" else "Shows"
-                if (groupedItems.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) {
-                    Column(
-                        Modifier
-                            .padding(top = 50.dp)
-                            .padding(horizontal = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        val icon = when (selectedTab) {
-                            WatchTabItem.WATCHLIST if tab == "Movies" -> R.drawable.ticket
-                            WatchTabItem.WATCHED if tab == "Movies" -> R.drawable.movie_library
-                            WatchTabItem.WATCHLIST -> R.drawable.tv_play
-                            WatchTabItem.WATCHED -> R.drawable.list_stars
-                        }
-                        val `in` = if (selectedTab == WatchTabItem.WATCHLIST) " in " else " "
-                        val tip = if (selectedTab == WatchTabItem.WATCHLIST) "want to watch later" else "already watched"
-                        Icon(
-                            painter = painterResource(icon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(70.dp),
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Text(
-                            "No $tab$`in`${selectedTab.title}",
-                            style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
-                        )
-                        Text(
-                            "Save the ${tab.lowercase()} you $tip and you'll see them here",
-                            color = Color.Gray,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        Button(
-                            onClick = actions.onBackToHome,
+
+                if (groupedItems.isEmpty())
+                    itemFullSpan {
+                        Column(
+                            Modifier
+                                .padding(top = 50.dp)
+                                .padding(horizontal = 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Text("Explore")
+                            val icon = when (selectedTab) {
+                                WatchTabItem.WATCHLIST if tab == "Movies" -> R.drawable.ticket
+                                WatchTabItem.WATCHED if tab == "Movies" -> R.drawable.movie_library
+                                WatchTabItem.WATCHLIST -> R.drawable.tv_play
+                                WatchTabItem.WATCHED -> R.drawable.list_stars
+                            }
+                            val `in` = if (selectedTab == WatchTabItem.WATCHLIST) " in " else " "
+                            val tip = if (selectedTab == WatchTabItem.WATCHLIST) "want to watch later" else "already watched"
+                            Icon(
+                                painter = painterResource(icon),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(70.dp),
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                "No $tab$`in`${selectedTab.title}",
+                                style = MaterialTheme.typography.titleLarge.copy(textAlign = TextAlign.Center),
+                            )
+                            Text(
+                                "Save the ${tab.lowercase()} you $tip and you'll see them here",
+                                color = Color.Gray,
+                                textAlign = TextAlign.Center,
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Button(
+                                onClick = { actions.onBackToHome(getHomeTab(type)) },
+                            ) {
+                                Text("Explore")
+                            }
                         }
-                    }
-                } else {
-                    // 1. CHIPS DI ORDINAMENTO (Span completo)
-                    item(span = { GridItemSpan(maxLineSpan) }) {
+                    } else
+                // 1. CHIPS DI ORDINAMENTO (Span completo)
+                    itemFullSpan {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
@@ -223,22 +229,21 @@ fun TrackingPage(
                             )
                         }
                     }
-                    // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
-                    groupedItems.forEach { (header, items) ->
-                        // Titolo della sezione (span completo)
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
-                                text = header,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
-                            )
-                        }
-                        // Elementi della sezione
-                        items(key = { "${it.id}" }, items = items) { media ->
-                            if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
-                            else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
-                        }
+                // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
+                groupedItems.forEach { (header, items) ->
+                    // Titolo della sezione (span completo)
+                    itemFullSpan {
+                        Text(
+                            text = header,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
+                        )
+                    }
+                    // Elementi della sezione
+                    items(key = { "${it.id}" }, items = items) { media ->
+                        if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
+                        else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
                     }
                 }
             }
@@ -280,12 +285,13 @@ private fun TopTabBar(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier
+        Modifier
             .fillMaxWidth()
             .background(Color.Black)
+            .then(modifier)
             .windowInsetsPadding(WindowInsets.statusBars), // Keeps it below the system status bar
     ) {
-        BasicTopBar(title, icon, false) {}
+        IconTopBar(title, icon, false) {}
         CustomTabRow(
             availableTabs = tabs,
             onClick = onClick,
@@ -348,12 +354,6 @@ fun getDateHeader(date: LocalDateTime?): String {
         date.year == today.year -> date.month.name.lowercase().replaceFirstChar { it.uppercase() }
         else -> "${date.year}"
     }
-}
-
-fun Date.toLocalDateTime(): LocalDateTime {
-    return this.toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
 }
 
 fun getRatingHeader(rating: Float?): String {

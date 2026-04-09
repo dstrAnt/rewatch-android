@@ -14,14 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import it.polimi.rewatch.common.CustomLazyGrid
 import it.polimi.rewatch.common.SkeletonPart
 import it.polimi.rewatch.common.itemFullSpan
+import it.polimi.rewatch.components.layout.CustomLazyGrid
 
 @Composable
 fun HomeSkeleton() {
     CustomLazyGrid(
-        contentPadding = PaddingValues(bottom = 24.dp),
+        contentPadding = PaddingValues(bottom = 24.dp, top = 92.dp),
         userScrollEnabled = false,
     ) { columnCount -> // <-- 1. Cattura la variabile calcolata dalla CustomLazyGrid
         repeat(3) {

@@ -20,6 +20,35 @@ import coil3.compose.SubcomposeAsyncImageScope
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 
+/**
+ * A wrapper around [SubcomposeAsyncImage] that provides a unified fallback system
+ * for both loading and error states.
+ *
+ * This component simplifies image handling by allowing you to define a single visual
+ * placeholder (either a resource-based [Image] or a vector-based [Icon]) that
+ * remains visible from the moment the request starts until the image successfully
+ * loads, or if the request fails.
+ *
+ * ### Features:
+ * * **Consistency:** Uses the same fallbackContent for both `loading` and `error`
+ * slots to prevent flickering during state transitions.
+ * * **Flexible Fallbacks:** Prioritizes [fallbackResId] (full-sized image) over
+ * [fallbackIcon] (centered tinted icon).
+ * * **Coil Integration:** Built-in support for [ImageRequest] with `crossfade(true)`
+ * enabled by default for smooth visual transitions.
+ *
+ * @param model The data source for the image (URL, URI, File, etc.).
+ * @param contentDescription Text used by accessibility services to describe the image.
+ * @param modifier [Modifier] to be applied to the image layout.
+ * @param contentScale Strategy for scaling the image content (defaults to [ContentScale.Crop]).
+ * @param alignment Alignment parameter for the image within its bounds.
+ * @param fallbackResId Optional drawable resource ID to show while loading or on error.
+ * @param fallbackIcon Optional [ImageVector] to show if no [fallbackResId] is provided.
+ * @param fallbackIconTint The color tint applied to the [fallbackIcon].
+ *
+ * @see SubcomposeAsyncImage
+ * @see ImageRequest.Builder.crossfade
+ */
 @Composable
 fun RewatchAsyncImage(
     model: Any?,

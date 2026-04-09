@@ -1,7 +1,9 @@
-package it.polimi.rewatch.components
+package it.polimi.rewatch.components.layout
 
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material.icons.Icons
@@ -9,11 +11,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 
 /**
  * [MediaScaffold] is a template that adds an [AppearingTopBar] at the top of a page
@@ -82,12 +89,25 @@ fun AppearingTopBar(
             }
         },
         navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = null,
-                    tint = Color.White,
-                )
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 4.dp) {
+                IconButton(
+                    onClick = onNavigateBack,
+                    Modifier
+                        .padding(start = 12.dp)
+                        .size(35.dp),
+                    colors = IconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color.Unspecified,
+                        disabledContentColor = Color.Unspecified,
+                    ),
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = Color.White,
+                    )
+                }
             }
         },
         // Apply background color with alpha
