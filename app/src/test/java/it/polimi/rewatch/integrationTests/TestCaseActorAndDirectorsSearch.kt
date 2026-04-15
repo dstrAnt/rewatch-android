@@ -1,10 +1,10 @@
-package it.polimi.rewatch
+package it.polimi.rewatch.integrationTests
 
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseWatchlist {
+class TestCaseActorAndDirectorsSearch {
     @get:Rule
     //val composeTestRule = createComposeRule()
     val composeTestRule = 0

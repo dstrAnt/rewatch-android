@@ -1,4 +1,4 @@
-package it.polimi.rewatch
+package it.polimi.rewatch.integrationTests
 
 import org.junit.Before
 import org.junit.Rule

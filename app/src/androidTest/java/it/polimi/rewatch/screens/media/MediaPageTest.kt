@@ -66,8 +66,8 @@ class MediaPageTest {
                     onFullscreenImage = {},
                     onBottomSheet = {},
                     onNavigateToLogin = {},
-                    onNavigateToProfile = {},
-                    onClearAndNavigateToSettings = {},
+                    //onNavigateToProfile = {},
+                    //onClearAndNavigateToSettings = {},
                     onBackToHome = {},
                 ),
             )
