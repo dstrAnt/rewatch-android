@@ -7,6 +7,7 @@ import app.moviebase.tmdb.model.TmdbCountry
 import app.moviebase.tmdb.model.TmdbCrew
 import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbEpisodeDetail
+import app.moviebase.tmdb.model.TmdbExternalIds
 import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbProviders
@@ -15,6 +16,9 @@ import app.moviebase.tmdb.model.TmdbSeason
 import app.moviebase.tmdb.model.TmdbSeasonDetail
 import app.moviebase.tmdb.model.TmdbShowDetail
 import app.moviebase.tmdb.model.TmdbShowStatus
+import app.moviebase.tmdb.model.TmdbVideo
+import app.moviebase.tmdb.model.TmdbVideoSite
+import app.moviebase.tmdb.model.TmdbVideoType
 import kotlinx.datetime.LocalDate
 
 // Data object for MediaPage data of Movie, Tv, Season, Episode
@@ -32,6 +36,7 @@ data class MediaDetail(
     val voteAverage: Float?,
     val voteCount: Int?,
     val runtime: String,
+    val externalIds: Map<String, String> = emptyMap(),
     val tagline: String?,
     val releaseDate: LocalDate?,
     val posterImage: TmdbImage?,
@@ -62,6 +67,7 @@ data class MediaDetail(
         voteAverage = movie.voteAverage,
         voteCount = movie.voteCount,
         runtime = movie.runtime.toString(),
+        externalIds = toExternalLinks(movie.externalIds, movie.videos?.results),
         tagline = movie.tagline,
         releaseDate = movie.releaseDate, // Assumes movie.releaseDate is LocalDate
         posterImage = movie.posterImage,
@@ -92,6 +98,7 @@ data class MediaDetail(
         reviews = show.reviews?.results.orEmpty(),
         voteAverage = show.voteAverage,
         voteCount = show.voteCount,
+        externalIds = toExternalLinks(show.externalIds, show.videos?.results),
         tagline = show.tagline,
         releaseDate = show.firstAirDate, // TMDB uses 'firstAirDate' for TV shows
         posterImage = show.posterImage,
@@ -116,6 +123,7 @@ data class MediaDetail(
         reviews = emptyList(),
         voteAverage = season.voteAverage,
         voteCount = season.voteCount,
+        externalIds = toExternalLinks(season.externalIds, season.videos?.results),
         tagline = null,
         releaseDate = season.airDate, // TMDB uses 'firstAirDate' for TV shows
         posterImage = season.posterImage,
@@ -139,6 +147,7 @@ data class MediaDetail(
         reviews = emptyList(),
         voteAverage = episode.voteAverage,
         voteCount = episode.voteCount,
+        externalIds = toExternalLinks(episode.externalIds, null),
         tagline = null,
         releaseDate = episode.airDate, // TMDB uses 'firstAirDate' for TV shows
         posterImage = null,
@@ -171,4 +180,17 @@ sealed interface MediaSpecificDetails {
     data class Season(
         val episodes: List<TmdbEpisode>?,
     ) : MediaSpecificDetails
+}
+
+fun toExternalLinks(
+    externalIds: TmdbExternalIds?,
+    videos: List<TmdbVideo>?,
+): Map<String, String> {
+    return buildMap {
+        externalIds?.imdbId?.let { put("IMDb", "https://www.imdb.com/title/$it/") }
+
+        videos?.find { it.site == TmdbVideoSite.YOUTUBE && it.type == TmdbVideoType.TRAILER }?.key?.let {
+            put("Trailer", "https://www.youtube.com/watch?v=$it")
+        }
+    }
 }

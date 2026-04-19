@@ -1,19 +1,23 @@
 package it.polimi.rewatch.screens.media
 
+import android.content.Intent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,11 +30,13 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTimeFilled
+import androidx.compose.material.icons.filled.ArrowOutward
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,6 +59,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +68,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.moviebase.tmdb.image.TmdbImage
@@ -160,8 +168,6 @@ fun MediaContent(
     val screenSize = remember(windowInfo.containerSize) {
         maxOf(windowInfo.containerSize.width, windowInfo.containerSize.height)
     }
-
-
 
     MediaScaffold(
         scrollState = scrollState,
@@ -301,6 +307,7 @@ private fun LazyListScope.mediaHeaderItems(
             TmdbRatings(
                 voteCount = movie.voteCount,
                 voteAverage = movie.voteAverage,
+                externalIds = movie.externalIds,
             )
         }
     }
@@ -587,11 +594,13 @@ fun TaglineAndOverview(
 fun TmdbRatings(
     voteCount: Int?,
     voteAverage: Float?,
+    externalIds: Map<String, String>,
 ) {
     val vote = voteAverage?.toDouble() ?: 0.0
     val count = voteCount ?: 0
 
-    if (vote == 0.0 && count == 0) return
+    if (vote == 0.0 && count == 0 && externalIds.isEmpty()) return
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -601,52 +610,102 @@ fun TmdbRatings(
     ) {
         Row(
             modifier = Modifier
-                .clip(RoundedCornerShape(24.dp))
-                .background(Color(0xFF022441))
-                .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(24.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.tmdb_logo),
-                contentDescription = "TMDB logo",
-                modifier = Modifier.width(70.dp),
-            )
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFF022441))
+                    .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // 1. TMDB Logo
+                Image(
+                    painter = painterResource(id = R.drawable.tmdb_logo),
+                    contentDescription = "TMDB logo",
+                    modifier = Modifier
+                        .padding(start = 20.dp, end = 12.dp)
+                        .padding(vertical = 10.dp)
+                        .width(60.dp),
+                )
+                // 2. Rating
+                if (vote > 0) {
+                    TmdbDivider()
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = "%.1f".format(Locale.US, vote),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                        )
+                        Text(
+                            text = "/10",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White.copy(alpha = 0.6f),
+                        )
+                    }
+                }
+                // 3. Vote Count
+                if (count > 0) {
+                    TmdbDivider()
+                    Text(
+                        text = "${count.toDouble().getShortNotation()} votes",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.White.copy(alpha = 0.8f),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                    )
+                }
+                // 4. External Links
+                externalIds.forEach { (label, url) ->
+                    TmdbDivider()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .clickable {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                            }
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        Text(
+                            text = label.lowercase(),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                        Icon(
+                            imageVector = Icons.Default.ArrowOutward,
+                            contentDescription = null,
+                            modifier = Modifier.size(12.dp),
+                            tint = Color.White.copy(alpha = 0.7f),
+                        )
+                    }
+                }
 
-            VerticalDivider(
-                modifier = Modifier.height(16.dp),
-                color = Color.White.copy(alpha = 0.3f),
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = "%.1f".format(Locale.US, vote),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                )
-                Text(
-                    text = "/10",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White.copy(alpha = 0.6f),
-                )
-            }
-
-            if (count > 0) {
-                VerticalDivider(
-                    modifier = Modifier.height(16.dp),
-                    color = Color.White.copy(alpha = 0.3f),
-                )
-                Text(
-                    text = "${count.toDouble().getShortNotation()} votes",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White.copy(alpha = 0.8f),
-                )
+                Spacer(Modifier.width(4.dp))
             }
         }
     }
+}
+
+// Extracted to keep the main layout clean
+@Composable
+private fun TmdbDivider() {
+    VerticalDivider(
+        modifier = Modifier.height(16.dp), // Notice: NO horizontal padding here anymore
+        color = Color.White.copy(alpha = 0.3f),
+    )
 }
 
 @Composable
