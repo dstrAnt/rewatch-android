@@ -73,6 +73,6 @@ class MediaPageTest {
             )
         }
         // Keep the test alive for a while so you can see it on the device
-        Thread.sleep(20000)
+        Thread.sleep(60000)
     }
 }
