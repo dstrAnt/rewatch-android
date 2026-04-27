@@ -129,6 +129,8 @@ class TmdbRepository @Inject constructor(
                 AppendResponse.CREDITS,
                 AppendResponse.REVIEWS,
                 AppendResponse.RELEASES_DATES,
+                AppendResponse.EXTERNAL_IDS,
+                AppendResponse.VIDEOS,
                 AppendResponse.WATCH_PROVIDERS,
             ),
         )
@@ -150,6 +152,8 @@ class TmdbRepository @Inject constructor(
             appendResponses = listOf(
                 AppendResponse.CREDITS,
                 AppendResponse.REVIEWS,
+                AppendResponse.EXTERNAL_IDS,
+                AppendResponse.VIDEOS,
                 AppendResponse.RELEASES_DATES,
                 AppendResponse.WATCH_PROVIDERS,
             ),
