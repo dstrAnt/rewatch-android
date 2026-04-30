@@ -15,10 +15,105 @@ class TrackingMediaTesting {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun testAppTrackingMedia() {
+    fun testAppTrackingMediaConstructor() {
 
         testEmptyTrackingMedia();
-        testWatchedMedia();
+        testTrivialWatchedMedia();
+        testTrivialWatchedMedia2();
+    }
+
+    @Test
+    fun testAppTrackingMediaToWatchedMovies() {
+
+       val trackingMedia = TrackingMediaDto();
+       val watched = trackingMedia.toWatchedMedia()
+
+        assert(watched.id.parentId == 0)
+        assert(watched.rating == 0f)
+        assert(watched.date != null)
+
+        val trackingMedia2 = TrackingMediaDto(WatchedMedia(id = MovieId(0)));
+        val watched2 = trackingMedia.toWatchedMedia()
+
+        assert(watched2.id.parentId == 0)
+        assert(watched2.rating == 0f)
+        assert(watched2.date.equals(trackingMedia2.date))
+
+        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = MovieId(3), rating = 4.3f));
+        val watched3 = trackingMedia.toWatchedMedia()
+
+        assert(watched3.id.parentId == 3)
+        assert(watched3.rating == 4.3f)
+        assert(watched3.date.equals(trackingMedia3.date))
+    }
+
+    @Test
+    fun testAppTrackingMediaToWatchedTVShows() {
+
+        val trackingMedia = TrackingMediaDto();
+        val watched = trackingMedia.toWatchedMedia()
+
+        assert(watched.id.parentId == 0)
+        assert(watched.rating == 0f)
+        assert(watched.date != null)
+
+        val trackingMedia2 = TrackingMediaDto(WatchedMedia(id = TvId(0)));
+        val watched2 = trackingMedia.toWatchedMedia()
+
+        assert(watched2.id.parentId == 0)
+        assert(watched2.rating == 0f)
+        assert(watched2.date.equals(trackingMedia2.date))
+
+        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = TvId(3), rating = 4.3f));
+        val watched3 = trackingMedia.toWatchedMedia()
+
+        assert(watched3.id.parentId == 3)
+        assert(watched3.rating == 4.3f)
+        assert(watched3.date.equals(trackingMedia3.date))
+    }
+
+    @Test
+    fun testAppTrackingMediaToWatchlistMovies() {
+
+        val trackingMedia = TrackingMediaDto();
+        val watchlist = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist.id.parentId == 0)
+        assert(watchlist.date != null)
+
+        val trackingMedia2 = TrackingMediaDto(WatchlistMedia(id = MovieId(0)));
+        val watchlist2 = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist2.id.parentId == 0)
+        assert(watchlist2.date.equals(trackingMedia2.date))
+
+        val trackingMedia3 = TrackingMediaDto(WatchlistMedia(id = MovieId(3)));
+        val watchlist3 = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist3.id.parentId == 3)
+        assert(watchlist3.date.equals(trackingMedia3.date))
+    }
+
+    @Test
+    fun testAppTrackingMediaToWatchlistTVShows() {
+
+        val trackingMedia = TrackingMediaDto();
+        val watchlist = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist.id.parentId == 0)
+        assert(watchlist.date != null)
+
+        val trackingMedia2 = TrackingMediaDto(WatchlistMedia(id = TvId(0)));
+        val watchlist2 = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist2.id.parentId == 0)
+        assert(watchlist2.date.equals(trackingMedia2.date))
+
+        val trackingMedia3 = TrackingMediaDto(WatchlistMedia(id = TvId(3)));
+        val watchlist3 = trackingMedia.toWatchlistMedia()
+
+        assert(watchlist3.id.parentId == 3)
+        assert(watchlist3.date.equals(trackingMedia3.date))
     }
 
     fun testEmptyTrackingMedia(){
@@ -33,7 +128,7 @@ class TrackingMediaTesting {
 
     }
 
-    fun testWatchedMedia(){
+    fun testTrivialWatchedMedia(){
         val watchedMedia = WatchedMedia(id = MovieId(0));
         val trackingMedia = TrackingMediaDto(watchedMedia);
 
@@ -44,10 +139,18 @@ class TrackingMediaTesting {
         assert(trackingMedia.date != null);
     }
 
-    fun testWatchedMedia2(){
+    fun testTrivialWatchedMedia2(){
         val watchedMedia = WatchedMedia(id = TvId(1390),
             rating = 8.5f,
             date = LocalDateTime.of(2026, 3, 23, 0, 0),);
+
+        val trackingMedia = TrackingMediaDto(watchedMedia);
+
+        assert(trackingMedia.documentId == watchedMedia.id.type.name + "_" + watchedMedia.id.parentId);
+        assert(trackingMedia.parentId == watchedMedia.id.parentId);
+        assert(trackingMedia.mediaType == watchedMedia.id.type.name,);
+        assert(trackingMedia.rating == watchedMedia.rating);
+        assert(trackingMedia.date?.equals(watchedMedia.date) == true);
     }
 
 }
