@@ -111,9 +111,20 @@ class StarRatingTesting {
     @Test
     fun testNumberOfStarIcons(){
 
+        val maxStars = 5
+
+        composeTestRule.setContent {
+            StarRating(
+                rating = 0f,
+                maxRating = maxStars,
+                starSize = 15.dp,               // Standard Dimension for the test
+                modifier = Modifier.testTag("starIcon")     // Necessary unique tag
+            )
+        }
+
         composeTestRule
             .onAllNodes(hasIcon(Icons.Default.Star))
-            .assertCountEquals(5)
+            .assertCountEquals(maxStars)
 
     }
 
