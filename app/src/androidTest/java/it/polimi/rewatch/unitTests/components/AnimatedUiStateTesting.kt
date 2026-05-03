@@ -1,8 +1,10 @@
 package it.polimi.rewatch.unitTests.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.common.UiState
 import it.polimi.rewatch.components.AnimatedUiState
 import it.polimi.rewatch.components.BottomSheet
@@ -26,13 +28,13 @@ class AnimatedUiStateTesting {
         }
     }
 
-    /*@Test
+    @Test
     fun testAnimatedUIStateSuccess() {
         composeTestRule.setContent {
             AnimatedUiState(
-                UiState.Success<String>, modifier = Modifier.testTag("animatedUiState"),
+                state = UiState.Success("String"), modifier = Modifier.testTag("animatedUiState"),
                 loadingContent = {  }
-            ) { }
+            ) { data -> Row(){} }
         }
     }
 
@@ -40,9 +42,9 @@ class AnimatedUiStateTesting {
     fun testAnimatedUIStateError() {
         composeTestRule.setContent {
             AnimatedUiState(
-                UiState.Error, modifier = Modifier.testTag("animatedUiState"),
+                UiState.Error(""), modifier = Modifier.testTag("animatedUiState"),
                 loadingContent = {  }
             ) { }
         }
-    }*/
+    }
 }

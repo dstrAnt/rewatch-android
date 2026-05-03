@@ -22,7 +22,7 @@ class FullScreenImageOverlayTesting {
     @Test
     fun testImageOverlay(){
 
-        val content = composeTestRule.setContent { FullScreenImageOverlay("", {}) }
+        val content = composeTestRule.setContent { FullScreenImageOverlay("") {} }
 
         val asyncImage = composeTestRule.onNodeWithContentDescription("Full Screen").assertExists().assertIsDisplayed()
 

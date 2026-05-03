@@ -1,10 +1,16 @@
 package it.polimi.rewatch.unitTests.components
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertAll
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.click
@@ -95,11 +101,20 @@ class StarRatingTesting {
         assert(finalRating == 4f)
     }
 
-    /*val numeroIcone = composeTestRule
-        .onAllNodes(hasAnyChild(isNotNull()), useUnmergedTree = true)
-        .fetchSemanticsNodes().size
+    val IconKey = SemanticsPropertyKey<ImageVector>("IconKey")
+    var SemanticsPropertyReceiver.iconType by IconKey
 
-    private fun isNotNull(): SemanticsMatcher { return { i -> i != null; }}*/
 
+    fun hasIcon(icon: ImageVector): SemanticsMatcher =
+        SemanticsMatcher.expectValue(IconKey, icon)
+
+    @Test
+    fun testNumberOfStarIcons(){
+
+        composeTestRule
+            .onAllNodes(hasIcon(Icons.Default.Star))
+            .assertCountEquals(5)
+
+    }
 
 }

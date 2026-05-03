@@ -19,21 +19,21 @@ class BottomSheetTesting {
 
     @Before
     fun setup() {
-        actions = NavigationActions(onNavigateToPerson = { id -> return@NavigationActions},
+        actions = NavigationActions(onNavigateToPerson = { id -> },
 
         onNavigateToMedia = { id ->  id.parentId + 1},
         onNavigateBack = {
-            return@NavigationActions
+
         },
         onFullscreenImage = { url ->
-            return@NavigationActions
+
         },
-        onBottomSheet = { info -> val flag = mutableStateOf(true) },
+        onBottomSheet = { info ->  },
         onNavigateToLogin = {
-            return@NavigationActions
+
         },
         onBackToHome = { tab ->
-            return@NavigationActions
+
         })
 
         composeTestRule.setContent { BottomSheet(PosterInfo(MovieId(0)), actions = actions) { } }

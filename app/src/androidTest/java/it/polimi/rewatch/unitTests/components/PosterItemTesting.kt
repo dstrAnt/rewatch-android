@@ -31,20 +31,21 @@ class PosterItemTesting {
         val media = MovieId(0)
         var flag = mutableStateOf(false)
 
-        val content = composeTestRule.setContent { PosterItem(PosterInfo(media), actions = NavigationActions(onNavigateToPerson = { id -> return@NavigationActions},
+        val content = composeTestRule.setContent { PosterItem(PosterInfo(media), actions = NavigationActions(onNavigateToPerson = { id -> },
+
             onNavigateToMedia = { id ->  id.parentId + 1},
             onNavigateBack = {
-                return@NavigationActions
+
             },
             onFullscreenImage = { url ->
-                return@NavigationActions
+
             },
-            onBottomSheet = { info ->  flag = mutableStateOf(true)},
+            onBottomSheet = { info ->  },
             onNavigateToLogin = {
-                return@NavigationActions
+
             },
             onBackToHome = { tab ->
-                return@NavigationActions
+
             }),
             modifier = Modifier.testTag("posterItem") )}
 
