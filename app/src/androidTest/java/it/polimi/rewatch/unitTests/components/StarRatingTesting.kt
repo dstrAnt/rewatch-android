@@ -35,21 +35,6 @@ class StarRatingTesting {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun testStarRating() {
-
-        composeTestRule.setContent { StarRating(0f) }
-
-        Thread.sleep(40000);
-
-        // Trova TUTTI i nodi nell'albero profondo, inclusi i contenitori
-        val tuttiINodi = composeTestRule.onAllNodes(isRoot(), useUnmergedTree = true);
-
-        composeTestRule.onRoot(useUnmergedTree = true).printToLog("STRUTTURA_UI");
-
-
-    }
-
-    @Test
     fun testMidStarsRating() {
         var finalRating = 0f
         val maxStars = 5
