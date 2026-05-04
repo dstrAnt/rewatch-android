@@ -22,8 +22,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.printToLog
-import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.*
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.components.StarRating
 import org.junit.Rule
@@ -79,19 +78,12 @@ class StarRatingTesting {
 
         composeTestRule.onNodeWithTag("starIcon").performTouchInput {
             // I swiper from 20% width to 80% width
-            swipeLeft(startX = width * 0.2f, endX = width * 0.8f)
+            swipeRight(startX = width * 0.2f, endX = width * 0.8f)
         }
 
         // Verifying that the value had changed to 4 (80% width corresponds to 4 of 5 stars)
         assert(finalRating == 4f)
     }
-
-    val IconKey = SemanticsPropertyKey<ImageVector>("IconKey")
-    var SemanticsPropertyReceiver.iconType by IconKey
-
-
-    fun hasIcon(icon: ImageVector): SemanticsMatcher =
-        SemanticsMatcher.expectValue(IconKey, icon)
 
     @Test
     fun testNumberOfStarIcons(){
@@ -108,7 +100,7 @@ class StarRatingTesting {
         }
 
         composeTestRule
-            .onAllNodes(hasIcon(Icons.Default.Star))
+            .onAllNodesWithContentDescription("Star rating icon")
             .assertCountEquals(maxStars)
 
     }

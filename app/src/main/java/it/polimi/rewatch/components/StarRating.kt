@@ -116,7 +116,7 @@ fun StarRating(
             Box(modifier = Modifier.size(starSize)) {
                 Icon(
                     imageVector = Icons.Filled.Star,
-                    contentDescription = null,
+                    contentDescription = "Star rating icon",
                     tint = MaterialTheme.colorScheme.outline,
                     modifier = Modifier.matchParentSize(),
                 )
