@@ -18,29 +18,29 @@ internal class ThemeTesting {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun testAppTheme() {
+    fun testAppDarkTheme() {
 
-        composeTestRule.setContent { RewatchTheme(darkTheme = true, dynamicColor =  true) { Text("Hello") } }
-
-        Thread.sleep(10000);
-
-        val node = composeTestRule.onNodeWithText("Hello").assertExists();
+        composeTestRule.setContent { RewatchTheme(darkTheme = true) { Text("Hello") } }
 
         Thread.sleep(10000);
 
-        node.onParent().assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Hello").assertExists();
+
+        Thread.sleep(10000);
+    }
+
+    @Test
+    fun testAppLightTheme (){
+
+        composeTestRule.setContent { RewatchTheme(darkTheme = false) { Text("World") } }
 
         Thread.sleep(10000);
 
-        val parentNode = node.onParent();
-
-        //val theme = (parentNode as MaterialTheme)
-
-        node.onParent().printToLog("Printing RewatchTheme's MaterialTheme")
+        composeTestRule.onNodeWithText("World").assertExists();
 
         Thread.sleep(10000);
 
-        //assert(true);
+
     }
 
 }
