@@ -8,6 +8,7 @@ import it.polimi.rewatch.model.*;
 import it.polimi.rewatch.theme.RewatchTheme
 import org.junit.Rule
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 class TrackingMediaTesting {
 
@@ -32,19 +33,23 @@ class TrackingMediaTesting {
         assert(watched.rating == 0f)
         assert(watched.date != null)
 
-        val trackingMedia2 = TrackingMediaDto(WatchedMedia(id = MovieId(0)));
-        val watched2 = trackingMedia.toWatchedMedia()
+        val genericWatchedMedia = WatchedMedia(id = MovieId(0),
+            date = LocalDateTime.of(2026, 4, 25, 0, 0))
+
+        val trackingMedia2 = TrackingMediaDto(genericWatchedMedia);
+        val watched2 = trackingMedia2.toWatchedMedia()
 
         assert(watched2.id.parentId == 0)
         assert(watched2.rating == 0f)
-        assert(watched2.date.equals(trackingMedia2.date))
+        assert(watched2.date == genericWatchedMedia.date)
 
-        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = MovieId(3), rating = 4.3f));
-        val watched3 = trackingMedia.toWatchedMedia()
+        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = MovieId(3), rating = 4.3f,
+            date = LocalDateTime.of(2026, 4, 25, 0, 0)),);
+        val watched3 = trackingMedia3.toWatchedMedia()
 
         assert(watched3.id.parentId == 3)
         assert(watched3.rating == 4.3f)
-        assert(watched3.date.equals(trackingMedia3.date))
+        assert(trackingMedia3.date?.equals(watched3.date.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()) == true);
     }
 
     @Test
@@ -150,7 +155,7 @@ class TrackingMediaTesting {
         assert(trackingMedia.parentId == watchedMedia.id.parentId);
         assert(trackingMedia.mediaType == watchedMedia.id.type.name,);
         assert(trackingMedia.rating == watchedMedia.rating);
-        assert(trackingMedia.date?.equals(watchedMedia.date) == true);
+        assert(trackingMedia.date?.equals(watchedMedia.date.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()) == true);
     }
 
 }
