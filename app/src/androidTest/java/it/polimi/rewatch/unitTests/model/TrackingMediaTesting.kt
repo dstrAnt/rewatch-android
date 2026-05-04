@@ -62,19 +62,23 @@ class TrackingMediaTesting {
         assert(watched.rating == 0f)
         assert(watched.date != null)
 
-        val trackingMedia2 = TrackingMediaDto(WatchedMedia(id = TvId(0)));
-        val watched2 = trackingMedia.toWatchedMedia()
+        val genericWatchedMedia = WatchedMedia(id = TvId(0),
+            date = LocalDateTime.of(2026, 4, 25, 0, 0))
+
+        val trackingMedia2 = TrackingMediaDto(genericWatchedMedia);
+        val watched2 = trackingMedia2.toWatchedMedia()
 
         assert(watched2.id.parentId == 0)
         assert(watched2.rating == 0f)
-        assert(watched2.date.equals(trackingMedia2.date))
+        assert(watched2.date == genericWatchedMedia.date)
 
-        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = TvId(3), rating = 4.3f));
-        val watched3 = trackingMedia.toWatchedMedia()
+        val trackingMedia3 = TrackingMediaDto(WatchedMedia(id = TvId(3), rating = 4.3f,
+            date = LocalDateTime.of(2026, 4, 25, 0, 0)));
+        val watched3 = trackingMedia3.toWatchedMedia()
 
         assert(watched3.id.parentId == 3)
         assert(watched3.rating == 4.3f)
-        assert(watched3.date.equals(trackingMedia3.date))
+        assert(trackingMedia3.date?.equals(watched3.date.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()) == true);
     }
 
     @Test
@@ -86,17 +90,20 @@ class TrackingMediaTesting {
         assert(watchlist.id.parentId == 0)
         assert(watchlist.date != null)
 
-        val trackingMedia2 = TrackingMediaDto(WatchlistMedia(id = MovieId(0)));
-        val watchlist2 = trackingMedia.toWatchlistMedia()
+        val genericWatchedMedia = WatchedMedia(id = MovieId(0),
+            date = LocalDateTime.of(2026, 5, 3, 0, 0))
+
+        val trackingMedia2 = TrackingMediaDto(genericWatchedMedia);
+        val watchlist2 = trackingMedia2.toWatchlistMedia()
 
         assert(watchlist2.id.parentId == 0)
-        assert(watchlist2.date.equals(trackingMedia2.date))
+        assert(watchlist2.date.equals(genericWatchedMedia.date))
 
         val trackingMedia3 = TrackingMediaDto(WatchlistMedia(id = MovieId(3)));
-        val watchlist3 = trackingMedia.toWatchlistMedia()
+        val watchlist3 = trackingMedia3.toWatchlistMedia()
 
         assert(watchlist3.id.parentId == 3)
-        assert(watchlist3.date.equals(trackingMedia3.date))
+        assert(trackingMedia3.date?.equals(watchlist3.date.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()) == true);
     }
 
     @Test
@@ -108,17 +115,20 @@ class TrackingMediaTesting {
         assert(watchlist.id.parentId == 0)
         assert(watchlist.date != null)
 
-        val trackingMedia2 = TrackingMediaDto(WatchlistMedia(id = TvId(0)));
-        val watchlist2 = trackingMedia.toWatchlistMedia()
+        val genericWatchedMedia = WatchedMedia(id = TvId(0),
+            date = LocalDateTime.of(2026, 5, 3, 0, 0))
+
+        val trackingMedia2 = TrackingMediaDto(genericWatchedMedia);
+        val watchlist2 = trackingMedia2.toWatchlistMedia()
 
         assert(watchlist2.id.parentId == 0)
-        assert(watchlist2.date.equals(trackingMedia2.date))
+        assert(watchlist2.date.equals(genericWatchedMedia.date))
 
         val trackingMedia3 = TrackingMediaDto(WatchlistMedia(id = TvId(3)));
-        val watchlist3 = trackingMedia.toWatchlistMedia()
+        val watchlist3 = trackingMedia3.toWatchlistMedia()
 
         assert(watchlist3.id.parentId == 3)
-        assert(watchlist3.date.equals(trackingMedia3.date))
+        assert(trackingMedia3.date?.equals(watchlist3.date.atZone(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()) == true);
     }
 
     fun testEmptyTrackingMedia(){
