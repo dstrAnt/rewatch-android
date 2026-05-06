@@ -41,12 +41,13 @@ class TestCaseFilmSearch {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            //SearchPage(actions = actions, outerPadding = outerPadding, pagerState = )
+            val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
+            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState )
         }
     }
 
     @Test
     fun test() {
-        //composeTestRule.onNodeWithText("Title").assertIsDisplayed()
+
     }
 }

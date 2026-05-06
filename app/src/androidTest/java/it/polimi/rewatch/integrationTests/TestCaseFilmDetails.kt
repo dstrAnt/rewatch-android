@@ -43,6 +43,6 @@ class TestCaseFilmDetails {
     }
     @Test
     fun test() {
-        //composeTestRule.onNodeWithText("Title").assertIsDisplayed()
+
     }
 }
