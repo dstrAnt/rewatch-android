@@ -33,7 +33,7 @@ class PosterItemTesting {
 
         val content = composeTestRule.setContent { PosterItem(PosterInfo(media), actions = NavigationActions(onNavigateToPerson = { id -> },
 
-            onNavigateToMedia = { id ->  id.parentId + 1},
+            onNavigateToMedia = { id ->  /*id.parentId + 1*/},
             onNavigateBack = {
 
             },
