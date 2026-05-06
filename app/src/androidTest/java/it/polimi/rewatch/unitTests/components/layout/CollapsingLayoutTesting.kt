@@ -7,6 +7,8 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import it.polimi.rewatch.components.layout.CollapsingLayout
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import org.junit.Rule
 import org.junit.Test
 
@@ -61,5 +63,9 @@ class CollapsingLayoutTesting {
         }
 
         val node = composeTestRule.onNodeWithTag("collapsingLayout").assertExists()
+
+        node.performScrollTo()
+
+        // composeTestRule.onNodeWithText("Rewatch").assertExists().assertIsDisplayed()
     }
 }
