@@ -41,7 +41,7 @@ class AnimatedUiStateTesting {
             AnimatedUiState(
                 state = UiState.Success("String"), modifier = Modifier.testTag("animatedUiState"),
                 loadingContent = {  }
-            ) { data -> Row(){ Text("I am going to show some data: $data") } }
+            ) { data -> Row(){ Text("I am going to show some data:") } }
         }
 
         composeTestRule.onNodeWithTag("animatedUiState").assertExists().assertIsDisplayed()

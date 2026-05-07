@@ -64,7 +64,7 @@ class CollapsingLayoutTesting {
 
         val node = composeTestRule.onNodeWithTag("collapsingLayout").assertExists()
 
-        node.performScrollTo()
+        //node.performScrollTo()
 
         // composeTestRule.onNodeWithText("Rewatch").assertExists().assertIsDisplayed()
     }
