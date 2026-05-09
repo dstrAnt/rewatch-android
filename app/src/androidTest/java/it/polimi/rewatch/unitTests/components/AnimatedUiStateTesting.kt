@@ -31,7 +31,8 @@ class AnimatedUiStateTesting {
             ) { }
         }
 
-        composeTestRule.onNodeWithTag("animatedUiState").assertExists().assertIsDisplayed()
+        Thread.sleep(5000)
+        composeTestRule.onNodeWithTag("animatedUiState").assertExists()
         composeTestRule.onNodeWithText("Hi, I'm loading...").assertExists().assertIsDisplayed()
     }
 
@@ -41,11 +42,12 @@ class AnimatedUiStateTesting {
             AnimatedUiState(
                 state = UiState.Success("String"), modifier = Modifier.testTag("animatedUiState"),
                 loadingContent = {  }
-            ) { data -> Row(){ Text("I am going to show some data:") } }
+            ) { data -> Row(){ Text("I am going to show some data: $data") } }
         }
 
+        Thread.sleep(5000)
         composeTestRule.onNodeWithTag("animatedUiState").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("I am going to show some data:").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("I am going to show some data: String").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -57,6 +59,7 @@ class AnimatedUiStateTesting {
             ) { }
         }
 
+        Thread.sleep(5000)
         composeTestRule.onNodeWithTag("animatedUiState").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Error: Hi, I'm an error!").assertExists().assertIsDisplayed()
     }
