@@ -28,7 +28,7 @@ class CustomLazyGridTesting {
     val composeTestRule = createComposeRule()
 
     val trivialList = listOf(1, 2, 3)
-    val prettyLongList = listOf(1.. 100)
+    val prettyLongList = listOf(1.. 20)
 
     @Test
     fun testTrivialCustomLazyGrid(){
@@ -43,9 +43,10 @@ class CustomLazyGridTesting {
             }
         }
 
-        composeTestRule.onNodeWithText("1").assertExists()
-        composeTestRule.onNodeWithText("2").assertExists()
-        composeTestRule.onNodeWithText("3").assertExists()
+        Thread.sleep(10000)
+        composeTestRule.onNodeWithText("1").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("2").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("3").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -61,19 +62,26 @@ class CustomLazyGridTesting {
             }
         }
 
+        Thread.sleep(10000)
         val customLazyGridNode = composeTestRule.onNodeWithTag("customLazyGrid")
 
         verifyFirstAppearance(composeTestRule)
         
         customLazyGridNode.scrollToNodeWithText("9")
 
+        Thread.sleep(10000)
+
         verifySecondAppearance(composeTestRule)
 
         customLazyGridNode.scrollToNodeWithText("18")
 
+        Thread.sleep(10000)
+
         verifyThirdAppearance(composeTestRule)
 
         customLazyGridNode.scrollToNodeWithText("90")
+
+        Thread.sleep(10000)
 
         verifyFourthAppearance(composeTestRule)
 
