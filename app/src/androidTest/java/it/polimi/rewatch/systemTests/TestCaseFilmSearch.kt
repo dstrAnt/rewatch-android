@@ -1,15 +1,16 @@
-package it.polimi.rewatch.integrationTests
+package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.test.junit4.createComposeRule
+import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.screens.home.HomePage
-import it.polimi.rewatch.screens.home.HomeTabItem
+import it.polimi.rewatch.screens.search.SearchPage
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseBrowseFilms {
+class TestCaseFilmSearch {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -36,11 +37,28 @@ class TestCaseBrowseFilms {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            HomePage(actions = actions, outerPadding = outerPadding, startTab = HomeTabItem.MOVIES)
+            val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
+            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState )
         }
     }
+
     @Test
-    fun testBrowseFilms() {
+    fun testSearchTopBarFilm() {
+
+    }
+
+    @Test
+    fun testSearchInputFieldFilm(){
+
+    }
+
+    @Test
+    fun testSearchResultsListFilm(){
+
+    }
+
+    @Test
+    fun testEmptySearchState(){
 
     }
 }

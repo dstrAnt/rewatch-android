@@ -1,4 +1,4 @@
-package it.polimi.rewatch.integrationTests
+package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -9,7 +9,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseSortFilms {
+class TestCaseWatchlist {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -40,6 +40,7 @@ class TestCaseSortFilms {
         }
     }
 
+    @Test
     fun test() {
 
     }

@@ -1,16 +1,14 @@
-package it.polimi.rewatch.integrationTests
+package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.test.junit4.createComposeRule
-import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.person.PersonPage
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseActorAndDirectorsSearch {
+class TestCaseActorAndDirectorsDetails {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -37,28 +35,12 @@ class TestCaseActorAndDirectorsSearch {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
-            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState )
+            PersonPage(actions = actions, outerPadding = outerPadding, personId = 0)
         }
     }
 
     @Test
-    fun testSearchTopBarPerson() {
-
-    }
-
-    @Test
-    fun testSearchInputFieldPerson(){
-
-    }
-
-    @Test
-    fun testSearchResultsListPerson(){
-
-    }
-
-    @Test
-    fun testEmptySearchStatePerson(){
+    fun test() {
 
     }
 }

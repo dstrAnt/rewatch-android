@@ -1,15 +1,15 @@
-package it.polimi.rewatch.integrationTests
+package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.screens.settings.AuthPage
-import it.polimi.rewatch.screens.settings.ProfilePage
+import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.screens.tracking.TrackingPage
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseSignUpAndLogin {
+class TestCaseWatchedFilms {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -36,32 +36,12 @@ class TestCaseSignUpAndLogin {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            AuthPage(actions = actions, outerPadding = outerPadding)
+            TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE)
         }
     }
 
     @Test
-    fun testIdleContent() {
+    fun test() {
 
     }
-
-    @Test
-    fun testSuccessContent() {
-
-    }
-
-    @Test
-    fun testLinkSentContent() {
-
-    }
-
-    @Test
-    fun testMergePromptContent() {
-
-    }
-    @Test
-    fun testLoadingContent() {
-
-    }
-
 }

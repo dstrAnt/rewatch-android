@@ -1,15 +1,15 @@
-package it.polimi.rewatch.integrationTests
+package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
 import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.model.MediaType
-import it.polimi.rewatch.screens.tracking.TrackingPage
+import it.polimi.rewatch.model.MovieId
+import it.polimi.rewatch.screens.media.MediaPage
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-class TestCaseWatchlist {
+class TestCaseFilmDetails {
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -36,10 +36,9 @@ class TestCaseWatchlist {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE)
+            MediaPage(MovieId(0), actions = actions, outerPadding = outerPadding)
         }
     }
-
     @Test
     fun test() {
 
