@@ -43,7 +43,22 @@ class TestCaseActorAndDirectorsSearch {
     }
 
     @Test
-    fun test() {
+    fun testSearchTopBarPerson() {
+
+    }
+
+    @Test
+    fun testSearchInputFieldPerson(){
+
+    }
+
+    @Test
+    fun testSearchResultsListPerson(){
+
+    }
+
+    @Test
+    fun testEmptySearchStatePerson(){
 
     }
 }
