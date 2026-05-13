@@ -41,7 +41,27 @@ class TestCaseSignUpAndLogin {
     }
 
     @Test
-    fun test() {
+    fun testIdleContent() {
 
     }
+
+    @Test
+    fun testSuccessContent() {
+
+    }
+
+    @Test
+    fun testLinkSentContent() {
+
+    }
+
+    @Test
+    fun testMergePromptContent() {
+
+    }
+    @Test
+    fun testLoadingContent() {
+
+    }
+
 }

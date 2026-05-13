@@ -47,7 +47,22 @@ class TestCaseFilmSearch {
     }
 
     @Test
-    fun test() {
+    fun testSearchTopBarFilm() {
+
+    }
+
+    @Test
+    fun testSearchInputFieldFilm(){
+
+    }
+
+    @Test
+    fun testSearchResultsListFilm(){
+
+    }
+
+    @Test
+    fun testEmptySearchState(){
 
     }
 }
