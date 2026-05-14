@@ -2,6 +2,10 @@ package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -16,32 +20,28 @@ class TestCaseWatchedFilms {
     @Before
     fun setup() {
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
-
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
-
-        val outerPadding = PaddingValues();
-
         composeTestRule.setContent {
-            TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE)
+            MainActivity()
         }
     }
 
     @Test
-    fun test() {
+    fun testWatchedMovies() {
+        composeTestRule.onNodeWithContentDescription("Movies").assertExists()
+            .performClick()
 
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+    }
+
+    @Test
+    fun testWatchedTvShows() {
+        composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
     }
 }

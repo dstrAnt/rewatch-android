@@ -2,6 +2,7 @@ package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.tracking.TrackingPage
@@ -15,7 +16,7 @@ class TestCaseSortFilms {
     @Before
     fun setup() {
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
+        /*val actions = NavigationActions(onNavigateToPerson = { id -> },
 
             onNavigateToMedia = { id -> },
             onNavigateBack = {
@@ -36,7 +37,8 @@ class TestCaseSortFilms {
 
         composeTestRule.setContent {
             TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE)
-        }
+        }*/
+        MainActivity()
     }
 
     fun test() {

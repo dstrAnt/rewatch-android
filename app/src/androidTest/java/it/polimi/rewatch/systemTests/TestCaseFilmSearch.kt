@@ -6,6 +6,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.MainActivity
@@ -27,22 +30,12 @@ class TestCaseFilmSearch {
     }
 
     @Test
-    fun testSearchTopBarFilm() {
+    fun testFilmSearch() {
+        composeTestRule.onNodeWithContentDescription("Search").assertExists()
+            .performClick()
 
-    }
+        composeTestRule.waitForIdle()
 
-    @Test
-    fun testSearchInputFieldFilm(){
-
-    }
-
-    @Test
-    fun testSearchResultsListFilm(){
-
-    }
-
-    @Test
-    fun testEmptySearchState(){
-
+        composeTestRule.onNodeWithTag("search_page").assertExists()
     }
 }

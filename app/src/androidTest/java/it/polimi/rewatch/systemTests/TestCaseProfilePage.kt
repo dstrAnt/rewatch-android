@@ -2,6 +2,11 @@ package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.screens.settings.ProfilePage
 import org.junit.Before
@@ -15,7 +20,7 @@ class TestCaseProfilePage {
     @Before
     fun setup() {
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
+        /*val actions = NavigationActions(onNavigateToPerson = { id -> },
 
             onNavigateToMedia = { id -> },
             onNavigateBack = {
@@ -32,15 +37,23 @@ class TestCaseProfilePage {
 
             })
 
-        val outerPadding = PaddingValues();
+        val outerPadding = PaddingValues();*/
 
         composeTestRule.setContent {
-            ProfilePage(actions = actions, outerPadding = outerPadding)
+            MainActivity()
         }
+
     }
 
     @Test
-    fun test() {
+    fun testProfilePage() {
+
+        composeTestRule.onNodeWithContentDescription("Profile").assertExists()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("profile_page").assertExists()
 
     }
 }

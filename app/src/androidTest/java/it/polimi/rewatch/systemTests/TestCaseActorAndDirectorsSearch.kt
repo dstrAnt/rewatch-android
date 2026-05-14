@@ -3,7 +3,11 @@ package it.polimi.rewatch.systemTests
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import it.polimi.rewatch.BottomTabs
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.screens.search.SearchPage
 import org.junit.Before
@@ -17,48 +21,18 @@ class TestCaseActorAndDirectorsSearch {
     @Before
     fun setup() {
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
-
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
-
-        val outerPadding = PaddingValues();
-
         composeTestRule.setContent {
-            val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
-            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState )
+            MainActivity()
         }
     }
 
     @Test
-    fun testSearchTopBarPerson() {
+    fun testActorAndDirectorsSearch(){
+        composeTestRule.onNodeWithContentDescription("Search").assertExists()
+            .performClick()
 
-    }
+        composeTestRule.waitForIdle()
 
-    @Test
-    fun testSearchInputFieldPerson(){
-
-    }
-
-    @Test
-    fun testSearchResultsListPerson(){
-
-    }
-
-    @Test
-    fun testEmptySearchStatePerson(){
-
+        composeTestRule.onNodeWithTag("search_page").assertExists()
     }
 }

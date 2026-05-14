@@ -2,6 +2,10 @@ package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.home.HomeTabItem
@@ -15,32 +19,17 @@ class TestCaseBrowseFilms {
 
     @Before
     fun setup() {
-
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
-
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
-
-        val outerPadding = PaddingValues();
-
         composeTestRule.setContent {
-            HomePage(actions = actions, outerPadding = outerPadding, startTab = HomeTabItem.MOVIES)
+            MainActivity()
         }
     }
     @Test
     fun testBrowseFilms() {
+        composeTestRule.onNodeWithContentDescription("Home").assertExists()
+            .performClick()
 
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("home_page").assertExists()
     }
 }
