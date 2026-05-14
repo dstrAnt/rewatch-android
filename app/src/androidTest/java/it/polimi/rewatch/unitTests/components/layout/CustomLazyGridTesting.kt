@@ -1,5 +1,8 @@
 package it.polimi.rewatch.unitTests.components.layout
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
@@ -28,7 +31,7 @@ class CustomLazyGridTesting {
     val composeTestRule = createComposeRule()
 
     val trivialList = listOf(1, 2, 3)
-    val prettyLongList = listOf(1.. 20)
+    val prettyLongList = List(100) { it }
 
     @Test
     fun testTrivialCustomLazyGrid(){
@@ -52,14 +55,21 @@ class CustomLazyGridTesting {
     @Test
     fun testPrettyLongCustomLazyGrid(){
         composeTestRule.setContent {
+            Column(modifier = Modifier) {
+                Spacer(Modifier.height(16.dp))
             CustomLazyGrid(Modifier.testTag("customLazyGrid")) {
+
                 items(
                     items = prettyLongList,
                     key = { it.toString() },
                 ) {
-                    Text(it.toString(), Modifier.size(400.dp, 10.dp))
+
+                        Text(it.toString(), Modifier.size(140.dp))
+                        Spacer(Modifier.height(16.dp))
+                    }
                 }
             }
+
         }
 
         Thread.sleep(10000)
@@ -97,8 +107,10 @@ fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
     composeTestRule.onNodeWithText("1").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("3").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("9").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("14").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("23").assertExists().assertIsDisplayed()
 
-    composeTestRule.onNodeWithText("14").assertExists().assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("40").assertExists().assertIsNotDisplayed()
     composeTestRule.onNodeWithText("66").assertExists().assertIsNotDisplayed()
     composeTestRule.onNodeWithText("100").assertExists().assertIsNotDisplayed()
 
