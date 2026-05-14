@@ -39,8 +39,94 @@ class MediaPageTest {
             MediaPage(MovieId(0), actions = actions, outerPadding = outerPadding)
         }
     }
+
     @Test
-    fun test() {
+    fun testMediaHeaderItems(){
+
+    }
+
+    @Test
+    fun testTrackingInfo() {
+
+    }
+
+    @Test
+    fun testBuildTabs() {
+
+    }
+
+    @Test
+    fun testOptionalTitledSection() {
+
+    }
+
+    @Test
+    fun testTabbedSection() {
+
+    }
+
+    @Test
+    fun testTaglineAndOverview() {
+
+    }
+
+    @Test
+    fun testTmdbRatings() {
+
+    }
+
+    @Test
+    fun testBackdropImage() {
+
+    }
+
+    @Test
+    fun testTitleAndInfoSection() {
+
+    }
+
+    @Test
+    fun testWatchTab() {
+
+    }
+
+    @Test
+    fun testDetailsTab() {
+
+    }
+
+    @Test
+    fun testDetailRow() {
+
+    }
+
+    @Test
+    fun testCompanyItem() {
+
+    }
+
+    @Test
+    fun testSimilarSection() {
+
+    }
+
+    @Test
+    fun testPersonItem() {
+
+    }
+
+    @Test
+    fun testReviewItem() {
+
+    }
+
+    @Test
+    fun testWatchProviders() {
+
+    }
+
+    @Test
+    fun testEpisodeItem() {
 
     }
 }
