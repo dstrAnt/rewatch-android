@@ -273,7 +273,7 @@ private fun BottomSheetActions(
     onWatchClick: () -> Unit,
     onWatchlistClick: () -> Unit,
 ) = Row(
-    modifier = Modifier.fillMaxWidth(),
+    modifier = Modifier.fillMaxWidth().testTag("bottomSheetActions"),
     horizontalArrangement = Arrangement.SpaceAround,
 ) {
     SheetIconButton(
@@ -299,7 +299,8 @@ private fun ColumnScope.BottomSheetRating(
         onRatingChanged = onRatingChanged,
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentWidth(),
+            .wrapContentWidth()
+            .testTag("bottomSheetStarRating"),
     )
     Text(
         text = if (rating > 0f) getRatingHeader(rating * 2) else "Rate now",
