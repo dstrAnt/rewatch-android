@@ -49,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -253,7 +254,7 @@ private fun BottomSheetHeader(
     releaseDate: String?,
     onClick: () -> Unit,
 ) {
-    Column {
+    Column (modifier = Modifier.testTag("bottomSheetHeader")){
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,

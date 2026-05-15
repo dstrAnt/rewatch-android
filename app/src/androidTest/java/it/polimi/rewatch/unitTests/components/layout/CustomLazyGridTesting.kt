@@ -76,7 +76,7 @@ class CustomLazyGridTesting {
         val customLazyGridNode = composeTestRule.onNodeWithTag("customLazyGrid")
 
         verifyFirstAppearance(composeTestRule)
-        
+
         customLazyGridNode.scrollToNodeWithText("9")
 
         Thread.sleep(10000)
@@ -98,11 +98,11 @@ class CustomLazyGridTesting {
     }
 }
 
-fun SemanticsNodeInteraction.scrollToNodeWithText(text: String) {
+private fun SemanticsNodeInteraction.scrollToNodeWithText(text: String) {
     this.performScrollToNode(hasText(text))
 }
 
-fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
+private fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("1").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("3").assertExists().assertIsDisplayed()
@@ -116,7 +116,7 @@ fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
 
 }
 
-fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
+private fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
     composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
@@ -130,7 +130,7 @@ fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
 
 }
 
-fun verifyThirdAppearance(composeTestRule: ComposeContentTestRule){
+private fun verifyThirdAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
     composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
@@ -148,7 +148,7 @@ fun verifyThirdAppearance(composeTestRule: ComposeContentTestRule){
 
 }
 
-fun verifyFourthAppearance(composeTestRule: ComposeContentTestRule){
+private fun verifyFourthAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
     composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
