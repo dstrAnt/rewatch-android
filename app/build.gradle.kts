@@ -34,6 +34,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        //testInstrumentationRunner = "dagger.hilt.android.testing.HiltTestRunner"
+
         buildConfigField(
             "String",
             "TMDB_API_KEY",
@@ -126,6 +128,14 @@ dependencies {
 
     // to load composables
     debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
+
+    androidTestImplementation(
+        "com.google.dagger:hilt-android-testing:2.57"
+    )
+
+    kspAndroidTest(
+        "com.google.dagger:hilt-compiler:2.57"
+    )
 
     // to unlock in case of dealing with animations
     // androidTestImplementation("androidx.compose.ui:ui-test:1.6.0")
