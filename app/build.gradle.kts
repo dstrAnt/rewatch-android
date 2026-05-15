@@ -49,6 +49,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        getByName("debug") {
+            // Abilita la copertura per i test unitari locali (JVM)
+            enableUnitTestCoverage = true
+
+            // Abilita la copertura per i test strumentati (su emulatore/dispositivo)
+            enableAndroidTestCoverage = true
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

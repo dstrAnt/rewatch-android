@@ -1,9 +1,13 @@
 package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.test.performClick
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
@@ -34,7 +38,11 @@ class TestCaseWatchlist {
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
-        //...
+        val watchlistNode = composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
+        watchlistNode.performClick()
+
+        val watchlistTab = watchlistNode.onParent().assertExists()
+        watchlistTab.assertIsSelected()
     }
 
     @Test
@@ -46,6 +54,10 @@ class TestCaseWatchlist {
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
-        //...
+        val watchlistNode = composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
+        watchlistNode.performClick()
+
+        val watchlistTab = watchlistNode.onParent().assertExists()
+        watchlistTab.assertIsSelected()
     }
 }
