@@ -50,10 +50,10 @@ android {
             )
         }
         getByName("debug") {
-            // Abilita la copertura per i test unitari locali (JVM)
+            // Enables coverage for local unitary tests (JVM)
             enableUnitTestCoverage = true
 
-            // Abilita la copertura per i test strumentati (su emulatore/dispositivo)
+            //  Enables coverage for instrumented tests (emulators/real devices)
             enableAndroidTestCoverage = true
         }
     }
