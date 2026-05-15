@@ -61,17 +61,25 @@ class StarRatingTesting {
         }
 
         // 3. Verification of the result
-        assert(finalRating == 2.5f)
+        composeTestRule.runOnIdle {
+            assert(finalRating == 2.5f)
+        }
 
         node.performTouchInput {
-            click(Offset(left.toLong()))
+            click(Offset(left, center.y))
         }
-        assert(finalRating == 0f)
+
+        composeTestRule.runOnIdle {
+            assert(finalRating == 0f)
+        }
 
         node.performTouchInput {
-            click(Offset(right.toLong()))
+            click(Offset(right, center.y))
         }
-        assert(finalRating == 5f)
+
+        composeTestRule.runOnIdle {
+            assert(finalRating == 5f)
+        }
     }
 
     @Test
