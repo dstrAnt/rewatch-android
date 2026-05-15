@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -61,6 +62,16 @@ class StarRatingTesting {
 
         // 3. Verification of the result
         assert(finalRating == 2.5f)
+
+        node.performTouchInput {
+            click(Offset(left.toLong()))
+        }
+        assert(finalRating == 0f)
+
+        node.performTouchInput {
+            click(Offset(right.toLong()))
+        }
+        assert(finalRating == 5f)
     }
 
     @Test
@@ -74,21 +85,45 @@ class StarRatingTesting {
             )
         }
 
-        composeTestRule.onNodeWithTag("starIcon").assertExists().assertIsDisplayed()
+        val starIcon =  composeTestRule.onNodeWithTag("starIcon").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithTag("starIcon").performTouchInput {
+        starIcon.performTouchInput {
             // I swiper from 20% width to 80% width
             swipeRight(startX = width * 0.2f, endX = width * 0.8f)
         }
 
         // Verifying that the value had changed to 4 (80% width corresponds to 4 of 5 stars)
         assert(finalRating == 4f)
+
+        starIcon.performTouchInput {
+            // I swiper from 80% width to 40% width
+            swipeLeft(startX = width * 0.8f, endX = width * 0.4f)
+        }
+
+        // Verifying that the value had changed to 2 (40% width corresponds to 2 of 5 stars)
+        assert(finalRating == 2f)
+
+        starIcon.performTouchInput {
+            // I swiper from 40% width to 100% width
+            swipeRight(startX = width * 0.4f, endX = width * 1f)
+        }
+
+        // Verifying that the value had changed to 5 (100% width corresponds to 5 of 5 stars)
+        assert(finalRating == 5f)
+
+        starIcon.performTouchInput {
+            // I swiper from 100% width to 0% width
+            swipeLeft(startX = width * 1f, endX = width * 0f)
+        }
+
+        // Verifying that the value had changed to 0 (0% width corresponds to 0 of 5 stars)
+        assert(finalRating == 0f)
     }
 
     @Test
     fun testNumberOfStarIcons(){
 
-        val maxStars = 5
+        val maxStars = 7
 
         composeTestRule.setContent {
             StarRating(
