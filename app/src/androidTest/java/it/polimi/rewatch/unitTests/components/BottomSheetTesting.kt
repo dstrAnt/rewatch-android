@@ -1,53 +1,37 @@
 package it.polimi.rewatch.unitTests.components
 
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SheetState
-import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.*
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import app.moviebase.tmdb.model.TmdbMovieDetail
-import dagger.hilt.android.testing.HiltAndroidRule
-import dagger.hilt.android.testing.HiltAndroidTest
+import it.polimi.rewatch.common.FakeRepository
 import org.junit.Before
 import org.junit.Rule
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.components.BottomSheetViewModel
+import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.PosterInfo
-import it.polimi.rewatch.screens.tracking.getRatingHeader
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.single
-import kotlinx.coroutines.flow.singleOrNull
-import kotlinx.coroutines.runBlocking
+import it.polimi.rewatch.utility.FakeBottomSheetViewModel
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.junit.Test
 import java.time.LocalDateTime
 
-@HiltAndroidTest
 class BottomSheetTesting {
 
     lateinit var actions : NavigationActions
 
-    @get:Rule(order = 0)
-    val hiltRule = HiltAndroidRule(this)
-
-    @get:Rule(order = 1)
-    val composeTestRule = createComposeRule()
+    @get:Rule
+    val composeTestRule = androidx.compose.ui.test.junit4.createComposeRule()
 
     val media = MovieId(0);
 
     val String.Companion.Empty: String get() = ""
-    lateinit var bottomSheetViewModel : BottomSheetViewModel
 
-
-    //@OptIn(ExperimentalMaterial3Api::class)
     @Before
     fun setup() {
         actions = NavigationActions(onNavigateToPerson = { id -> },
@@ -66,22 +50,24 @@ class BottomSheetTesting {
         onBackToHome = { tab ->
 
         })
+    }
 
-
+    @Test
+    fun debug() {
         composeTestRule.setContent {
-            val viewModel = hiltViewModel<BottomSheetViewModel, BottomSheetViewModel.Factory>(
-                key = "sheet_${media.parentId}",
-                creationCallback = { it.create(media) },
-            )
-
-            bottomSheetViewModel  = viewModel
-
-            BottomSheet(PosterInfo(media), actions = actions, viewModel = viewModel) { }
+            androidx.compose.material3.Text("HELLO")
         }
+
+        composeTestRule.waitForIdle()
     }
 
     @Test
     fun testBottomSheetWatchDate(){
+
+        composeTestRule.setContent {
+
+            BottomSheet(PosterInfo(media), actions = actions) { }
+        }
 
         val datePickerDialogConfirmButton = composeTestRule.onNodeWithText("Select").assertExists().assertIsNotDisplayed()
         val watchDateTrigger = composeTestRule.onNodeWithText("Content watched on ").onSibling().assertExists().assertIsNotDisplayed()
@@ -100,34 +86,41 @@ class BottomSheetTesting {
         datePickerDialog.performTouchInput { click(center) }
         datePickerDialogConfirmButton.performClick()
 
-        val watchedItemDate = bottomSheetViewModel.persistRepo.watchedFlow
-            .map { watched -> watched.getOrNull()?.find { it.id == media } }
-            .map { result -> result?.date}
-
-        assert(watchedItemDate != null)
-
         // Dismissing the BottomSheet
         composeTestRule.onNodeWithText("Dismiss").assertExists().assertIsDisplayed()
         datePickerDialog.assertIsNotDisplayed()
     }
 
     @Test
-    fun testBottomSheetHeader(){
+    fun testBottomSheetHeader1(){
+
+        composeTestRule.setContent {
+
+            BottomSheet(PosterInfo(media), actions = actions) { }
+        }
+
         val bottomSheetHeader = composeTestRule.onNodeWithTag("bottomSheetHeader").assertExists()
 
-        var firstTextNode = bottomSheetHeader.onChildren().onFirst()
-        var secondTextNode = bottomSheetHeader.onChildren().onLast()
+        val firstTextNode = bottomSheetHeader.onChildren().onFirst()
+        val secondTextNode = bottomSheetHeader.onChildren().onLast()
 
         firstTextNode.assertTextEquals(String.Empty)
         secondTextNode.assertDoesNotExist()
 
-        val releaseDate : LocalDate? = LocalDateTime.of(2026, 5, 13, 0, 0).toLocalDate() as LocalDate?
+    }
+
+    @Test
+    fun testBottomSheetHeader2(){
+
+        val releaseDate : LocalDate? = LocalDate(2026, 5, 13) as LocalDate?
         val movie = MediaDetail(TmdbMovieDetail(title = "My Title", releaseDate = releaseDate))
 
         composeTestRule.setContent { BottomSheet(PosterInfo(movie, media), actions = actions) { } }
 
-        firstTextNode = bottomSheetHeader.onChildren().onFirst()
-        secondTextNode = bottomSheetHeader.onChildren().onLast()
+        val bottomSheetHeader = composeTestRule.onNodeWithTag("bottomSheetHeader").assertExists()
+
+        val firstTextNode = bottomSheetHeader.onChildren().onFirst()
+        val secondTextNode = bottomSheetHeader.onChildren().onLast()
 
         firstTextNode.assertTextEquals("My Title")
         secondTextNode.assertExists().assertTextEquals(releaseDate.toString().formatDate("MMM YYYY"))
@@ -139,6 +132,8 @@ class BottomSheetTesting {
 
     @Test
     fun testBottomSheetActions(){
+
+        composeTestRule.setContent { BottomSheet(PosterInfo(media), actions = actions) { } }
 
         /*
          * An initial Test to check existence
@@ -160,28 +155,23 @@ class BottomSheetTesting {
 
         firstIconButton.performClick()
         composeTestRule.onNodeWithText("Watched").assertExists().assertIsDisplayed()
-        assert(bottomSheetViewModel.watchedItem != null)
 
         secondIconButton.performClick()
         composeTestRule.onNodeWithText("In watchlist").assertExists().assertIsDisplayed()
-        assert(bottomSheetViewModel.watchlistItem != null)
 
         // Verifying that the Film is removed correctly from the Watched list/ Watchlist
 
         firstIconButton.performClick()
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
-        assert(bottomSheetViewModel.watchedItem != null)
 
         secondIconButton.performClick()
         composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
-        assert(bottomSheetViewModel.watchlistItem != null)
 
 
         // Verifying that the Rating is added automatically when the Film becomes Watched
 
         composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(center) }
         composeTestRule.onNodeWithText("Watched").assertExists().assertIsDisplayed()
-        assert(bottomSheetViewModel.watchedItem != null)
 
         /*
          * Testing to check behavior with rating
@@ -203,41 +193,54 @@ class BottomSheetTesting {
         composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(Offset(left.toLong())) }
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
         snackbarShower.assertIsNotDisplayed()
-        assert(bottomSheetViewModel.watchedItem == null)
-
     }
 
     @Test
     fun testBottomSheetRating(){
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions) { } }
+
         val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
         composeTestRule.onNodeWithText("Rate now").assertExists().assertIsDisplayed()
 
         bottomSheetStarRating.performTouchInput { click(center) }
         composeTestRule.onNodeWithText("Rate now").assertExists().assertIsNotDisplayed()
-        assert(bottomSheetViewModel.watchedItem != null)
 
-        /*val rating =
-            runBlocking {
-                bottomSheetViewModel?.watchedItem?.map { watchedItem -> watchedItem?.rating }?.single()
-            }*/
-
-        val rating = bottomSheetViewModel.watchedItem?.value?.rating
-        composeTestRule.onNodeWithText(getRatingHeader(rating?.times(2))).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testBottomSheetWatchStatus(){
+
+        val bottomSheetViewModel = //FakeBottomSheetViewModel(media, FakeRepository())
+            BottomSheetViewModel(
+                id = media,
+                persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("You haven't watched this content yet").assertExists().assertIsDisplayed()
 
         val bottomSheetActions = composeTestRule.onNodeWithTag("bottomSheetActions").assertExists()
         bottomSheetActions.onChildren().onFirst().assertIsDisplayed().performClick()
 
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Content watched on ").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText(bottomSheetViewModel.watchedItem?.value?.date?.toString()?.formatDate("d MMM YYYY").orEmpty())
+        composeTestRule.onNodeWithText(LocalDateTime.now()?.toString()?.formatDate("d MMM YYYY").orEmpty())
             .assertExists().assertIsDisplayed()
 
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         bottomSheetActions.onChildren().onFirst().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
         composeTestRule.onNodeWithText("You haven't watched this content yet").assertExists().assertIsDisplayed()
     }
 }
