@@ -177,11 +177,11 @@ class BottomSheetTesting {
     }
 
     @Test
-    fun testBottomSheetActions(){
+    fun testBottomSheetActions1() {
 
         val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
-        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.setContent { BottomSheet(PosterInfo(media), actions = actions, viewModel = bottomSheetViewModel) { } }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
@@ -191,8 +191,8 @@ class BottomSheetTesting {
 
         val bottomSheetActions = composeTestRule.onNodeWithTag("bottomSheetActions").assertExists()
 
-        val firstIconButton = bottomSheetActions.onChildren().onFirst().assertIsDisplayed()
-        val secondIconButton = bottomSheetActions.onChildren().onLast().assertIsDisplayed()
+        var firstIconButton = composeTestRule.onNodeWithContentDescription("Watch").assertExists().assertIsDisplayed()
+        var secondIconButton = composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("  Watchlist  ").assertExists().assertIsDisplayed()
@@ -217,6 +217,9 @@ class BottomSheetTesting {
 
         // Verifying that the Film is removed correctly from the Watched list/ Watchlist
 
+        firstIconButton = composeTestRule.onNodeWithContentDescription("Watched").assertExists().assertIsDisplayed()
+        secondIconButton = composeTestRule.onNodeWithContentDescription("In watchlist").assertExists().assertIsDisplayed()
+
         firstIconButton.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
@@ -227,8 +230,25 @@ class BottomSheetTesting {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Watchlist", substring = true).assertExists().assertIsDisplayed()
+    }
 
+    @Test
+    fun testBottomSheetActions2(){
+
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo(media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        /*
+         * An initial Test to check existence
+         */
+
+        val bottomSheetActions = composeTestRule.onNodeWithTag("bottomSheetActions").assertExists()
+
+        val firstIconButton = bottomSheetActions.onChildren().onFirst().assertIsDisplayed()
 
         // Verifying that the Rating is added automatically when the Film becomes Watched
 
@@ -259,6 +279,10 @@ class BottomSheetTesting {
 
         // Verifying that the user can finally remove the film from Watched list
         composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(Offset(left.toLong())) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        firstIconButton.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
