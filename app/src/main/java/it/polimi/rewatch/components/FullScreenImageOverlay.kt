@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImagePainter
 import coil3.compose.SubcomposeAsyncImage
@@ -86,6 +87,7 @@ fun FullScreenImageOverlay(
             model = imageUrl,
             contentDescription = "Full Screen",
             contentScale = ContentScale.Fit,
+            modifier = Modifier.testTag("subComposeAsyncImage")
         ) {
             val scope = this
             val state by painter.state.collectAsState()

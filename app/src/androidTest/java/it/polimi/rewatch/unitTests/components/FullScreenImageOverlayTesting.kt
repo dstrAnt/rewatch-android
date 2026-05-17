@@ -18,7 +18,9 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
@@ -46,17 +48,21 @@ class FullScreenImageOverlayTesting {
                 enter = fadeIn(animationSpec = animationSpec()),
                 exit = fadeOut(animationSpec = animationSpec()),
             ){
-                FullScreenImageOverlay("") { isOverlayVisible = false }
+                FullScreenImageOverlay("",
+                    onDismiss =  { isOverlayVisible = false } )
             }
         }
 
+        composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        val asyncImage = composeTestRule.onNodeWithContentDescription("Full Screen").assertExists()
+        val asyncImage = composeTestRule.onNodeWithTag("subComposeAsyncImage", useUnmergedTree = true).assertExists()
 
         asyncImage.assertIsDisplayed()
 
         asyncImage.performTouchInput { swipeUp(320f) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         asyncImage.assertIsNotDisplayed()
 
@@ -65,28 +71,56 @@ class FullScreenImageOverlayTesting {
     @Test
     fun testImageOverlayTapDismiss(){
 
-        composeTestRule.setContent { FullScreenImageOverlay("") {} }
+        composeTestRule.setContent {
+            var isOverlayVisible by remember { mutableStateOf(true) }
+
+            AnimatedVisibility(
+                visible = isOverlayVisible,
+                enter = fadeIn(animationSpec = animationSpec()),
+                exit = fadeOut(animationSpec = animationSpec()),
+            ){
+                FullScreenImageOverlay("", onDismiss =  { isOverlayVisible = false } )
+            }
+        }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val imageBackground = composeTestRule.onRoot().assertExists()
 
         imageBackground.performTouchInput { click() }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
-        imageBackground.assertIsNotDisplayed()
+        composeTestRule.onNodeWithContentDescription("Full Screen").assertIsNotDisplayed()
 
     }
 
     @Test
     fun testImageOverlayCloseButtonDismiss(){
 
-        composeTestRule.setContent { FullScreenImageOverlay("") {} }
+        composeTestRule.setContent {
+            var isOverlayVisible by remember { mutableStateOf(true) }
 
-        val overCloseButton = composeTestRule.onRoot().onChild();
+            AnimatedVisibility(
+                visible = isOverlayVisible,
+                enter = fadeIn(animationSpec = animationSpec()),
+                exit = fadeOut(animationSpec = animationSpec()),
+            ){
+                FullScreenImageOverlay("", onDismiss =  { isOverlayVisible = false } )
+            }
+        }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val overCloseButton = composeTestRule.onNodeWithContentDescription("Close").onParent();
 
         overCloseButton.assertExists().assertIsDisplayed()
 
         overCloseButton.performTouchInput { click() }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
-        overCloseButton.assertIsNotDisplayed()
+        composeTestRule.onNodeWithContentDescription("Full Screen").assertIsNotDisplayed()
 
     }
 }
