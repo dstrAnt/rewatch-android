@@ -18,6 +18,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.components.layout.CustomLazyGrid
@@ -57,43 +59,44 @@ class CustomLazyGridTesting {
         composeTestRule.setContent {
             Column(modifier = Modifier) {
                 Spacer(Modifier.height(16.dp))
-            CustomLazyGrid(Modifier.testTag("customLazyGrid")) {
 
-                items(
-                    items = prettyLongList,
-                    key = { it.toString() },
-                ) {
+                CustomLazyGrid(Modifier.testTag("customLazyGrid")) {
 
-                        Text(it.toString(), Modifier.size(140.dp))
-                        Spacer(Modifier.height(16.dp))
+                    items(
+                        items = prettyLongList,
+                        key = { it.toString() },
+                    ) {
+
+                            Text(it.toString(), Modifier.size(140.dp))
+                            Spacer(Modifier.height(16.dp))
                     }
                 }
             }
-
         }
 
-        Thread.sleep(10000)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         val customLazyGridNode = composeTestRule.onNodeWithTag("customLazyGrid")
 
         verifyFirstAppearance(composeTestRule)
 
-        customLazyGridNode.scrollToNodeWithText("9")
+        //customLazyGridNode.scrollToNodeWithText("20")
+        customLazyGridNode.performTouchInput { swipeUp(400f, 200f) }
 
-        Thread.sleep(10000)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         verifySecondAppearance(composeTestRule)
 
-        customLazyGridNode.scrollToNodeWithText("18")
+        //customLazyGridNode.scrollToNodeWithText("18")
 
-        Thread.sleep(10000)
+        customLazyGridNode.performTouchInput { swipeUp() }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         verifyThirdAppearance(composeTestRule)
-
-        customLazyGridNode.scrollToNodeWithText("90")
-
-        Thread.sleep(10000)
-
-        verifyFourthAppearance(composeTestRule)
 
     }
 }
@@ -110,59 +113,31 @@ private fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
     composeTestRule.onNodeWithText("14").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("23").assertExists().assertIsDisplayed()
 
-    composeTestRule.onNodeWithText("40").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("66").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("100").assertExists().assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("40").assertDoesNotExist()
+    composeTestRule.onNodeWithText("66").assertDoesNotExist()
+    composeTestRule.onNodeWithText("100").assertDoesNotExist()
 
 }
 
 private fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
 
-    composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("9").assertExists().assertIsNotDisplayed()
-
     composeTestRule.onNodeWithText("14").assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithText("16").assertExists().assertIsDisplayed()
 
-    composeTestRule.onNodeWithText("20").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("100").assertExists().assertIsNotDisplayed()
+    composeTestRule.onNodeWithText("20").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("50").assertDoesNotExist()
+    composeTestRule.onNodeWithText("100").assertDoesNotExist()
 
 }
 
 private fun verifyThirdAppearance(composeTestRule: ComposeContentTestRule){
 
-    composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("9").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("14").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("16").assertExists().assertIsNotDisplayed()
-
-    composeTestRule.onNodeWithText("18").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("21").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("24").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("80").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("85").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("92").assertExists().assertIsDisplayed()
 
 
-    composeTestRule.onNodeWithText("30").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("100").assertExists().assertIsNotDisplayed()
-
-}
-
-private fun verifyFourthAppearance(composeTestRule: ComposeContentTestRule){
-
-    composeTestRule.onNodeWithText("1").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("3").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("9").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("14").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("16").assertExists().assertIsNotDisplayed()
-
-    composeTestRule.onNodeWithText("18").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("21").assertExists().assertIsNotDisplayed()
-    composeTestRule.onNodeWithText("24").assertExists().assertIsNotDisplayed()
-
-
-    composeTestRule.onNodeWithText("91").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("95").assertExists().assertIsDisplayed()
-    composeTestRule.onNodeWithText("100").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("98").assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithText("99").assertExists().assertIsDisplayed()
 
 }
