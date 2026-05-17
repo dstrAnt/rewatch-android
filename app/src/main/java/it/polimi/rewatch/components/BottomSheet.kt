@@ -320,7 +320,7 @@ private fun BottomSheetWatchStatus(
             Text(
                 text = watchDate.orEmpty(),
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onDateClick() },
+                modifier = Modifier.clickable { onDateClick() }.testTag("watchDateTrigger"),
             )
         }
     } else {
@@ -362,6 +362,7 @@ private fun WatchDatePickerDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Dismiss") }
         },
+        modifier = Modifier.testTag("datePickerDialog")
     ) {
         DatePicker(state = datePickerState)
     }

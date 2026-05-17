@@ -53,7 +53,7 @@ class BottomSheetTesting {
     }
 
     @Test
-    fun testBottomSheetWatchDate(){
+    fun testBottomSheetWatchDateSelect(){
 
         val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
@@ -69,14 +69,14 @@ class BottomSheetTesting {
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Content watched on ").assertExists()
-        val watchDateTrigger = composeTestRule.onNodeWithText("Content watched on ").onSibling().assertExists()
+        val watchDateTrigger = composeTestRule.onNodeWithTag("watchDateTrigger").assertExists()
         watchDateTrigger.assertIsDisplayed()
         watchDateTrigger.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         val datePickerDialogConfirmButton = composeTestRule.onNodeWithText("Select").assertExists()
-        val datePickerDialog = datePickerDialogConfirmButton.onParent().assertExists().assertIsNotDisplayed()
+        val datePickerDialog = datePickerDialogConfirmButton.onParent().assertExists()
 
         datePickerDialogConfirmButton.assertIsDisplayed()
 
@@ -84,11 +84,49 @@ class BottomSheetTesting {
 
         // Select a date in the picker...
         datePickerDialog.performTouchInput { click(center) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         datePickerDialogConfirmButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithTag("datePickerDialog").assertDoesNotExist()
+    }
+
+    @Test
+    fun testBottomSheetWatchDateDismiss(){
+
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithTag("bottomSheetActions").onChildren().onFirst().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Content watched on ").assertExists()
+        val watchDateTrigger = composeTestRule.onNodeWithTag("watchDateTrigger").assertExists()
+        watchDateTrigger.assertIsDisplayed()
+        watchDateTrigger.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val datePickerDialogDismissButton = composeTestRule.onNodeWithText("Dismiss").assertExists().assertIsDisplayed()
+        val datePickerDialog = datePickerDialogDismissButton.onParent().assertExists()
+
+        datePickerDialogDismissButton.assertIsDisplayed()
+
+        datePickerDialog.assertIsDisplayed()
 
         // Dismissing the BottomSheet
-        composeTestRule.onNodeWithText("Dismiss").assertExists().assertIsDisplayed()
-        datePickerDialog.assertIsNotDisplayed()
+        datePickerDialogDismissButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithTag("datePickerDialog").assertDoesNotExist()
     }
 
     @Test
