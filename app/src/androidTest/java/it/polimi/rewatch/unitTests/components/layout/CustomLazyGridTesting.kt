@@ -81,15 +81,12 @@ class CustomLazyGridTesting {
 
         verifyFirstAppearance(composeTestRule)
 
-        //customLazyGridNode.scrollToNodeWithText("20")
         customLazyGridNode.performTouchInput { swipeUp(400f, 200f) }
 
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         verifySecondAppearance(composeTestRule)
-
-        //customLazyGridNode.scrollToNodeWithText("18")
 
         customLazyGridNode.performTouchInput { swipeUp() }
 
