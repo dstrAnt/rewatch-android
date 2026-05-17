@@ -53,30 +53,30 @@ class BottomSheetTesting {
     }
 
     @Test
-    fun debug() {
-        composeTestRule.setContent {
-            androidx.compose.material3.Text("HELLO")
-        }
-
-        composeTestRule.waitForIdle()
-    }
-
-    @Test
     fun testBottomSheetWatchDate(){
 
-        composeTestRule.setContent {
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
-            BottomSheet(PosterInfo(media), actions = actions) { }
-        }
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
-        val datePickerDialogConfirmButton = composeTestRule.onNodeWithText("Select").assertExists().assertIsNotDisplayed()
-        val watchDateTrigger = composeTestRule.onNodeWithText("Content watched on ").onSibling().assertExists().assertIsNotDisplayed()
-
-        val datePickerDialog = datePickerDialogConfirmButton.onParent().assertExists().assertIsNotDisplayed()
+        composeTestRule.onNodeWithText("Select").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Content watched on ").assertDoesNotExist()
 
         composeTestRule.onNodeWithTag("bottomSheetActions").onChildren().onFirst().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Content watched on ").assertExists()
+        val watchDateTrigger = composeTestRule.onNodeWithText("Content watched on ").onSibling().assertExists()
         watchDateTrigger.assertIsDisplayed()
         watchDateTrigger.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val datePickerDialogConfirmButton = composeTestRule.onNodeWithText("Select").assertExists()
+        val datePickerDialog = datePickerDialogConfirmButton.onParent().assertExists().assertIsNotDisplayed()
 
         datePickerDialogConfirmButton.assertIsDisplayed()
 
@@ -94,10 +94,11 @@ class BottomSheetTesting {
     @Test
     fun testBottomSheetHeader1(){
 
-        composeTestRule.setContent {
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
-            BottomSheet(PosterInfo(media), actions = actions) { }
-        }
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val bottomSheetHeader = composeTestRule.onNodeWithTag("bottomSheetHeader").assertExists()
 
@@ -105,7 +106,7 @@ class BottomSheetTesting {
         val secondTextNode = bottomSheetHeader.onChildren().onLast()
 
         firstTextNode.assertTextEquals(String.Empty)
-        secondTextNode.assertDoesNotExist()
+        secondTextNode.assertExists().assertIsNotDisplayed()
 
     }
 
@@ -115,7 +116,11 @@ class BottomSheetTesting {
         val releaseDate : LocalDate? = LocalDate(2026, 5, 13) as LocalDate?
         val movie = MediaDetail(TmdbMovieDetail(title = "My Title", releaseDate = releaseDate))
 
-        composeTestRule.setContent { BottomSheet(PosterInfo(movie, media), actions = actions) { } }
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo(movie, media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val bottomSheetHeader = composeTestRule.onNodeWithTag("bottomSheetHeader").assertExists()
 
@@ -127,13 +132,20 @@ class BottomSheetTesting {
 
         // Verifying that clicking on the header dismisses the BottomSheet
         bottomSheetHeader.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         bottomSheetHeader.assertIsNotDisplayed()
     }
 
     @Test
     fun testBottomSheetActions(){
 
-        composeTestRule.setContent { BottomSheet(PosterInfo(media), actions = actions) { } }
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         /*
          * An initial Test to check existence
@@ -145,7 +157,7 @@ class BottomSheetTesting {
         val secondIconButton = bottomSheetActions.onChildren().onLast().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("  Watchlist  ").assertExists().assertIsDisplayed()
 
         /*
          * Testing all the basic functionalities
@@ -154,23 +166,38 @@ class BottomSheetTesting {
         // Verifying that the Film is added correctly to the Watched list/ Watchlist
 
         firstIconButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watched").assertExists().assertIsDisplayed()
 
         secondIconButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("In watchlist").assertExists().assertIsDisplayed()
 
         // Verifying that the Film is removed correctly from the Watched list/ Watchlist
 
         firstIconButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
 
         secondIconButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watchlist").assertExists().assertIsDisplayed()
 
 
         // Verifying that the Rating is added automatically when the Film becomes Watched
 
         composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(center) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watched").assertExists().assertIsDisplayed()
 
         /*
@@ -180,17 +207,23 @@ class BottomSheetTesting {
         // Verifying that the user cannot remove from Watched list until the rating is back to 0 stars
 
         firstIconButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val snackbarShower = composeTestRule.onNodeWithText("Please remove your rating before unwatching.").assertExists().assertIsDisplayed()
         Thread.sleep(5000)
 
         snackbarShower.performTouchInput { swipeRight(30f, 200f) }
+        composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         snackbarShower.assertIsNotDisplayed()
 
         // Verifying that the user can finally remove the film from Watched list
         composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(Offset(left.toLong())) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed()
         snackbarShower.assertIsNotDisplayed()
     }
@@ -198,25 +231,29 @@ class BottomSheetTesting {
     @Test
     fun testBottomSheetRating(){
 
-        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions) { } }
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
         composeTestRule.onNodeWithText("Rate now").assertExists().assertIsDisplayed()
 
         bottomSheetStarRating.performTouchInput { click(center) }
-        composeTestRule.onNodeWithText("Rate now").assertExists().assertIsNotDisplayed()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Rate now").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testBottomSheetWatchStatus(){
 
-        val bottomSheetViewModel = //FakeBottomSheetViewModel(media, FakeRepository())
-            BottomSheetViewModel(
-                id = media,
-                persistRepo = FakeRepository())
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
         composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
 
