@@ -174,6 +174,7 @@ fun BottomSheet(
         scrimColor = Color.Black.copy(alpha = 0.8f),
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        modifier = Modifier.testTag("RewatchBottomSheet")
     ) {
         rememberOverscrollEffect()
 

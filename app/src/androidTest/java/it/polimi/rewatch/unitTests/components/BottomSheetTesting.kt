@@ -291,7 +291,7 @@ class BottomSheetTesting {
     }
 
     @Test
-    fun testBottomSheetRating(){
+    fun testBottomSheetRating1(){
 
         val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
 
@@ -310,6 +310,55 @@ class BottomSheetTesting {
         composeTestRule.onNodeWithText("Rate now").assertDoesNotExist()
 
         composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testBottomSheetRating2(){
+
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
+
+        // Case 1: Below Average Rating
+        bottomSheetStarRating.performTouchInput { click(Offset(left + 100f, center.y)) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Rate now").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
+
+        // Case 2: Average Rating
+        bottomSheetStarRating.performTouchInput { click(Offset(center.x, center.y)) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
+
+        // Case 3: Above Average Rating ("Great" Rating)
+        bottomSheetStarRating.performTouchInput { click(Offset(right - 100f, center.y)) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
+
+        // Case 4: Masterpiece Rating
+        bottomSheetStarRating.performTouchInput { click(Offset(right, center.y)) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
+
+        // Case 5: Unrated Case
+        bottomSheetStarRating.performTouchInput { click(Offset(left, center.y)) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Rate now").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -341,5 +390,41 @@ class BottomSheetTesting {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("You haven't watched this content yet").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testBottomSheetDirectDismiss(){
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+
+        contentPageNode.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        contentPageNode.assertIsNotDisplayed()
+    }
+
+    @Test
+    fun testBottomSheetSwipeDismiss(){
+        val bottomSheetViewModel = BottomSheetViewModel(id = media, persistRepo = FakeRepository())
+
+        composeTestRule.setContent { BottomSheet(PosterInfo( media), actions = actions, viewModel = bottomSheetViewModel) { } }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
+
+        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithTag("bottomSheetHeader").assertIsNotDisplayed()
     }
 }
