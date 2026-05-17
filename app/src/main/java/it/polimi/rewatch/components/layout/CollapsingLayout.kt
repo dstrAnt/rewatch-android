@@ -23,6 +23,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
- * [CollapsingLayout] allows to create a top bar that hides as the user scroll down
+ * [CollapsingLayout] allows to create a top bar that hides as the user scrolls down
  */
 @Composable
 fun CollapsingLayout(
@@ -100,6 +101,7 @@ fun CollapsingLayout(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(collapsingTopHeight)
+                    .testTag("collapsingTopBar")
                     .graphicsLayer {
                         val fadeThreshold = 0.9f
                         val rawCollapseFraction = if (collapsingHeightPx > 0f) {
@@ -117,7 +119,8 @@ fun CollapsingLayout(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(pinnedBottomHeight),
+                    .height(pinnedBottomHeight)
+                    .testTag("pinnedBottomBar"),
             ) {
                 pinnedBottomBar()
             }
