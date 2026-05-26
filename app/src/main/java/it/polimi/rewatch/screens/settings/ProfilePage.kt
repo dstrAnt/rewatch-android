@@ -212,7 +212,8 @@ private fun LogButton(
                 boxShape,
             )
             .clickable(onClick = callback)
-            .padding(vertical = 10.dp),
+            .padding(vertical = 10.dp)
+            .testTag("logButton"),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {

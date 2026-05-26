@@ -63,4 +63,9 @@ class AuthPageTest {
 
     }
 
+    @Test
+    fun testLogIn() {
+
+    }
+
 }
