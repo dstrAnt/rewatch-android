@@ -221,7 +221,7 @@ fun LazyGridScope.movieSection(
         PosterItem(
             movie,
             actions,
-            Modifier.animateItem(),
+            Modifier.animateItem().testTag("posterItem_$title"),
         )
     }
     // --- Dynamic Button ---
@@ -231,7 +231,8 @@ fun LazyGridScope.movieSection(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,
                 onClick = { onToggleSection(title) },
-                Modifier.animateItem(),
+                Modifier.animateItem()
+                    .testTag("button_$title"),
             )
         }
     }

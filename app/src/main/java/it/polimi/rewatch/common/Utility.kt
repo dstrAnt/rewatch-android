@@ -75,6 +75,7 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -410,7 +411,7 @@ fun <T> CustomTabRow(
 ) {
     availableTabs.forEach {
         Tab(
-            modifier = Modifier.height(50.dp),
+            modifier = Modifier.height(50.dp).testTag("homeTab_${title(it)}"),
             selected = it == tabState,
             onClick = { onClick(it) },
             text = {
