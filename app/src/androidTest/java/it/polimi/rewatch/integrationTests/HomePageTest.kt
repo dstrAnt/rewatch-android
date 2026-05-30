@@ -65,8 +65,8 @@ class HomePageTest {
         composeTestRule.onNodeWithText("Movies").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Tv Shows").assertExists().assertIsDisplayed()
 
-        val movieTab = composeTestRule.onNodeWithTag("homeTab_Movies").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
-        val showsTab = composeTestRule.onNodeWithTag("homeTab_Tv Shows").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        val movieTab = composeTestRule.onNodeWithTag("Tab_Movies").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        val showsTab = composeTestRule.onNodeWithTag("Tab_Tv Shows").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
 
         if(startTab == HomeTabItem.MOVIES) {

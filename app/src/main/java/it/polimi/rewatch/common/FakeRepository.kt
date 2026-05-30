@@ -190,22 +190,22 @@ val fakeWatchlist = listOf(
         id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f))
     ),
     WatchlistMedia(
-        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f))
+        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f))
     ),
     WatchlistMedia(
-        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f))
+        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f))
     ),
     WatchlistMedia(
-        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f))
+        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f))
     ),
     WatchlistMedia(
-        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f))
+        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f))
     ),
     WatchlistMedia(
-        id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f))
+        id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f, voteAverage = 3.5f))
     ),
     WatchlistMedia(
-        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f))
+        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f))
     ),
 )
 val fakeWatch = listOf(
@@ -242,12 +242,12 @@ val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1394),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 12, 0, 0),
+        date = LocalDateTime.of(2026, 5, 12, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1319),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 2, 0, 0),
+        date = LocalDateTime.of(2026, 6, 2, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1395),
@@ -262,7 +262,7 @@ val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1329),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        date = LocalDateTime.of(2026, 6, 7, 0, 0),
     ),
 )
 

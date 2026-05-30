@@ -245,7 +245,7 @@ fun TrackingPage(
                     // Elementi della sezione
                     items(key = { "${it.id}" }, items = items) { media ->
                         if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
-                        else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())
+                        else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem().testTag("watchlist_posterItems-${media.id.parentId}"))
                     }
                 }
             }
@@ -270,7 +270,7 @@ private fun LazyGridItemScope.PosterStarsItem(
         verticalArrangement = Arrangement.spacedBy(3.dp),
         modifier = Modifier.animateItem(),
     ) {
-        PosterItem(media.mediaData, actions)
+        PosterItem(media.mediaData, actions, modifier = Modifier.testTag("watched_posterItems-${media.id.parentId}"))
         val rating = media.rating
 
         StarRating(rating = rating / 2, starSize = 10.dp)
