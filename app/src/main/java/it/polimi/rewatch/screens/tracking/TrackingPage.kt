@@ -323,7 +323,7 @@ fun <T> SortFilterChips(
                 LocalMinimumInteractiveComponentSize provides 0.dp,
             ) {
                 FilterChip(
-                    modifier = Modifier.height(28.dp),
+                    modifier = Modifier.height(28.dp).testTag("filterChip_${sort.toString()}"),
                     selected = selectedSort == sort,
                     onClick = { onSortSelected(sort) },
                     label = {

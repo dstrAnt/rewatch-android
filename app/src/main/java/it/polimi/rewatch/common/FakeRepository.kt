@@ -1,8 +1,11 @@
 package it.polimi.rewatch.common
 
+import app.moviebase.tmdb.model.TmdbShow
+import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
@@ -178,31 +181,31 @@ val fakeWatchlist = listOf(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1399),
+        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
     ),
     WatchlistMedia(
-        id = TvId(1393),
+        id = TvId(1393), mediaData = PosterInfo(TmdbShowDetail(popularity = 50f))
     ),
     WatchlistMedia(
-        id = TvId(1395),
+        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f))
     ),
     WatchlistMedia(
-        id = MovieId(83533),
+        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f))
     ),
     WatchlistMedia(
-        id = MovieId(1317288),
+        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f))
     ),
     WatchlistMedia(
-        id = MovieId(1317287),
+        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f))
     ),
     WatchlistMedia(
-        id = MovieId(1317289),
+        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f))
     ),
     WatchlistMedia(
-        id = MovieId(551),
+        id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f))
     ),
     WatchlistMedia(
-        id = MovieId(83532),
+        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f))
     ),
 )
 val fakeWatch = listOf(
@@ -214,12 +217,12 @@ val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1399),
         rating = 8.5f,
-        date = LocalDateTime.of(2023, 3, 23, 0, 0),
+        date = LocalDateTime.of(2023, 3, 22, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1393),
         rating = 8.5f,
-        date = LocalDateTime.of(2024, 3, 23, 0, 0),
+        date = LocalDateTime.of(2024, 3, 25, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(549),
@@ -239,22 +242,22 @@ val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1394),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        date = LocalDateTime.of(2026, 3, 12, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1319),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        date = LocalDateTime.of(2026, 3, 2, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1395),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        date = LocalDateTime.of(2026, 3, 13, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1349),
         rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        date = LocalDateTime.of(2026, 3, 10, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1329),
