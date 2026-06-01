@@ -15,13 +15,23 @@ import app.moviebase.tmdb.model.TmdbShow
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.common.UiState
 import it.polimi.rewatch.components.BottomSheetViewModel
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.screens.home.HomeTabItem
+import it.polimi.rewatch.screens.tracking.SortFilterChips
+import it.polimi.rewatch.screens.tracking.SortOption
 import it.polimi.rewatch.screens.tracking.TrackingPage
 import it.polimi.rewatch.screens.tracking.TrackingViewModel
 import it.polimi.rewatch.screens.tracking.WatchTabItem
+import it.polimi.rewatch.screens.tracking.sortedByDirection
+import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -32,12 +42,14 @@ class TrackingPageTest {
     val composeTestRule = createComposeRule()
 
     val type: WatchTabItem = WatchTabItem.WATCHED
-    val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3 {  }), persistRepo = FakeRepository())
+    val mediaType: MediaType = MediaType.MOVIE
+    //val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3 {  }), persistRepo = FakeRepository())
+    val fakeRepo = FakeRepository()
 
     @Before
     fun setup() {
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
+       /* val actions = NavigationActions(onNavigateToPerson = { id -> },
 
             onNavigateToMedia = { id -> },
             onNavigateBack = {
@@ -67,23 +79,58 @@ class TrackingPageTest {
             watchedTab.performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(5000)
-        }
+        }*/
+
+
     }
 
     @Test
     fun testSortByDate() {
-        val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date")
+
+        val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+        val expectedResult = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+
+        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+
+        assertEquals(
+            expectedResult,
+            actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.date }
+        )
+
+        assertNotEquals(
+            expectedResult,
+            actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.date }
+        )
+
+        var selected: SortOption? = null
+
+        composeTestRule.setContent {
+            SortFilterChips(
+                options = SortOption.entries,
+                selectedSort = SortOption.DATE,
+                isAscending = false,
+                onSortSelected = {
+                    selected = it
+                },
+                label = SortOption::label
+            )
+        }
+
+        val dateFilter = composeTestRule.onNodeWithTag("filterChip_DATE").assertExists()
 
         dateFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        assertEquals(
+            SortOption.DATE,
+            selected
+        )
+
         composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
-
-//        assert(trackingViewModel.watchlist[])
     }
 
     @Test
@@ -117,5 +164,67 @@ class TrackingPageTest {
         Thread.sleep(5000)
 
         //composeTestRule.onAllNodesWithTag("watchlist_posterItems").assertCountEquals(11)
+    }
+
+    @Test
+    fun testEmptyListCase(){
+        //UiState.Success(emptyList())
+
+        composeTestRule
+            .onNodeWithText("Explore")
+            .assertExists()
+
+        composeTestRule
+            .onNodeWithText("No Movies in Watchlist")
+            .assertExists()
+    }
+
+    @Test
+    fun testTopTabBar(){
+        composeTestRule
+            .onNodeWithText("Watchlist")
+            .assertExists()
+
+        composeTestRule
+            .onNodeWithText("Watched")
+            .assertExists()
+
+        var selected = WatchTabItem.WATCHLIST
+
+        composeTestRule.setContent {
+         /*   TopTabBar(
+                ...
+            selectedTab = selected,
+            onClick = { selected = it }
+            )*/
+        }
+        composeTestRule
+            .onNodeWithText("Watched")
+            .performClick()
+
+        assertEquals(
+            WatchTabItem.WATCHED,
+            selected
+        )
+    }
+
+    @Test
+    fun testOnBackToHome(){
+        //val actions = NavigationActions(
+        //            ...
+        //        onBackToHome = {
+        //            destination = it
+        //        }
+        //        )
+        var destination: HomeTabItem? = null
+
+        composeTestRule
+            .onNodeWithText("Explore")
+            .performClick()
+
+        assertEquals(
+            HomeTabItem.MOVIES,
+            destination
+        )
     }
 }
