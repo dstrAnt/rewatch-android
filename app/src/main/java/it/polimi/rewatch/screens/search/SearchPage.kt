@@ -120,7 +120,7 @@ fun SearchPage(
                 modifier = Modifier.padding(
                     start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
                     end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
-                ),
+                ).testTag("searchBar"),
             )
         },
         modifier = Modifier.testTag("search_page"),
@@ -247,7 +247,7 @@ private fun SearchInputField(
             onValueChange = onQueryChange,
             modifier = Modifier
                 .weight(1f)
-                .focusRequester(focusRequester),
+                .focusRequester(focusRequester).testTag("textField"),
             placeholder = { Text(placeholder, style = MaterialTheme.typography.labelLarge) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,

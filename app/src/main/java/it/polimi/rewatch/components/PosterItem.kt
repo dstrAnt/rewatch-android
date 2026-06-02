@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -204,7 +205,7 @@ private fun PosterItem(
                 } else {
                     baseModifier // If both are null, return the modifier without click behavior
                 }
-            },
+            }.testTag("posterItem_$title"),
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots

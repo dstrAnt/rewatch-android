@@ -221,7 +221,7 @@ fun LazyGridScope.movieSection(
         PosterItem(
             movie,
             actions,
-            Modifier.animateItem().testTag("posterItem_$title"),
+            Modifier.animateItem(),
         )
     }
     // --- Dynamic Button ---
