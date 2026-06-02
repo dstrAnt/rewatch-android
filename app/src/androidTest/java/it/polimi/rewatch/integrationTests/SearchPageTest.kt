@@ -102,6 +102,7 @@ class SearchPageTest {
     @Test
     fun testSearchTopBarMovie() {
         val movieTab = composeTestRule.onNodeWithTag("Tab_Movies").assertExists().assertIsDisplayed().assertHasClickAction()
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         movieTab.performClick()
         composeTestRule.waitForIdle()
@@ -109,28 +110,53 @@ class SearchPageTest {
 
         movieTab.assertIsSelected()
 
+        val inputText = "Avengers"
+
+        searchField.performTextInput(inputText)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSearchTopBarTvShows() {
         val showsTab = composeTestRule.onNodeWithTag("Tab_Tv Shows").assertExists().assertIsDisplayed().assertHasClickAction()
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         showsTab.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         showsTab.assertIsSelected()
+
+        val inputText = "Avengers"
+
+        searchField.performTextInput(inputText)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSearchTopBarPerson() {
         val peopleTab = composeTestRule.onNodeWithTag("Tab_People").assertExists().assertIsDisplayed().assertHasClickAction()
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         peopleTab.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         peopleTab.assertIsSelected()
+
+        val inputText = "Avengers"
+
+        searchField.performTextInput(inputText)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
