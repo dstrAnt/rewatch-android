@@ -188,12 +188,12 @@ val fakeWatchlist = listOf(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f, firstAirDate = LocalDate.now().toKotlinLocalDate()))
+        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
     ),
     WatchlistMedia(
         id = TvId(1393),
-        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers",
-                    firstAirDate = shortLocalDateTime(2026, 2, 23).toLocalDate().toKotlinLocalDate()))
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers",)),
+        date = shortLocalDateTime(2026, 2, 23)
     ),
     WatchlistMedia(
         id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f, voteAverage = 7.2f, name = "Feelings",))
@@ -202,21 +202,21 @@ val fakeWatchlist = listOf(
         id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders"))
     ),
     WatchlistMedia(
-        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f))
+        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f, name = "Betamax - The Return"))
     ),
     WatchlistMedia(
-        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f))
+        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f, name = "1984"))
     ),
     WatchlistMedia(
-        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f,
-                    firstAirDate = shortLocalDateTime(2026, 5, 18).toLocalDate().toKotlinLocalDate()))
+        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f)),
+        date = shortLocalDateTime(2026, 5, 18)
     ),
     WatchlistMedia(
         id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f, voteAverage = 3.5f))
     ),
     WatchlistMedia(
-        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f,
-                    firstAirDate = shortLocalDateTime(2025, 12, 2).toLocalDate().toKotlinLocalDate()))
+        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f,)),
+        date = shortLocalDateTime(2025, 12, 2)
     ),
 )
 val fakeWatch = listOf(
@@ -224,6 +224,7 @@ val fakeWatch = listOf(
         id = TvId(1390),
         rating = 8.5f,
         date = LocalDateTime.of(2026, 3, 23, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail( name = "Benjamin"))
     ),
     WatchedMedia(
         id = TvId(1399),
@@ -234,6 +235,7 @@ val fakeWatch = listOf(
         id = TvId(1393),
         rating = 1.5f,
         date = LocalDateTime.of(2024, 3, 25, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail(name = "A Man, a Legend"))
     ),
     WatchedMedia(
         id = MovieId(549),
@@ -249,6 +251,7 @@ val fakeWatch = listOf(
         id = MovieId(83540),
         rating = 5.0f,
         date = LocalDateTime.of(2026, 4, 23, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail(name = "Sarah, Where Are U?"))
     ),
     WatchedMedia(
         id = TvId(1394),
@@ -259,6 +262,7 @@ val fakeWatch = listOf(
         id = TvId(1319),
         rating = 1.0f,
         date = LocalDateTime.of(2026, 6, 2, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail(name = "Felix Escalibur"))
     ),
     WatchedMedia(
         id = TvId(1395),
@@ -274,6 +278,7 @@ val fakeWatch = listOf(
         id = TvId(1329),
         rating = 7.2f,
         date = LocalDateTime.of(2026, 6, 7, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f, name = "1000 Lives... And Beyond"))
     ),
     WatchedMedia(
         id = TvId(1329),

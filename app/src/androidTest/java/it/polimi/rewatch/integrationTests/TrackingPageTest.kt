@@ -169,7 +169,7 @@ class TrackingPageTest {
             )
         }
 
-        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_Rating")
+        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_RATING")
 
         ratingFilter.performClick()
         composeTestRule.waitForIdle()
@@ -216,7 +216,7 @@ class TrackingPageTest {
             )
         }
 
-        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_A-Z")
+        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_ALPHABETICAL")
 
         alphabeticFilter.performClick()
         composeTestRule.waitForIdle()
@@ -227,18 +227,58 @@ class TrackingPageTest {
             selected
         )
 
-        //...
+        composeTestRule.onNodeWithText("A").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("B").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("F").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("S").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSortByPopularity() {
-        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity")
+        val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+
+        val expectedResult = actualValues?.sortedWith(compareBy { it.popularity })
+
+        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.popularity })
+
+        val expectedResultDescending = actualValues?.sortedWith(
+            compareByDescending { it.popularity }
+        )
+
+        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.popularity })
+
+        var selected: SortOption? = null
+
+        composeTestRule.setContent {
+            SortFilterChips(
+                options = SortOption.entries,
+                selectedSort = SortOption.DATE,
+                isAscending = false,
+                onSortSelected = {
+                    selected = it
+                },
+                label = SortOption::label
+            )
+        }
+
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_POPULARITY")
 
         popularityFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        //composeTestRule.onAllNodesWithTag("watchlist_posterItems").assertCountEquals(11)
+        assertEquals(
+            SortOption.POPULARITY,
+            selected
+        )
+
+        composeTestRule.onNodeWithText("Trending Worldwide").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Well Known").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
     }
 
     @Test
