@@ -14,6 +14,9 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
+import java.time.LocalDate
 import java.time.LocalDateTime
 
 
@@ -176,18 +179,24 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 }
 
+fun shortLocalDateTime(year: Int, month: Int, day: Int) : LocalDateTime{
+    return LocalDateTime.of(2026, 2, 23, 0, 0)
+}
+
 val fakeWatchlist = listOf(
     WatchlistMedia(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
+        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f, firstAirDate = LocalDate.now().toKotlinLocalDate()))
     ),
     WatchlistMedia(
-        id = TvId(1393), mediaData = PosterInfo(TmdbShowDetail(popularity = 50f))
+        id = TvId(1393),
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f,
+                    firstAirDate = shortLocalDateTime(2026, 2, 23).toLocalDate().toKotlinLocalDate()))
     ),
     WatchlistMedia(
-        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f))
+        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f, voteAverage = 7.2f))
     ),
     WatchlistMedia(
         id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f))
@@ -199,13 +208,15 @@ val fakeWatchlist = listOf(
         id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f))
     ),
     WatchlistMedia(
-        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f))
+        id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f,
+                    firstAirDate = shortLocalDateTime(2026, 5, 18).toLocalDate().toKotlinLocalDate()))
     ),
     WatchlistMedia(
         id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f, voteAverage = 3.5f))
     ),
     WatchlistMedia(
-        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f))
+        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f,
+                    firstAirDate = shortLocalDateTime(2025, 12, 2).toLocalDate().toKotlinLocalDate()))
     ),
 )
 val fakeWatch = listOf(
@@ -216,53 +227,58 @@ val fakeWatch = listOf(
     ),
     WatchedMedia(
         id = TvId(1399),
-        rating = 8.5f,
+        rating = 7.5f,
         date = LocalDateTime.of(2023, 3, 22, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1393),
-        rating = 8.5f,
+        rating = 1.5f,
         date = LocalDateTime.of(2024, 3, 25, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(549),
-        rating = 8.5f,
-        date = LocalDateTime.of(2026, 4, 23, 0, 0),
+        rating = 2.0f,
+        date = LocalDateTime.of(LocalDate.now().year, 4, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(83541),
-        rating = 8.5f,
+        rating = 2.5f,
         date = LocalDateTime.of(2026, 2, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(83540),
-        rating = 8.5f,
+        rating = 5.0f,
         date = LocalDateTime.of(2026, 4, 23, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1394),
-        rating = 8.5f,
+        rating = 0f,
         date = LocalDateTime.of(2026, 5, 12, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1319),
-        rating = 8.5f,
+        rating = 1.0f,
         date = LocalDateTime.of(2026, 6, 2, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1395),
-        rating = 8.5f,
-        date = LocalDateTime.of(2026, 3, 13, 0, 0),
+        rating = 9.0f,
+        date = LocalDateTime.of(LocalDate.now().year, 3, 13, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1349),
-        rating = 8.5f,
+        rating = 7.5f,
         date = LocalDateTime.of(2026, 3, 10, 0, 0),
     ),
     WatchedMedia(
         id = TvId(1329),
-        rating = 8.5f,
+        rating = 7.2f,
         date = LocalDateTime.of(2026, 6, 7, 0, 0),
+    ),
+    WatchedMedia(
+        id = TvId(1329),
+        rating = 6.3f,
+        date = LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, 17, 0, 0),
     ),
 )
 

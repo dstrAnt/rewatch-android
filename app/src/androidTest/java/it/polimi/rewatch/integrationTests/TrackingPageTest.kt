@@ -19,6 +19,7 @@ import it.polimi.rewatch.common.UiState
 import it.polimi.rewatch.components.BottomSheetViewModel
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
+import it.polimi.rewatch.model.TrackingMedia
 import it.polimi.rewatch.screens.home.HomeTabItem
 import it.polimi.rewatch.screens.tracking.SortFilterChips
 import it.polimi.rewatch.screens.tracking.SortOption
@@ -88,19 +89,17 @@ class TrackingPageTest {
     fun testSortByDate() {
 
         val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
-        val expectedResult = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
-
         val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
 
-        assertEquals(
-            expectedResult,
-            actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.date }
+        val expectedResult = actualValues?.sortedWith(compareBy { it.date })
+
+        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.date })
+
+        val expectedResultDescending = actualValues?.sortedWith(
+            compareByDescending { it.date }
         )
 
-        assertNotEquals(
-            expectedResult,
-            actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.date }
-        )
+        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.date })
 
         var selected: SortOption? = null
 
@@ -127,21 +126,65 @@ class TrackingPageTest {
             selected
         )
 
-        composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
+        if (type == WatchTabItem.WATCHED) {
+            composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
+        }
+        else{
+            composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("2025").assertExists().assertIsDisplayed()
+        }
     }
 
     @Test
     fun testSortByRating() {
+        val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+
+        val expectedResult = actualValues?.sortedWith(compareBy { it.rating })
+
+        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.rating })
+
+        val expectedResultDescending = actualValues?.sortedWith(
+            compareByDescending { it.rating }
+        )
+
+        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.rating })
+
+        var selected: SortOption? = null
+
+        composeTestRule.setContent {
+            SortFilterChips(
+                options = SortOption.entries,
+                selectedSort = SortOption.DATE,
+                isAscending = false,
+                onSortSelected = {
+                    selected = it
+                },
+                label = SortOption::label
+            )
+        }
+
         val ratingFilter = composeTestRule.onNodeWithTag("filterChip_Rating")
 
         ratingFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        //composeTestRule.onAllNodesWithTag("watchlist_posterItems").assertCountEquals(11)
+        assertEquals(
+            SortOption.RATING,
+            selected
+        )
+
+        composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
     }
 
     @Test
