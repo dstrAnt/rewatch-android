@@ -189,13 +189,45 @@ class TrackingPageTest {
 
     @Test
     fun testSortAlphabetically() {
+        val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+
+        val expectedResult = actualValues?.sortedWith(compareBy { it.title })
+
+        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.title })
+
+        val expectedResultDescending = actualValues?.sortedWith(
+            compareByDescending { it.title }
+        )
+
+        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.title })
+
+        var selected: SortOption? = null
+
+        composeTestRule.setContent {
+            SortFilterChips(
+                options = SortOption.entries,
+                selectedSort = SortOption.DATE,
+                isAscending = false,
+                onSortSelected = {
+                    selected = it
+                },
+                label = SortOption::label
+            )
+        }
+
         val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_A-Z")
 
         alphabeticFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        //composeTestRule.onAllNodesWithTag("watchlist_posterItems").assertCountEquals(11)
+        assertEquals(
+            SortOption.ALPHABETICAL,
+            selected
+        )
+
+        //...
     }
 
     @Test

@@ -192,14 +192,14 @@ val fakeWatchlist = listOf(
     ),
     WatchlistMedia(
         id = TvId(1393),
-        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f,
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers",
                     firstAirDate = shortLocalDateTime(2026, 2, 23).toLocalDate().toKotlinLocalDate()))
     ),
     WatchlistMedia(
-        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f, voteAverage = 7.2f))
+        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f, voteAverage = 7.2f, name = "Feelings",))
     ),
     WatchlistMedia(
-        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f))
+        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders"))
     ),
     WatchlistMedia(
         id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f))
