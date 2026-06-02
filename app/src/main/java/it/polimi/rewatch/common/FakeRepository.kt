@@ -49,9 +49,9 @@ interface PersistRepository {
 @Singleton
 class FakeRepository @Inject constructor() : PersistRepository {
     private val _watchlistFlow = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
-    override val watchlistFlow = _watchlistFlow.asSharedFlow()
+    override var watchlistFlow = _watchlistFlow.asSharedFlow()
     private val _watchedFlow = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
-    override val watchedFlow = _watchedFlow.asSharedFlow()
+    override var watchedFlow = _watchedFlow.asSharedFlow()
     private var _email = ""
 
     init {

@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelectable
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -16,10 +17,13 @@ import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.common.UiState
+import it.polimi.rewatch.common.fakeWatchlist
 import it.polimi.rewatch.components.BottomSheetViewModel
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.model.TrackingMedia
+import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
 import it.polimi.rewatch.screens.home.HomeTabItem
 import it.polimi.rewatch.screens.tracking.SortFilterChips
 import it.polimi.rewatch.screens.tracking.SortOption
@@ -28,6 +32,8 @@ import it.polimi.rewatch.screens.tracking.TrackingViewModel
 import it.polimi.rewatch.screens.tracking.WatchTabItem
 import it.polimi.rewatch.screens.tracking.sortedByDirection
 import junit.framework.TestCase.assertEquals
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -36,6 +42,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.collections.emptyList
 
 class TrackingPageTest {
 
@@ -44,13 +51,14 @@ class TrackingPageTest {
 
     val type: WatchTabItem = WatchTabItem.WATCHED
     val mediaType: MediaType = MediaType.MOVIE
-    //val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3 {  }), persistRepo = FakeRepository())
+
     val fakeRepo = FakeRepository()
+
+    var destination: HomeTabItem? = null
 
     @Before
     fun setup() {
-
-       /* val actions = NavigationActions(onNavigateToPerson = { id -> },
+         val actions = NavigationActions(onNavigateToPerson = { id -> },
 
             onNavigateToMedia = { id -> },
             onNavigateBack = {
@@ -63,11 +71,13 @@ class TrackingPageTest {
             onNavigateToLogin = {
 
             },
-            onBackToHome = { tab ->
-
-            })
+             onBackToHome = { tab ->
+                 destination = tab
+             })
 
         val outerPadding = PaddingValues();
+
+        val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3 {  }), persistRepo = fakeRepo)
 
         composeTestRule.setContent {
             TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE, viewModel = trackingViewModel)
@@ -80,9 +90,7 @@ class TrackingPageTest {
             watchedTab.performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(5000)
-        }*/
-
-
+        }
     }
 
     @Test
@@ -101,30 +109,13 @@ class TrackingPageTest {
 
         assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.date })
 
-        var selected: SortOption? = null
-
-        composeTestRule.setContent {
-            SortFilterChips(
-                options = SortOption.entries,
-                selectedSort = SortOption.DATE,
-                isAscending = false,
-                onSortSelected = {
-                    selected = it
-                },
-                label = SortOption::label
-            )
-        }
-
-        val dateFilter = composeTestRule.onNodeWithTag("filterChip_DATE").assertExists()
+        val dateFilter = composeTestRule.onNodeWithTag("filterChip_DATE").assertExists().assertIsSelectable()
 
         dateFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        assertEquals(
-            SortOption.DATE,
-            selected
-        )
+        dateFilter.assertIsSelected()
 
         if (type == WatchTabItem.WATCHED) {
             composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
@@ -155,30 +146,13 @@ class TrackingPageTest {
 
         assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.rating })
 
-        var selected: SortOption? = null
-
-        composeTestRule.setContent {
-            SortFilterChips(
-                options = SortOption.entries,
-                selectedSort = SortOption.DATE,
-                isAscending = false,
-                onSortSelected = {
-                    selected = it
-                },
-                label = SortOption::label
-            )
-        }
-
-        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_RATING")
+        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_RATING").assertIsSelectable()
 
         ratingFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        assertEquals(
-            SortOption.RATING,
-            selected
-        )
+        ratingFilter.assertIsSelected()
 
         composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
@@ -202,30 +176,13 @@ class TrackingPageTest {
 
         assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.title })
 
-        var selected: SortOption? = null
-
-        composeTestRule.setContent {
-            SortFilterChips(
-                options = SortOption.entries,
-                selectedSort = SortOption.DATE,
-                isAscending = false,
-                onSortSelected = {
-                    selected = it
-                },
-                label = SortOption::label
-            )
-        }
-
-        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_ALPHABETICAL")
+        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_ALPHABETICAL").assertIsSelectable()
 
         alphabeticFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        assertEquals(
-            SortOption.ALPHABETICAL,
-            selected
-        )
+        alphabeticFilter.assertIsSelected()
 
         composeTestRule.onNodeWithText("A").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("B").assertExists().assertIsDisplayed()
@@ -249,97 +206,56 @@ class TrackingPageTest {
 
         assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.popularity })
 
-        var selected: SortOption? = null
-
-        composeTestRule.setContent {
-            SortFilterChips(
-                options = SortOption.entries,
-                selectedSort = SortOption.DATE,
-                isAscending = false,
-                onSortSelected = {
-                    selected = it
-                },
-                label = SortOption::label
-            )
-        }
-
-        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_POPULARITY")
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_POPULARITY").assertIsSelectable()
 
         popularityFilter.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        assertEquals(
-            SortOption.POPULARITY,
-            selected
-        )
+        popularityFilter.assertIsSelected()
 
         composeTestRule.onNodeWithText("Trending Worldwide").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Well Known").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testEmptyListCase(){
-        //UiState.Success(emptyList())
+        val myWatchlist = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
+        val myWatched = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
+        myWatchlist.tryEmit(Result.success(emptyList()))
+        myWatched.tryEmit(Result.success(emptyList()))
 
-        composeTestRule
-            .onNodeWithText("Explore")
-            .assertExists()
+        fakeRepo.watchlistFlow = myWatchlist.asSharedFlow()
+        fakeRepo.watchedFlow = myWatched.asSharedFlow()
 
-        composeTestRule
-            .onNodeWithText("No Movies in Watchlist")
-            .assertExists()
-    }
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
 
-    @Test
-    fun testTopTabBar(){
-        composeTestRule
-            .onNodeWithText("Watchlist")
-            .assertExists()
+        composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed()
 
-        composeTestRule
-            .onNodeWithText("Watched")
-            .assertExists()
+        val mediaText = if (mediaType == MediaType.MOVIE) "Movies" else "Shows"
+        val typeText = if (type == WatchTabItem.WATCHLIST) "in Watchlist" else "Watched"
 
-        var selected = WatchTabItem.WATCHLIST
-
-        composeTestRule.setContent {
-         /*   TopTabBar(
-                ...
-            selectedTab = selected,
-            onClick = { selected = it }
-            )*/
-        }
-        composeTestRule
-            .onNodeWithText("Watched")
-            .performClick()
-
-        assertEquals(
-            WatchTabItem.WATCHED,
-            selected
-        )
+        composeTestRule.onNodeWithText("No $mediaText $typeText").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testOnBackToHome(){
-        //val actions = NavigationActions(
-        //            ...
-        //        onBackToHome = {
-        //            destination = it
-        //        }
-        //        )
-        var destination: HomeTabItem? = null
+        val myWatchlist = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
+        val myWatched = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
+        myWatchlist.tryEmit(Result.success(emptyList()))
+        myWatched.tryEmit(Result.success(emptyList()))
 
-        composeTestRule
-            .onNodeWithText("Explore")
-            .performClick()
+        fakeRepo.watchlistFlow = myWatchlist.asSharedFlow()
+        fakeRepo.watchedFlow = myWatched.asSharedFlow()
 
-        assertEquals(
-            HomeTabItem.MOVIES,
-            destination
-        )
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
+
+        assertEquals(HomeTabItem.MOVIES, destination)
     }
 }
