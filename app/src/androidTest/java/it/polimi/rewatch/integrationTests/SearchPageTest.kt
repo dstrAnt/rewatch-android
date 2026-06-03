@@ -117,6 +117,14 @@ class SearchPageTest {
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+
+        val inputText2 = "Chris Hemsworth"
+
+        searchField.performTextInput(inputText2)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription(inputText2).assertDoesNotExist()
     }
 
     @Test
@@ -137,6 +145,14 @@ class SearchPageTest {
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+
+        val inputText2 = "Matt Damon"
+
+        searchField.performTextInput(inputText2)
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription(inputText2).assertDoesNotExist()
     }
 
     @Test
@@ -150,7 +166,7 @@ class SearchPageTest {
 
         peopleTab.assertIsSelected()
 
-        val inputText = "Avengers"
+        val inputText = "Chris Evans"
 
         searchField.performTextInput(inputText)
         composeTestRule.waitForIdle()
