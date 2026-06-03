@@ -132,7 +132,7 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        authViewModel.handleDeepLink("c@b.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("Sign-in failed").assertExists().assertIsDisplayed()
@@ -156,7 +156,7 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
-        authViewModel.handleDeepLink("cannotMerge.me@b.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
@@ -205,7 +205,7 @@ class AuthPageTest {
         composeTestRule.onNodeWithText("Sending link…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
 
-        authViewModel.handleDeepLink("matteo.bianchi@tutorial.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
     }
 
@@ -227,7 +227,7 @@ class AuthPageTest {
         composeTestRule.onNodeWithText("Sending link…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
 
-        authViewModel.handleDeepLink("merge.me@b.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
 
         val mergeButton = composeTestRule.onNodeWithTag("mergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
@@ -255,7 +255,7 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
-        authViewModel.handleDeepLink("merge.me@b.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
@@ -291,7 +291,7 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        authViewModel.handleDeepLink("matteo.bianchi@tutorial.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
@@ -316,7 +316,7 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
-        authViewModel.handleDeepLink("merge.me@b.com")
+        authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
 
