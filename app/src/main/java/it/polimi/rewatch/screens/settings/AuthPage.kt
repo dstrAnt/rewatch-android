@@ -364,10 +364,10 @@ private fun MergePromptContent(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onMerge, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = onMerge, modifier = Modifier.fillMaxWidth().testTag("mergeButton")) {
             Text("Merge my lists")
         }
-        OutlinedButton(onClick = onDiscard, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(onClick = onDiscard, modifier = Modifier.fillMaxWidth().testTag("discardMergeButton")) {
             Text("Discard guest lists")
         }
         Spacer(Modifier.height(16.dp))

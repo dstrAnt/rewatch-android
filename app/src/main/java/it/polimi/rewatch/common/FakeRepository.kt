@@ -3,6 +3,7 @@ package it.polimi.rewatch.common
 import app.moviebase.tmdb.model.TmdbShow
 import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthProvider
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.PosterInfo
@@ -54,19 +55,38 @@ class FakeRepository @Inject constructor() : PersistRepository {
     override var watchedFlow = _watchedFlow.asSharedFlow()
     private var _email = ""
 
+    private val defaultTestEmail = "a@b.com"
+
+    private val defaultTestEmail2 = "c@b.com"
+
+    private val defaultMergeTestEmail = "merge.me@b.com"
+
+    private val defaultMergeTestEmail2 = "cannotMerge.me@b.com"
+
     init {
         _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
         _watchedFlow.tryEmit(Result.success(fakeWatch))
     }
 
     override suspend fun sendSignInLink(email: String): Result<Unit> {
-        return Result.success(Unit)
+        return if (email.equals(defaultTestEmail)) Result.failure(exception = Throwable()) else Result.success(Unit)
     }
 
     override suspend fun verifySignInLink(email: String, link: String): Result<LinkResult> {
         _email = email
         _authState.tryEmit(AuthState.Authenticated("", email))
-        return Result.success(LinkResult.SignedIn)
+        if (email.equals(defaultTestEmail2))
+            return Result.failure(exception = Throwable())
+        else {
+            val choice = when (email) {
+                defaultMergeTestEmail -> 0
+                defaultMergeTestEmail2 -> 1
+                else -> 1111
+            }
+            if (email.equals(defaultMergeTestEmail) || email.equals(defaultMergeTestEmail2))
+                return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredentialWithLink(email, link)))
+            else return Result.success(LinkResult.SignedIn)
+        }
     }
 
     override fun logout() {
@@ -87,7 +107,7 @@ class FakeRepository @Inject constructor() : PersistRepository {
         credential: AuthCredential,
         merge: Boolean,
     ): Result<Unit> {
-        return Result.success(Unit)
+        return if(anonymousUid.equals("0")) Result.success(Unit) else Result.failure(Throwable())
     }
 
     // The base helper we created earlier
