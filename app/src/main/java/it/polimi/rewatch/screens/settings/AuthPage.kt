@@ -278,13 +278,13 @@ private fun IdleContent(
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(onDone = { onSendLink() }),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag("signInTextField"),
         )
 
         Button(
             onClick = onSendLink,
             enabled = email.isValidEmail(),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().testTag("sendAuthLinkButton"),
         ) {
             Text("Send link")
         }
