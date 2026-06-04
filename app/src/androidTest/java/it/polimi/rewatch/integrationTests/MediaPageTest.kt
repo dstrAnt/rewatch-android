@@ -1,8 +1,14 @@
 package it.polimi.rewatch.integrationTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onChild
+import androidx.compose.ui.test.onNodeWithTag
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.screens.media.MediaPage
 import org.junit.Before
@@ -13,8 +19,10 @@ class MediaPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    @Before
-    fun setup() {
+    val defaultMedia = MovieId(0)
+
+    //@Before
+    fun setup(media: MediaId) {
 
         val actions = NavigationActions(onNavigateToPerson = { id -> },
 
@@ -36,13 +44,20 @@ class MediaPageTest {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            MediaPage(MovieId(0), actions = actions, outerPadding = outerPadding)
+            MediaPage(media, actions = actions, outerPadding = outerPadding)
         }
     }
 
     @Test
     fun testMediaHeaderItems(){
+        setup(defaultMedia)
 
+        composeTestRule.onNodeWithTag("header_backdrop").assertExists().assertIsDisplayed().assertHasClickAction()
+        composeTestRule.onNodeWithTag("header_title").assertExists().assertIsDisplayed().assertHasClickAction()
+        composeTestRule.onNodeWithTag("header_tagline").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithTag("header_ratings").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithTag("header_tracking").assertExists().assertIsDisplayed()
+            .onChild().assertExists().assertIsDisplayed().assertHasClickAction()
     }
 
     @Test
