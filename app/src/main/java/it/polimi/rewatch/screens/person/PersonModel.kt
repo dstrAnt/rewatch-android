@@ -9,7 +9,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import it.polimi.rewatch.common.PersistRepository
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.common.UiFetchViewModel
 import it.polimi.rewatch.common.UiState
@@ -36,7 +35,7 @@ enum class PersonSortOrder(val label: String) {
 @HiltViewModel(assistedFactory = PersonViewModel.Factory::class)
 class PersonViewModel @AssistedInject constructor(
     @Assisted("personId") private val personId: Int,
-    private val repository: PersistRepository,
+    private val repository: TmdbRepository,
 ) : UiFetchViewModel<PersonDetailsData>() {
     @AssistedFactory
     interface Factory {

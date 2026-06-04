@@ -208,7 +208,7 @@ fun PersonContent(
 private fun Bio(bio: String?) {
     if (!bio.isNullOrBlank()) {
         Spacer(Modifier.height(16.dp))
-        ExpandableText(bio, modifier = Modifier.padding(horizontal = 16.dp), maxLines = 3)
+        ExpandableText(bio, modifier = Modifier.padding(horizontal = 16.dp).testTag("bioParagraph"), maxLines = 3)
     }
 }
 
@@ -299,7 +299,7 @@ private fun ProfilePicture(profileImage: TmdbImage?, modifier: Modifier = Modifi
             modifier = Modifier
                 .height(200.dp)
                 .clip(RoundedCornerShape(10.dp))
-                .then(modifier),
+                .then(modifier).testTag("profilePicture"),
         )
     }
 }

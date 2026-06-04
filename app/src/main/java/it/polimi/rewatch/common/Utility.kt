@@ -408,6 +408,7 @@ fun <T> CustomTabRow(
     ),
     divider = divider,
     containerColor = containerColor,
+    modifier = Modifier.testTag("Tab_Row")
 ) {
     availableTabs.forEach {
         Tab(
