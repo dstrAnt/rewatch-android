@@ -10,6 +10,7 @@ import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
+import it.polimi.rewatch.screens.person.PersonDetailsData
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -42,6 +43,8 @@ interface PersistRepository {
     val authState: SharedFlow<AuthState>
     suspend fun signInAnonymously(): Result<Unit>
     suspend fun resolveCollision(anonymousUid: String, credential: AuthCredential, merge: Boolean): Result<Unit>
+
+    suspend fun getPersonData(personId: Int): PersonDetailsData
 }
 
 /**
@@ -196,6 +199,10 @@ class FakeRepository @Inject constructor() : PersistRepository {
         } else {
             addToWatchlist(id)
         }
+    }
+
+    override suspend fun getPersonData(personId: Int): PersonDetailsData {
+        TODO("Not yet implemented")
     }
 }
 
