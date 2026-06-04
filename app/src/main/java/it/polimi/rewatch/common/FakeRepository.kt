@@ -1,6 +1,6 @@
 package it.polimi.rewatch.common
 
-import app.moviebase.tmdb.model.TmdbShow
+
 import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.EmailAuthProvider
@@ -15,8 +15,6 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.datetime.toKotlinLocalDate
-import kotlinx.datetime.toKotlinLocalDateTime
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -200,7 +198,7 @@ class FakeRepository @Inject constructor() : PersistRepository {
 }
 
 fun shortLocalDateTime(year: Int, month: Int, day: Int) : LocalDateTime{
-    return LocalDateTime.of(2026, 2, 23, 0, 0)
+    return LocalDateTime.of(year, month, day, 0, 0)
 }
 
 val fakeWatchlist = listOf(
@@ -208,7 +206,7 @@ val fakeWatchlist = listOf(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1399), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
+        id = TvId(1390), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
     ),
     WatchlistMedia(
         id = TvId(1393),
@@ -238,6 +236,9 @@ val fakeWatchlist = listOf(
         id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f,)),
         date = shortLocalDateTime(2025, 12, 2)
     ),
+    WatchlistMedia(
+        id = TvId(1394)
+    )
 )
 val fakeWatch = listOf(
     WatchedMedia(

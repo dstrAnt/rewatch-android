@@ -7,22 +7,40 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.screens.media.MediaPage
+import it.polimi.rewatch.screens.media.MediaViewModel
+import app.moviebase.tmdb.Tmdb3
+import it.polimi.rewatch.common.fakeWatch
+import it.polimi.rewatch.model.TvId
+import it.polimi.rewatch.model.WatchedMedia
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import kotlin.collections.emptyList
 
 class MediaPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
     val defaultMedia = MovieId(0)
+    val fakeRepo = FakeRepository()
+    lateinit var mediaViewModel: MediaViewModel
 
     //@Before
     fun setup(media: MediaId) {
+
+        mediaViewModel = MediaViewModel(mediaId = media, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3{}))
 
         val actions = NavigationActions(onNavigateToPerson = { id -> },
 
@@ -44,7 +62,7 @@ class MediaPageTest {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            MediaPage(media, actions = actions, outerPadding = outerPadding)
+            MediaPage(media, actions = actions, outerPadding = outerPadding, viewModel = mediaViewModel)
         }
     }
 
@@ -61,8 +79,74 @@ class MediaPageTest {
     }
 
     @Test
-    fun testTrackingInfo() {
+    fun testTrackingInfoWithoutTracking() {
 
+        setup(defaultMedia)
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia == null)
+        assert(watchlistMedia == null)
+
+        composeTestRule.onNodeWithText("Add to your lists").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testTrackingInfoWithOnlyWatched() {
+
+        setup(MovieId(83541))
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia != null)
+        assert(watchlistMedia == null)
+
+        composeTestRule.onNodeWithText("You watched this").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testTrackingInfoWithOnlyWatchlist() {
+
+        setup(MovieId(550))
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia == null)
+        assert(watchlistMedia != null)
+
+        composeTestRule.onNodeWithText("In your watchlist").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testTrackingInfoWithWatchedAndWatchlist() {
+
+        setup(TvId(1394))
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia != null)
+        assert(watchlistMedia != null)
+
+        composeTestRule.onNodeWithText("You watched this").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testTrackingInfoWithWatchedAndWatchlistRated() {
+
+        setup(TvId(1390))
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia != null)
+        assert(watchlistMedia != null)
+        watchedMedia?.rating?.let { assert(it > 0f) }
+
+        composeTestRule.onNodeWithText("Your rating").assertExists().assertIsDisplayed()
     }
 
     @Test
