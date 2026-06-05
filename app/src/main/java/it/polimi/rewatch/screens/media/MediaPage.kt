@@ -1028,7 +1028,7 @@ fun PersonItem(
     },
     modifier = modifier
         .fillMaxWidth()
-        .clickable(onClick = onClick),
+        .clickable(onClick = onClick).testTag("person_listItem"),
 )
 
 @Composable
@@ -1076,7 +1076,8 @@ fun ReviewItem(review: TmdbReview?) {
         },
         modifier = Modifier
             .animateContentSize()
-            .clickable { isExpanded = !isExpanded },
+            .clickable { isExpanded = !isExpanded }
+            .testTag("review_listItem"),
     )
 }
 
@@ -1167,5 +1168,5 @@ fun EpisodeItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
     },
-    modifier = modifier.clickable(onClick = onNavigateToMedia),
+    modifier = modifier.clickable(onClick = onNavigateToMedia).testTag("episode_listItem"),
 )
