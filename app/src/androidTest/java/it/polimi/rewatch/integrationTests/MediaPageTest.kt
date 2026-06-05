@@ -1,8 +1,10 @@
 package it.polimi.rewatch.integrationTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChild
@@ -16,9 +18,14 @@ import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
 import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.model.TmdbMovieDetail
 import it.polimi.rewatch.common.fakeWatch
+import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
+import it.polimi.rewatch.model.WatchlistMedia
+import it.polimi.rewatch.screens.media.MediaContent
+import it.polimi.rewatch.screens.media.MovieData
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -150,7 +157,52 @@ class MediaPageTest {
     }
 
     @Test
-    fun testBuildTabs() {
+    fun testBuildTabsForMovies() {
+        val actions = NavigationActions(onNavigateToPerson = { id -> },
+
+            onNavigateToMedia = { id -> },
+            onNavigateBack = {
+
+            },
+            onFullscreenImage = { url ->
+
+            },
+            onBottomSheet = { info ->  },
+            onNavigateToLogin = {
+
+            },
+            onBackToHome = { tab ->
+
+            })
+
+        val outerPadding = PaddingValues();
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+
+        composeTestRule.onNodeWithText("Details").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+    }
+
+    @Test
+    fun testBuildTabsForShows() {
+
+    }
+
+    @Test
+    fun testBuildTabsForTvShowSeasons() {
 
     }
 
