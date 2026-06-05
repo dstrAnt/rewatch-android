@@ -19,8 +19,11 @@ import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbMovieDetail
+import app.moviebase.tmdb.model.TmdbProviders
+import app.moviebase.tmdb.model.TmdbShowDetail
 import it.polimi.rewatch.common.fakeWatch
 import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
@@ -43,6 +46,25 @@ class MediaPageTest {
     val defaultMedia = MovieId(0)
     val fakeRepo = FakeRepository()
     lateinit var mediaViewModel: MediaViewModel
+
+    val defaultActions = NavigationActions(onNavigateToPerson = { id -> },
+
+        onNavigateToMedia = { id -> },
+        onNavigateBack = {
+
+        },
+        onFullscreenImage = { url ->
+
+        },
+        onBottomSheet = { info ->  },
+        onNavigateToLogin = {
+
+        },
+        onBackToHome = { tab ->
+
+        })
+
+    val defaultOuterPadding = PaddingValues();
 
     //@Before
     fun setup(media: MediaId) {
@@ -158,24 +180,9 @@ class MediaPageTest {
 
     @Test
     fun testBuildTabsForMovies() {
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
+        val actions = defaultActions
 
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
-
-        val outerPadding = PaddingValues();
+        val outerPadding = defaultOuterPadding
         val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = emptyList())
 
         composeTestRule.setContent {
@@ -197,13 +204,74 @@ class MediaPageTest {
     }
 
     @Test
-    fun testBuildTabsForShows() {
+    fun testBuildTabsForMoviesWithDetails() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
 
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail(budget = 1000)), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+
+        composeTestRule.onNodeWithText("Details").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+    }
+
+    @Test
+    fun testBuildTabsForShows() {
+        val actions = defaultActions
+
+        val outerPadding = defaultOuterPadding
+        val showsData = MovieData(MediaDetail(TmdbShowDetail()), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = showsData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = TvId(1000),
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Seasons").assertExists().assertIsDisplayed().assertIsToggleable()
     }
 
     @Test
     fun testBuildTabsForTvShowSeasons() {
+        val actions = defaultActions
 
+        val outerPadding = defaultOuterPadding
+        val showsData = MovieData(MediaDetail(TmdbShowDetail()), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = showsData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = SeasonId(1000, 10),
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Episodes").assertExists().assertIsDisplayed().assertIsToggleable()
     }
 
     @Test
