@@ -19,10 +19,13 @@ import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbMovieDetail
+import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbShowDetail
+import app.moviebase.tmdb.model.TmdbWatchProviderResult
 import it.polimi.rewatch.common.fakeWatch
 import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
@@ -201,6 +204,7 @@ class MediaPageTest {
 
         composeTestRule.onNodeWithText("Details").assertDoesNotExist()
         composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
     }
 
     @Test
@@ -226,6 +230,7 @@ class MediaPageTest {
 
         composeTestRule.onNodeWithText("Details").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
     }
 
     @Test
@@ -249,6 +254,7 @@ class MediaPageTest {
         composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Seasons").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
     }
 
     @Test
@@ -272,6 +278,7 @@ class MediaPageTest {
         composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Episodes").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
     }
 
     @Test
@@ -305,11 +312,6 @@ class MediaPageTest {
     }
 
     @Test
-    fun testWatchTab() {
-
-    }
-
-    @Test
     fun testDetailsTab() {
 
     }
@@ -326,7 +328,24 @@ class MediaPageTest {
 
     @Test
     fun testSimilarSection() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val similars = List<PosterInfo>(1, {index -> PosterInfo(MovieId(index)) })
 
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = similars)
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Similar").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -340,8 +359,98 @@ class MediaPageTest {
     }
 
     @Test
-    fun testWatchProviders() {
+    fun testWatchProvidersForBuy() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val watchMap =  HashMap<String, TmdbProviders>(1)
+        val buy = List<TmdbProvider>(1, {index -> TmdbProvider(providerId = index)})
+        watchMap["US"] = TmdbProviders(buy = buy)
 
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail(watchProviders = TmdbWatchProviderResult(results = watchMap))), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Buy").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Unknown Provider").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testWatchProvidersForFlatrate() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val watchMap =  HashMap<String, TmdbProviders>(1)
+        val flatrate = List<TmdbProvider>(1, {index -> TmdbProvider(providerId = index)})
+        watchMap["US"] = TmdbProviders(flatrate = flatrate)
+
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail(watchProviders = TmdbWatchProviderResult(results = watchMap))), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+
+        composeTestRule.onNodeWithText("Streaming").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Unknown Provider").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testWatchProvidersForBuyAndFlatrate() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val watchMap =  HashMap<String, TmdbProviders>(1)
+        val buy = List<TmdbProvider>(1, {index -> TmdbProvider(providerId = index, providerName = "Mountain Prod.")})
+        val flatrate = List<TmdbProvider>(1, {index -> TmdbProvider(providerId = index, providerName = "Another Netflix")})
+        watchMap["US"] = TmdbProviders(buy = buy, flatrate = flatrate)
+
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail(watchProviders = TmdbWatchProviderResult(results = watchMap))), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Buy").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Mountain Prod.").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Streaming").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Another Netflix").assertExists().assertIsDisplayed()
     }
 
     @Test
