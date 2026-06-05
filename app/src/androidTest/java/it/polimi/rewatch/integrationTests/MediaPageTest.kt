@@ -10,6 +10,7 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -29,6 +30,8 @@ import app.moviebase.tmdb.model.TmdbEpisodeDetail
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
+import app.moviebase.tmdb.model.TmdbResult
+import app.moviebase.tmdb.model.TmdbReview
 import app.moviebase.tmdb.model.TmdbSeason
 import app.moviebase.tmdb.model.TmdbSeasonDetail
 import app.moviebase.tmdb.model.TmdbShowDetail
@@ -350,8 +353,66 @@ class MediaPageTest {
     }
 
     @Test
-    fun testOptionalTitledSection() {
+    fun testOptionalTitledSectionForReviews() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
 
+        val reviews = TmdbResult<TmdbReview>(
+            results = List<TmdbReview>(
+                5,
+                { index ->
+                    TmdbReview(
+                        id = index.toString(),
+                        author = "Giuseppe B. ($index)",
+                        url = "",
+                        content = "I don't like this movie ${if (index > 0) "sequel n° $index" else ""}, I'm ${if (index > 0) "still" else ""} disappointed"
+                    )
+                },
+            ),
+        )
+
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail(reviews = reviews)), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Reviews").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithTag("review_listItem").assertAll(hasClickAction())
+        composeTestRule.onNodeWithContentDescription("Avatar for", substring = true).assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Giuseppe B. (2)").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("I don't like this movie, I'm disappointed").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Star rating icon").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testOptionalTitledSectionForSimilars() {
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val similars = List<PosterInfo>(1, {index -> PosterInfo(MovieId(index)) })
+
+        val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = similars)
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        composeTestRule.onNodeWithText("Similar").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -395,41 +456,11 @@ class MediaPageTest {
     }
 
     @Test
-    fun testSimilarSection() {
-        val actions = defaultActions
-        val outerPadding = defaultOuterPadding
-        val similars = List<PosterInfo>(1, {index -> PosterInfo(MovieId(index)) })
-
-        val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = similars)
-
-        composeTestRule.setContent {
-            MediaContent(
-                data = movieData,
-                watchlistItem = null,
-                watchedListItem = null,
-                padding = outerPadding,
-                mediaId = defaultMedia,
-                actions = actions,
-            )
-        }
-
-        composeTestRule.onNodeWithText("Similar").assertExists().assertIsDisplayed()
-    }
-
-    @Test
     fun testPersonItem() {
         setup(defaultMedia)
 
         composeTestRule.onAllNodesWithTag("person_listItem").assertAll(hasClickAction())
         composeTestRule.onNodeWithContentDescription("Dettagli attore").assertExists().assertIsDisplayed()
-    }
-
-    @Test
-    fun testReviewItem() {
-        setup(defaultMedia)
-
-        composeTestRule.onAllNodesWithTag("review_listItem").assertAll(hasClickAction())
-        composeTestRule.onNodeWithContentDescription("Avatar for", substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
