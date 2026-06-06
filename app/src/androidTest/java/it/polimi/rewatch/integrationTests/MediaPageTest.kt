@@ -34,6 +34,8 @@ import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
 import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.image.TmdbImage
+import app.moviebase.tmdb.image.TmdbImageType
 import app.moviebase.tmdb.model.TmdbCast
 import app.moviebase.tmdb.model.TmdbCompany
 import app.moviebase.tmdb.model.TmdbCompanyId
@@ -64,6 +66,7 @@ import it.polimi.rewatch.screens.media.DetailsTab
 import it.polimi.rewatch.screens.media.MediaContent
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.media.TaglineAndOverview
+import it.polimi.rewatch.screens.media.TitleAndInfoSection
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -505,7 +508,36 @@ class MediaPageTest {
 
     @Test
     fun testTitleAndInfoSection() {
+        val releaseDate = LocalDate.now().toKotlinLocalDate()
 
+        composeTestRule.setContent {
+            TitleAndInfoSection(
+                pad = 16.dp,
+                backdropImage = null,
+                title = "A little great hero",
+                posterImage = TmdbImage(path = "", type = TmdbImageType.POSTER),
+                director = "Steven Andrix",
+                runtime = "65",
+                actions = NavigationActions(
+                    onNavigateToPerson = {},
+                    onNavigateToMedia = {},
+                    onNavigateBack = {},
+                    onFullscreenImage = {},
+                    onBottomSheet = {},
+                    onNavigateToLogin = {},
+                    onBackToHome = {},
+                ),
+                certification = "PG-9",
+                directorId = 10,
+                releaseDate = releaseDate
+            )
+        }
+
+        composeTestRule.onNodeWithText("A little great hero").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("PG-9").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText(releaseDate.toString().formatDate("MMM yyyy")).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Directed by", substring = true).assertExists().assertIsDisplayed().assertHasClickAction()
+        composeTestRule.onNodeWithContentDescription("A little great hero").assertExists().assertIsDisplayed()
     }
 
     @Test
