@@ -6,16 +6,24 @@ import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsToggleable
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChild
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onSibling
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
@@ -425,7 +433,27 @@ class MediaPageTest {
 
     @Test
     fun testTabbedSection() {
+        setup(defaultMedia)
 
+        val tabs = composeTestRule.onNodeWithTag("Tab_Row").assertExists().assertIsDisplayed()
+            .onChildren()
+
+        tabs.assertAll(hasClickAction()).assertAll(isSelectable())
+
+        val firstTab = tabs.onFirst().assertExists().assertIsDisplayed().assertIsSelected()
+        val lastTab = tabs.onLast().assertExists().assertIsDisplayed().assertIsNotSelected()
+
+        var currentTab = firstTab
+
+        do{
+            currentTab = currentTab.onSibling()
+
+            currentTab.performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+            currentTab.assertIsSelected()
+        } while (currentTab != lastTab)
     }
 
     @Test

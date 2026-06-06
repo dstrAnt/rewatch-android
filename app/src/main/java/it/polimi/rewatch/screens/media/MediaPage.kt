@@ -537,7 +537,7 @@ fun LazyListScope.tabbedSection(
     val availableTabs = allTabs.filter { it.isAvailable() }
 
     if (availableTabs.isNotEmpty()) {
-        // 2. Resolve the active tab (fallback to the first available if none selected/found)
+        // 2. Resolve the active tab (fallback to the first available if none is selected/found)
         val resolvedActiveTab = availableTabs.find { it.title == activeTab } ?: availableTabs.first()
 
         item(key = "tabs_row") {
