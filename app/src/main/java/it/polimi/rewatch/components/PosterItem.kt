@@ -205,7 +205,8 @@ private fun PosterItem(
                 } else {
                     baseModifier // If both are null, return the modifier without click behavior
                 }
-            }.testTag("posterItem_$title"),
+            }.testTag("posterItem_$title")
+            .testTag("posterItem"),
         contentAlignment = Alignment.Center,
     ) {
         // 2. Pass it directly into the built-in slots

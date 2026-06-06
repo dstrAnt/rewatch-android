@@ -231,8 +231,8 @@ fun LazyGridScope.movieSection(
                 string = if (isExpanded) "Show Less" else "More",
                 isExpanded = isExpanded,
                 onClick = { onToggleSection(title) },
-                Modifier.animateItem()
-                    .testTag("button_$title"),
+                title = title,
+                Modifier.animateItem(),
             )
         }
     }
@@ -243,6 +243,7 @@ fun HomeButton(
     string: String,
     isExpanded: Boolean,
     onClick: () -> Unit,
+    title: String,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -253,7 +254,8 @@ fun HomeButton(
             modifier = Modifier
                 .clip(CircleShape)
                 .clickable(onClick = onClick)
-                .padding(horizontal = 24.dp, vertical = 8.dp),
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .testTag("button_$title"),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
