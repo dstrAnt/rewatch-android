@@ -61,6 +61,9 @@ class FakeRepository @Inject constructor() : PersistRepository {
 
     private val defaultMergeTestEmail2 = "cannotMerge.me@b.com"
 
+    private val _authState = MutableSharedFlow<AuthState>(replay = 1)
+    override val authState = _authState.asSharedFlow()
+
     init {
         _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
         _watchedFlow.tryEmit(Result.success(fakeWatch))
@@ -91,9 +94,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
         _authState.tryEmit(AuthState.SignedOut)
         _email = ""
     }
-
-    private val _authState = MutableSharedFlow<AuthState>(replay = 1)
-    override val authState = _authState.asSharedFlow()
 
     override suspend fun signInAnonymously(): Result<Unit> {
         _authState.tryEmit(AuthState.Anonymous(""))

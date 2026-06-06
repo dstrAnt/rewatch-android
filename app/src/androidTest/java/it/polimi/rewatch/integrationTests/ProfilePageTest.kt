@@ -16,6 +16,10 @@ import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.screens.settings.ProfilePage
 import it.polimi.rewatch.screens.settings.ProfileViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,7 +29,8 @@ class ProfilePageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val profileViewModel = ProfileViewModel(repository = FakeRepository())
+    val repo = FakeRepository()
+    val profileViewModel = ProfileViewModel(repository = repo)
 
     @Before
     fun setup() {
@@ -56,35 +61,41 @@ class ProfilePageTest {
 
     @Test
     fun testProfileBox() {
-        val email = profileViewModel.email
+        composeTestRule.onNodeWithText("Guest").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
 
-        if(!email.equals("")){
-            composeTestRule.onNodeWithText("$email").assertExists().assertIsDisplayed()
-        }
-        else{
-            composeTestRule.onNodeWithText("Guest").assertExists().assertIsDisplayed()
-        }
+        val email = "mark.zuck@meta.com"
+        runBlocking {  repo.verifySignInLink(email,"") }
+        Thread.sleep(5000)
+
+
+        composeTestRule.onNodeWithText("Guest").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Logout").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText(email).assertExists().assertIsDisplayed()
+        Thread.sleep(5000)
     }
 
     @Test
     fun testProfileBoxRows() {
 
-        var watchedMovies = profileViewModel.watchedMovies
-        var watchedShows = profileViewModel.watchedShows
-        var watchlistShows = profileViewModel.watchlistShows
-        var watchlistMovies = profileViewModel.watchlistMovies
+        var watchedMovies = profileViewModel.watchedMovies; var nWatchedMovies = runBlocking { watchedMovies.first() }
+        var watchedShows = profileViewModel.watchedShows; var nWatchedShows = runBlocking { watchedShows.first() }
+        var watchlistShows = profileViewModel.watchlistShows; var nWatchlistShows = runBlocking { watchlistShows.first() }
+        var watchlistMovies = profileViewModel.watchlistMovies; var nWatchlistMovies = runBlocking { watchlistMovies.first() }
 
         composeTestRule.onNodeWithText("Movies in watchlist").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$watchlistMovies").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("$nWatchedMovies").assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Movies watched").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$watchedMovies").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("$nWatchedShows").assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Tv Shows in watchlist").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$watchlistShows").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("$nWatchlistShows").assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Tv Shows watched").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$watchedShows").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("$nWatchlistMovies").assertExists().assertIsDisplayed()
+        Thread.sleep(5000)
 
         profileViewModel.repository.addToWatchlist(MovieId(0))
         profileViewModel.repository.addToWatchedList(MovieId(0), 0.0f, LocalDateTime.now())
@@ -93,37 +104,47 @@ class ProfilePageTest {
 
         composeTestRule.onNodeWithTag("profile_page").assertExists()
         composeTestRule.waitForIdle()
-
+        Thread.sleep(5000)
 
         watchedMovies = profileViewModel.watchedMovies
          watchedShows = profileViewModel.watchedShows
          watchlistShows = profileViewModel.watchlistShows
          watchlistMovies = profileViewModel.watchlistMovies
-        composeTestRule.onNodeWithText("${watchlistMovies}").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("${watchedMovies}").assertExists().assertIsDisplayed()
+        nWatchedMovies = runBlocking { watchedMovies.first() }
+        nWatchedShows = runBlocking { watchedShows.first() }
+        nWatchlistShows = runBlocking { watchlistShows.first() }
+        nWatchlistMovies = runBlocking { watchlistMovies.first() }
 
-        composeTestRule.onNodeWithText("${watchlistShows}").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("${nWatchedMovies}").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("${watchedShows}").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("${nWatchedShows}").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("${nWatchlistShows}").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("${nWatchlistMovies}").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testLogOut() {
-        val authState = profileViewModel.state
+        //val authState = profileViewModel.state
+
+        val email = "mark.zuck@meta.com"
+        runBlocking {  repo.verifySignInLink(email,"") }
+        Thread.sleep(5000)
 
         val logButton = composeTestRule.onNodeWithTag("logButton").assertExists().assertIsDisplayed()
-
-        if (authState is AuthState.Authenticated){
+        Thread.sleep(5000)
+        try {
+            composeTestRule.onNodeWithText("Logout").assertExists().assertIsDisplayed()
             logButton.performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(5000)
-
-            assert(profileViewModel.state is AuthState.SignedOut)
         }
-        else{
+        catch (e: AssertionError){
             println("User is not logged! This test must halt.")
             assert(false)
         }
+        composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
     }
 }
