@@ -16,13 +16,22 @@ import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasNoClickAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChild
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
+import androidx.test.espresso.action.ViewActions.swipeUp
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.TmdbClientConfig
 import it.polimi.rewatch.common.NavigationActions
@@ -142,50 +151,62 @@ class HomePageTest {
 
     @Test
     fun testHomeButtons() {
-        setup(defaultStartTab, {})
+        setup(defaultStartTab, {media -> println(media.toString())})
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
 
+        composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+
+        composeTestRule.onNodeWithText("Trending").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Top Rated").assertExists().assertIsDisplayed()
         val trendingButton = composeTestRule.onNodeWithTag("button_Trending").assertExists().assertIsDisplayed().assertHasClickAction()
-        val ratedButton = composeTestRule.onNodeWithTag("button_Top Rated").assertExists().assertIsDisplayed().assertHasClickAction()
-        val newestButton = composeTestRule.onNodeWithTag("button_Newest").assertExists().assertIsDisplayed().assertHasClickAction()
-
         testHomeButton(trendingButton, "Trending")
+
+        //justScrollUp(lazyGrid, 2)
+        justScrollDown(lazyGrid, 2)
+
+        val ratedButton = composeTestRule.onNodeWithTag("button_Top Rated").assertExists().assertIsDisplayed().assertHasClickAction()
         testHomeButton(ratedButton, "Top Rated")
+
+        composeTestRule.onNodeWithText("Newest").assertExists().assertIsDisplayed()
+        val newestButton = composeTestRule.onNodeWithTag("button_Newest").assertExists().assertIsDisplayed().assertHasClickAction()
         testHomeButton(newestButton, "Newest")
     }
 
     fun testHomeButton(button: SemanticsNodeInteraction, title: String){
-        val expectedCompressedSizeForPortrait = 12
-        val expectedCompressedSizeForLandscape = 27
-        val expectedExpandedSizeForPortrait = 40
-        val expectedExpandedSizeForLandscape = 36
 
-        try {
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedCompressedSizeForPortrait)
-        }
-        catch (e: AssertionError){
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedCompressedSizeForLandscape)
-        }
+        composeTestRule.onAllNodesWithTag("posterItem$title").assertAll(hasClickAction())
+
+        composeTestRule.onNodeWithText("Show Less").assertDoesNotExist()
+
+        button.performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithContentDescription("More_$title").assertDoesNotExist()
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        justScrollDown(lazyGrid, 3)
 
         button.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        try {
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedExpandedSizeForPortrait)
-        }
-        catch (e: AssertionError){
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedExpandedSizeForLandscape)
-        }
+        composeTestRule.onNodeWithText("Show Less").assertDoesNotExist()
+    }
 
-        button.performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(5000)
-
-        try {
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedCompressedSizeForPortrait)
+    fun justScrollDown(grid: SemanticsNodeInteraction, times: Int){
+        for (i in List(times) { it }){
+            grid.performTouchInput { swipeUp(500f, 0f) }
+            composeTestRule.waitForIdle()
+            Thread.sleep(2000)
         }
-        catch (e: AssertionError){
-            composeTestRule.onAllNodesWithTag("posterItem_$title").assertCountEquals(expectedCompressedSizeForLandscape)
+    }
+
+    fun justScrollUp(grid: SemanticsNodeInteraction, times: Int){
+        for (i in List(times) { it }){
+            grid.performTouchInput { swipeDown(0f, 300f) }
+            composeTestRule.waitForIdle()
+            Thread.sleep(2000)
         }
     }
 

@@ -221,7 +221,7 @@ fun LazyGridScope.movieSection(
         PosterItem(
             movie,
             actions,
-            Modifier.animateItem(),
+            Modifier.animateItem().testTag("posterItem_$title"),
         )
     }
     // --- Dynamic Button ---
@@ -263,13 +263,13 @@ fun HomeButton(
             ) {
                 Text(
                     text = string,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelLarge
                 )
 
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp
                     else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
+                    contentDescription = string + "_" + title,
                 )
             }
         }

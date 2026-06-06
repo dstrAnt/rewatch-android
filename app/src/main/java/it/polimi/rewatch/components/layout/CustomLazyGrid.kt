@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import kotlin.math.max
 
@@ -46,7 +47,8 @@ fun CustomLazyGrid(
         modifier = modifier
             .fillMaxSize()
             .animateContentSize()
-            .padding(horizontal = 7.dp),
+            .padding(horizontal = 7.dp)
+            .testTag("lazyGrid"),
         content = { content.invoke(this, calculatedColumnCount) },
     )
 }
