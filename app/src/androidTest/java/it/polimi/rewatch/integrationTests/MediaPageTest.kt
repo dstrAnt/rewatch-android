@@ -3,6 +3,7 @@ package it.polimi.rewatch.integrationTests
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertAll
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsToggleable
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
@@ -24,9 +26,13 @@ import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbCast
+import app.moviebase.tmdb.model.TmdbCompany
+import app.moviebase.tmdb.model.TmdbCompanyId
+import app.moviebase.tmdb.model.TmdbCountry
 import app.moviebase.tmdb.model.TmdbCrew
 import app.moviebase.tmdb.model.TmdbEpisode
 import app.moviebase.tmdb.model.TmdbEpisodeDetail
+import app.moviebase.tmdb.model.TmdbGenre
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
@@ -37,6 +43,7 @@ import app.moviebase.tmdb.model.TmdbSeasonDetail
 import app.moviebase.tmdb.model.TmdbShowDetail
 import app.moviebase.tmdb.model.TmdbWatchProviderResult
 import it.polimi.rewatch.common.fakeWatch
+import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.model.EpisodeId
 import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.PosterInfo
@@ -44,6 +51,7 @@ import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.TvId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
+import it.polimi.rewatch.screens.media.DetailsTab
 import it.polimi.rewatch.screens.media.MediaContent
 import it.polimi.rewatch.screens.media.MovieData
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -442,17 +450,64 @@ class MediaPageTest {
 
     @Test
     fun testDetailsTab() {
+        val companies = List<TmdbCompany>(4, { index -> TmdbCompany(name = companyDecider(index), id = index)})
 
+        composeTestRule.setContent {
+            DetailsTab(pad = 16.dp,
+                MediaDetail(
+                    TmdbMovieDetail(
+                        genres = List<TmdbGenre>(4, { i -> genreDecider(i + 1)}),
+                        budget = 500000,
+                        releaseDate = LocalDate.now().toKotlinLocalDate(),
+                        productionCountries = List<TmdbCountry>(3, { index -> TmdbCountry(name = "Country n° $index", iso3166 = index.toString())}),
+                        productionCompanies = companies
+                    )
+                )
+            )
+        }
+
+        composeTestRule.onNodeWithText("Genres:").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Horror").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Comedy").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Drama").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Adventure").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Budget: $ 500 thousand").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Countries:").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("Country n° ", substring = true).assertCountEquals(3)
+
+        composeTestRule.onNodeWithText("Release: ${LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMMM yyyy")}").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Production:").assertExists().assertIsDisplayed()
+
+        for (company in companies){
+            try {
+                company.name?.let { composeTestRule.onNodeWithText(it).assertExists().assertIsDisplayed() }
+                company.name?.let { composeTestRule.onNodeWithContentDescription(it).assertExists().assertIsDisplayed() }
+            }catch (e: AssertionError){
+                composeTestRule.onNodeWithText("Unknown Company").assertExists().assertIsDisplayed()
+            }
+
+        }
     }
 
-    @Test
-    fun testDetailRow() {
-
+    fun genreDecider(index: Int): TmdbGenre {
+        when(index){
+            1 -> return TmdbGenre(id = index, name = "Horror")
+            2 -> return TmdbGenre(id = index, name = "Comedy")
+            3 -> return TmdbGenre(id = index, name = "Drama")
+            else -> return TmdbGenre(id = index, name = "Adventure")
+        }
     }
 
-    @Test
-    fun testCompanyItem() {
-
+    fun companyDecider(index: Int): String?{
+        when(index){
+            1 -> return "UNIVERSAL"
+            2 -> return "NETFLIX_INTERNATIONAL_PICTURES"
+            3 -> return "CENTURY_STUDIOS"
+            else -> return null
+        }
     }
 
     @Test
