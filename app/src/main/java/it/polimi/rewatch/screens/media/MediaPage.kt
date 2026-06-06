@@ -728,7 +728,7 @@ fun BackdropImage(
     ) {
         RewatchAsyncImage(
             model = build(image, width = 1000, height = 500),
-            contentDescription = null,
+            contentDescription = "backdrop image for media content",
             contentScale = ContentScale.Crop,
             modifier = modifier
                 .fillMaxWidth()

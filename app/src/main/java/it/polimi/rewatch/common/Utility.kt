@@ -384,7 +384,8 @@ fun ExpandableText(
                     if (canExpand) Modifier.clickable { isExpanded = !isExpanded }
                     else Modifier,
                 )
-                .then(modifier),
+                .then(modifier)
+                .testTag("expandableText"),
         )
     }
 }

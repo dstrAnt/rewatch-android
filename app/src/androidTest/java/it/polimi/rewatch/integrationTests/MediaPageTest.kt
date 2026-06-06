@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -62,6 +63,7 @@ import it.polimi.rewatch.model.WatchlistMedia
 import it.polimi.rewatch.screens.media.DetailsTab
 import it.polimi.rewatch.screens.media.MediaContent
 import it.polimi.rewatch.screens.media.MovieData
+import it.polimi.rewatch.screens.media.TaglineAndOverview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -458,7 +460,35 @@ class MediaPageTest {
 
     @Test
     fun testTaglineAndOverview() {
+        composeTestRule.setContent {
+            TaglineAndOverview(
+                16.dp,
+                overview = "This is an overview",
+                tagline = "This a great tagline"
+            )
+        }
 
+        composeTestRule.onNodeWithText("This is an overview").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("This a great tagline").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithTag("expandableText").assertExists().assertIsDisplayed().assertHasNoClickAction()
+    }
+
+    @Test
+    fun testTaglineAndOverviewWithExpandableText() {
+        composeTestRule.setContent {
+            TaglineAndOverview(
+                16.dp,
+                overview = "This is a very large overview: since this overview is so long, it should provide the possibility to allow the user not only to read more," +
+                        " but also to shrink the entire content to a minimal number of text lines.",
+                tagline = "This still a great tagline"
+            )
+        }
+
+        composeTestRule.onNodeWithText("This is a very large overview", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("This a great tagline").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithTag("expandableText").assertExists().assertIsDisplayed().assertHasClickAction()
     }
 
     @Test
@@ -468,7 +498,9 @@ class MediaPageTest {
 
     @Test
     fun testBackdropImage() {
+        setup(defaultMedia)
 
+        composeTestRule.onNodeWithContentDescription("backdrop image", substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
