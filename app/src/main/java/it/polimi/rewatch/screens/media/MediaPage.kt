@@ -673,7 +673,8 @@ fun TmdbRatings(
                             .clickable {
                                 context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                             }
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .testTag("externalLink_row"),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {

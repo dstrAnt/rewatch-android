@@ -67,6 +67,7 @@ import it.polimi.rewatch.screens.media.MediaContent
 import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.media.TaglineAndOverview
 import it.polimi.rewatch.screens.media.TitleAndInfoSection
+import it.polimi.rewatch.screens.media.TmdbRatings
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -496,7 +497,43 @@ class MediaPageTest {
 
     @Test
     fun testTmdbRatings() {
+        composeTestRule.setContent {
+            TmdbRatings(
+                voteAverage = 7.5f,
+                voteCount = 15,
+                externalIds = emptyMap()
+            )
+        }
 
+        composeTestRule.onNodeWithContentDescription("TMDB logo").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("7.5").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("/10").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("15 votes").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testTmdbRatingsWithExternalIds() {
+        val externalIds = HashMap<String, String>(2)
+        externalIds["Imdb Link"] = ""
+        externalIds["Trailer Link"] = ""
+
+        composeTestRule.setContent {
+            TmdbRatings(
+                voteAverage = 5.0f,
+                voteCount = 3,
+                externalIds = externalIds
+            )
+        }
+
+        composeTestRule.onNodeWithContentDescription("TMDB logo").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("5.0").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("/10").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("3 votes").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("imdb link").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("trailer link").assertExists().assertIsDisplayed()
+
+        composeTestRule.onAllNodesWithTag("externalLink_row").assertAll(hasClickAction())
     }
 
     @Test
