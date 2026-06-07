@@ -6,12 +6,14 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.screens.settings.AuthPage
@@ -154,6 +156,7 @@ class AuthPageTest {
 
         sendLinkButton.performClick()
         composeTestRule.waitForIdle()
+        Thread.sleep(5000)
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
         authViewModel.handleDeepLink(" ")
@@ -202,10 +205,14 @@ class AuthPageTest {
         sendLinkButton.assertIsEnabled()
 
         sendLinkButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Sending link…").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
         composeTestRule.waitForIdle()
 
         authViewModel.handleDeepLink(" ")
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
     }
 
@@ -253,10 +260,12 @@ class AuthPageTest {
 
         sendLinkButton.performClick()
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
         authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
 
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("You have lists saved as a guest. Do you want to merge them with your existing account?").assertExists().assertIsDisplayed()
@@ -314,10 +323,12 @@ class AuthPageTest {
 
         sendLinkButton.performClick()
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
         authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
 
         val discardButton = composeTestRule.onNodeWithTag("discardMergeButton").assertExists().assertIsDisplayed().assertIsEnabled()

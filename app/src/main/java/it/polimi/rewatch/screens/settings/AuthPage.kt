@@ -155,11 +155,11 @@ fun AuthPage(
     }
 
     DisposableEffect(context) {
-        val activity = context as MainActivity
+        val activity = context as? MainActivity
 
         // Function to process the link if we find one
-        fun processIntent(intent: Intent) {
-            intent.data?.toString()?.let { link ->
+        fun processIntent(intent: Intent?) {
+            intent?.data?.toString()?.let { link ->
                 // Route this to your AuthViewModel — via shared state,
                 // navigation argument, or a SavedStateHandle
                 viewModel.handleDeepLink(link)
@@ -168,15 +168,15 @@ fun AuthPage(
 
         println("RECEIVED!!!")
         // 1. Check if the app was completely closed and launched via the link
-        processIntent(activity.intent)
+        processIntent(activity?.intent)
         // 2. Listen for the link if the app was already open in the background
         val listener = { newIntent: Intent ->
             processIntent(newIntent)
         }
-        activity.addOnNewIntentListener(listener)
+        activity?.addOnNewIntentListener(listener)
         // Cleanup when the Composable leaves the screen
         onDispose {
-            activity.removeOnNewIntentListener(listener)
+            activity?.removeOnNewIntentListener(listener)
         }
     }
 
