@@ -3,6 +3,7 @@ package it.polimi.rewatch.systemTests
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -19,14 +20,13 @@ import org.junit.Test
 
 class TestCaseWatchlist {
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setup() {
-
-        composeTestRule.setContent {
+        /*composeTestRule.setContent {
             MainActivity()
-        }
+        }*/
     }
 
     @Test

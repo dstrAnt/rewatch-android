@@ -1,6 +1,7 @@
 package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -15,13 +16,13 @@ import org.junit.Test
 
 class TestCaseBrowseFilms {
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setup() {
-        composeTestRule.setContent {
+        /*composeTestRule.setContent {
             MainActivity()
-        }
+        }*/
     }
     @Test
     fun testBrowseFilms() {

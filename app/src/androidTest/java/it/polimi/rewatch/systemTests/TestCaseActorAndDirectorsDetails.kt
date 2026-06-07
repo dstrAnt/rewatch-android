@@ -1,6 +1,7 @@
 package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.common.NavigationActions
@@ -11,7 +12,7 @@ import org.junit.Test
 
 class TestCaseActorAndDirectorsDetails {
     @get:Rule
-    val composeTestRule = createComposeRule()
+    val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Before
     fun setup() {
@@ -39,7 +40,7 @@ class TestCaseActorAndDirectorsDetails {
             PersonPage(actions = actions, outerPadding = outerPadding, personId = 0)
         }*/
 
-        MainActivity()
+       // MainActivity()
     }
 
     @Test
