@@ -12,16 +12,21 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
+import app.moviebase.tmdb.Tmdb3
 import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.search.SearchPage
+import it.polimi.rewatch.screens.search.SearchViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +34,8 @@ import org.junit.Test
 class SearchPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    val searchViewModel = SearchViewModel(TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
     @Before
     fun setup() {
@@ -57,12 +64,14 @@ class SearchPageTest {
             )
             val pagerState = rememberPagerState(pageCount = { BottomTabs.entries.size })
 
-            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState )
+            SearchPage(actions = actions, outerPadding = outerPadding, pagerState = pagerState, viewModel = searchViewModel)
         }
     }
 
     @Test
     fun testSearchInputField(){
+        composeTestRule.onNodeWithText("Find All").assertExists().assertIsDisplayed()
+
         val startSearchButton = composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
@@ -81,7 +90,10 @@ class SearchPageTest {
         composeTestRule.onNodeWithText("Start Searching").assertDoesNotExist()
 
         try {
-            composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+            val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
+
+            //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+            searchResult.assertExists().assertIsDisplayed()
         }catch (e: AssertionError){
             composeTestRule.onNodeWithText("No results").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
@@ -109,6 +121,7 @@ class SearchPageTest {
         Thread.sleep(5000)
 
         movieTab.assertIsSelected()
+        composeTestRule.onNodeWithText("Find Movies").assertExists().assertIsDisplayed()
 
         val inputText = "Avengers"
 
@@ -116,11 +129,14 @@ class SearchPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
+
+        //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        searchResult.assertExists().assertIsDisplayed()
 
         val inputText2 = "Chris Hemsworth"
 
-        searchField.performTextInput(inputText2)
+        searchField.performTextReplacement(inputText2)
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
@@ -137,6 +153,7 @@ class SearchPageTest {
         Thread.sleep(5000)
 
         showsTab.assertIsSelected()
+        composeTestRule.onNodeWithText("Find Tv Shows").assertExists().assertIsDisplayed()
 
         val inputText = "Avengers"
 
@@ -144,11 +161,14 @@ class SearchPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
+
+        //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        searchResult.assertExists().assertIsDisplayed()
 
         val inputText2 = "Matt Damon"
 
-        searchField.performTextInput(inputText2)
+        searchField.performTextReplacement(inputText2)
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
@@ -165,6 +185,7 @@ class SearchPageTest {
         Thread.sleep(5000)
 
         peopleTab.assertIsSelected()
+        composeTestRule.onNodeWithText("Find People").assertExists().assertIsDisplayed()
 
         val inputText = "Chris Evans"
 
@@ -172,7 +193,21 @@ class SearchPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        //val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
+        val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText)[0]
+
+        //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
+        searchResult.assertExists().assertIsDisplayed()
+
+        val inputText2 = "Kung Fu Panda"
+
+        searchField.performTextReplacement(inputText2)
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
+
+        composeTestRule.onNodeWithContentDescription(inputText2).assertDoesNotExist()
+
+        Thread.sleep(5000)
     }
 
     @Test
