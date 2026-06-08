@@ -77,7 +77,7 @@ class TrackingPageTest {
 
         val outerPadding = PaddingValues();
 
-        val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3 {  }), persistRepo = fakeRepo)
+        val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")), persistRepo = fakeRepo)
 
         composeTestRule.setContent {
             TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE, viewModel = trackingViewModel)

@@ -16,8 +16,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSibling
 import androidx.compose.ui.test.performClick
+import app.moviebase.tmdb.Tmdb3
 import it.polimi.rewatch.common.NavigationActions
+import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.screens.person.PersonPage
+import it.polimi.rewatch.screens.person.PersonViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,6 +28,8 @@ import org.junit.Test
 class PersonPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    val personViewModel = PersonViewModel(personId = 0, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
     @Before
     fun setup() {
@@ -49,7 +54,7 @@ class PersonPageTest {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            PersonPage(actions = actions, outerPadding = outerPadding, personId = 0)
+            PersonPage(actions = actions, outerPadding = outerPadding, personId = 0, viewModel = personViewModel)
         }
     }
 

@@ -110,7 +110,7 @@ class MediaPageTest {
     //@Before
     fun setup(media: MediaId) {
 
-        mediaViewModel = MediaViewModel(mediaId = media, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3{}))
+        mediaViewModel = MediaViewModel(mediaId = media, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
         val actions = NavigationActions(onNavigateToPerson = { id -> },
 
