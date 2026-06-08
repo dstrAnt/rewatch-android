@@ -3,6 +3,7 @@ package it.polimi.rewatch.common
 
 import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.EmailAuthCredential
 import com.google.firebase.auth.EmailAuthProvider
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
@@ -12,6 +13,7 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -61,6 +63,8 @@ class FakeRepository @Inject constructor() : PersistRepository {
 
     private val defaultMergeTestEmail2 = "cannotMerge.me@b.com"
 
+    var loadStateTracking = false
+
     private val _authState = MutableSharedFlow<AuthState>(replay = 1)
     override val authState = _authState.asSharedFlow()
 
@@ -70,10 +74,14 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     override suspend fun sendSignInLink(email: String): Result<Unit> {
+        if(loadStateTracking)
+            delay(5000)
         return if (email.equals(defaultTestEmail)) Result.failure(exception = Throwable()) else Result.success(Unit)
     }
 
     override suspend fun verifySignInLink(email: String, link: String): Result<LinkResult> {
+        if(loadStateTracking)
+            delay(5000)
         _email = email
         _authState.tryEmit(AuthState.Authenticated("", email))
         if (email.equals(defaultTestEmail2))
@@ -85,7 +93,8 @@ class FakeRepository @Inject constructor() : PersistRepository {
                 else -> 1111
             }
             if (email.equals(defaultMergeTestEmail) || email.equals(defaultMergeTestEmail2))
-                return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredentialWithLink(email, link)))
+//                return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredentialWithLink(email, link)))
+                  return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredential("hello", "world")))
             else return Result.success(LinkResult.SignedIn)
         }
     }
@@ -105,6 +114,8 @@ class FakeRepository @Inject constructor() : PersistRepository {
         credential: AuthCredential,
         merge: Boolean,
     ): Result<Unit> {
+        if(loadStateTracking)
+            delay(5000)
         return if(anonymousUid.equals("0")) Result.success(Unit) else Result.failure(Throwable())
     }
 

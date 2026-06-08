@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -26,7 +27,8 @@ class AuthPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val authViewModel = AuthViewModel(repo = FakeRepository())
+    val fakeRepository = FakeRepository()
+    val authViewModel = AuthViewModel(repo = fakeRepository)
 
     @Before
     fun setup() {
@@ -160,8 +162,9 @@ class AuthPageTest {
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
         authViewModel.handleDeepLink(" ")
+        //composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
-        Thread.sleep(5000)
+        Thread.sleep(3000)
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
 
         val discardButton = composeTestRule.onNodeWithTag("discardMergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
@@ -194,6 +197,7 @@ class AuthPageTest {
     fun testLoadingContent() {
         val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
         val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
+        fakeRepository.loadStateTracking = true
 
         textField.performClick()
         composeTestRule.waitForIdle()
@@ -220,6 +224,7 @@ class AuthPageTest {
     fun testLoadingContentWithMerge() {
         val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
         val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
+        fakeRepository.loadStateTracking = true
 
         textField.performClick()
         composeTestRule.waitForIdle()
@@ -233,15 +238,60 @@ class AuthPageTest {
         sendLinkButton.performClick()
         composeTestRule.onNodeWithText("Sending link…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
 
         authViewModel.handleDeepLink(" ")
+        composeTestRule.waitForIdle()
+        //Thread.sleep(3000)
         composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
 
         val mergeButton = composeTestRule.onNodeWithTag("mergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
+
+        Thread.sleep(3000)
 
         // It is equivalent to execute this command: authViewModel.resolveCollision(true)
         mergeButton.performClick()
         composeTestRule.onNodeWithText("Merging lists…").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
+    }
+
+    @Test
+    fun testLoadingContentDiscardingMerge() {
+        val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
+        val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
+        fakeRepository.loadStateTracking = true
+
+        textField.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        textField.assertIsFocused().performTextInput("merge.me@b.com")
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+        sendLinkButton.assertIsEnabled()
+
+        sendLinkButton.performClick()
+        composeTestRule.onNodeWithText("Sending link…").assertExists().assertIsDisplayed()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        authViewModel.handleDeepLink(" ")
+        composeTestRule.waitForIdle()
+        //Thread.sleep(3000)
+        composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val discardButton = composeTestRule.onNodeWithTag("discardMergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
+
+        Thread.sleep(3000)
+
+        // It is equivalent to execute this command: authViewModel.resolveCollision(false)
+        discardButton.performClick()
+        composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
     }
 
     @Test
@@ -279,7 +329,9 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Sign in to synchronize your lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Email").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Send link").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -338,7 +390,9 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Sign in to synchronize your lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Email").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Send link").assertExists().assertIsDisplayed()
     }
 
 }
