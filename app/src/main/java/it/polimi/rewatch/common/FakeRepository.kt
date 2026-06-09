@@ -65,12 +65,34 @@ class FakeRepository @Inject constructor() : PersistRepository {
 
     var loadStateTracking = false
 
+    var emptyWatchList = false
+    var emptyWatchedList = false
+
     private val _authState = MutableSharedFlow<AuthState>(replay = 1)
     override val authState = _authState.asSharedFlow()
 
+    companion object {
+        fun empty(): FakeRepository {
+            return FakeRepository().apply {
+                _watchlistFlow.tryEmit(Result.success(emptyList()))
+                _watchedFlow.tryEmit(Result.success(emptyList()))
+            }
+        }
+    }
+
     init {
-        _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
-        _watchedFlow.tryEmit(Result.success(fakeWatch))
+        if(!emptyWatchList) {
+            _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
+        }
+        else{
+            _watchlistFlow.tryEmit(Result.success(emptyList()))
+        }
+        if (!emptyWatchedList) {
+            _watchedFlow.tryEmit(Result.success(fakeWatch))
+        }
+        else{
+            _watchedFlow.tryEmit(Result.success(emptyList()))
+        }
     }
 
     override suspend fun sendSignInLink(email: String): Result<Unit> {
@@ -310,10 +332,10 @@ val fakeWatch = listOf(
         id = TvId(1329),
         rating = 7.2f,
         date = LocalDateTime.of(2026, 6, 7, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 2.0f, name = "1000 Lives... And Beyond"))
+        mediaData = PosterInfo(TmdbShowDetail(voteAverage = 2.0f, name = "1000 Lives... And Beyond"))
     ),
     WatchedMedia(
-        id = TvId(1329),
+        id = TvId(1339),
         rating = 6.3f,
         date = LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, 17, 0, 0),
     ),

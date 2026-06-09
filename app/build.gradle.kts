@@ -54,7 +54,7 @@ android {
             enableUnitTestCoverage = true
 
             //  Enables coverage for instrumented tests (emulators/real devices)
-            enableAndroidTestCoverage = true
+            enableAndroidTestCoverage = false
         }
     }
     compileOptions {

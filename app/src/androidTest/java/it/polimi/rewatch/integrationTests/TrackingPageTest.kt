@@ -1,11 +1,13 @@
 package it.polimi.rewatch.integrationTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -14,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbShow
 import it.polimi.rewatch.common.FakeRepository
+import it.polimi.rewatch.common.FakeRepository.Companion.empty
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.common.UiState
@@ -33,6 +36,7 @@ import it.polimi.rewatch.screens.tracking.WatchTabItem
 import it.polimi.rewatch.screens.tracking.sortedByDirection
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -49,14 +53,14 @@ class TrackingPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val type: WatchTabItem = WatchTabItem.WATCHED
+    val type: WatchTabItem = WatchTabItem.WATCHLIST
     val mediaType: MediaType = MediaType.MOVIE
 
-    val fakeRepo = FakeRepository()
+    var fakeRepo = FakeRepository()
 
     var destination: HomeTabItem? = null
 
-    @Before
+    //@Before
     fun setup() {
          val actions = NavigationActions(onNavigateToPerson = { id -> },
 
@@ -80,7 +84,7 @@ class TrackingPageTest {
         val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")), persistRepo = fakeRepo)
 
         composeTestRule.setContent {
-            TrackingPage(actions = actions, outerPadding = outerPadding, type = MediaType.MOVIE, viewModel = trackingViewModel)
+            TrackingPage(actions = actions, outerPadding = outerPadding, type = mediaType, viewModel = trackingViewModel)
         }
         composeTestRule.waitForIdle()
         val watchedTab = composeTestRule.onNodeWithTag("Tab_Watched").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
@@ -89,12 +93,13 @@ class TrackingPageTest {
         if(type == WatchTabItem.WATCHED){
             watchedTab.performClick()
             composeTestRule.waitForIdle()
-            Thread.sleep(5000)
+            Thread.sleep(2000)
         }
     }
 
     @Test
     fun testSortByDate() {
+        setup()
 
         val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
         val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
@@ -133,6 +138,8 @@ class TrackingPageTest {
 
     @Test
     fun testSortByRating() {
+        setup()
+
         val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
         val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
 
@@ -163,6 +170,8 @@ class TrackingPageTest {
 
     @Test
     fun testSortAlphabetically() {
+        setup()
+
         val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
         val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
 
@@ -193,7 +202,9 @@ class TrackingPageTest {
 
     @Test
     fun testSortByPopularity() {
-        val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
+        setup()
+
+        val values = fakeRepo.watchlistFlow
         val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
 
         val expectedResult = actualValues?.sortedWith(compareBy { it.popularity })
@@ -221,17 +232,28 @@ class TrackingPageTest {
     }
 
     @Test
-    fun testEmptyListCase(){
-        val myWatchlist = MutableSharedFlow<Result<List<WatchlistMedia>>>(replay = 1)
-        val myWatched = MutableSharedFlow<Result<List<WatchedMedia>>>(replay = 1)
-        myWatchlist.tryEmit(Result.success(emptyList()))
-        myWatched.tryEmit(Result.success(emptyList()))
-
-        fakeRepo.watchlistFlow = myWatchlist.asSharedFlow()
-        fakeRepo.watchedFlow = myWatched.asSharedFlow()
+    fun testOrdinaryContent(){
+        setup()
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
         composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        val expectedPageTitle = if(mediaType == MediaType.MOVIE) "Movies" else "Tv Shows"
+        composeTestRule.onNodeWithText(expectedPageTitle).assertExists().assertIsDisplayed()
+
+        composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+        Thread.sleep(3000)
+    }
+
+    @Test
+    fun testEmptyListCase(){
+        fakeRepo = empty()
+        setup()
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
 
         composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed()
 
@@ -239,6 +261,7 @@ class TrackingPageTest {
         val typeText = if (type == WatchTabItem.WATCHLIST) "in Watchlist" else "Watched"
 
         composeTestRule.onNodeWithText("No $mediaText $typeText").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
     }
 
     @Test
@@ -248,8 +271,8 @@ class TrackingPageTest {
         myWatchlist.tryEmit(Result.success(emptyList()))
         myWatched.tryEmit(Result.success(emptyList()))
 
-        fakeRepo.watchlistFlow = myWatchlist.asSharedFlow()
-        fakeRepo.watchedFlow = myWatched.asSharedFlow()
+        fakeRepo.watchlistFlow = MutableStateFlow(Result.success(emptyList()))
+        fakeRepo.watchedFlow = MutableStateFlow(Result.success(emptyList()))
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
         composeTestRule.waitForIdle()
