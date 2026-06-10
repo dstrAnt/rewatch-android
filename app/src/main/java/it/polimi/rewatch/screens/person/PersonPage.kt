@@ -229,7 +229,8 @@ private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
             alignment = Alignment.End,
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 24.dp),
+                .padding(end = 24.dp)
+                .testTag("birthInfo"),
         )
 
         VerticalDivider(

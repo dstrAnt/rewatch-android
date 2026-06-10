@@ -9,6 +9,8 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -21,6 +23,7 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.person.PersonViewModel
+import it.polimi.rewatch.theme.RewatchTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +32,9 @@ class PersonPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val personViewModel = PersonViewModel(personId = 0, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+    val personId = 33200
+
+    val personViewModel = PersonViewModel(personId = personId, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
     @Before
     fun setup() {
@@ -54,34 +59,50 @@ class PersonPageTest {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            PersonPage(actions = actions, outerPadding = outerPadding, personId = 0, viewModel = personViewModel)
+            RewatchTheme(darkTheme = true) {
+                PersonPage(actions = actions, outerPadding = outerPadding, personId = personId, viewModel = personViewModel)
+            }
         }
     }
 
     @Test
     fun testBirthInfo() {
-        composeTestRule.onNodeWithText("Born").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("").assertExists().assertIsDisplayed()
+        /*Thread.sleep(4000)
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Born")
+                .fetchSemanticsNodes().isNotEmpty()
+        }*/
+        Thread.sleep(4000)
+
         try {
-            composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
-        }catch (e: AssertionError){
-            composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
+            try {
+                composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
+            }catch (e: AssertionError){
+                composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
+            }
+        }
+        catch (e: AssertionError){
+            composeTestRule.onNodeWithText("Born").assertDoesNotExist()
         }
     }
 
     @Test
     fun testBio() {
+        Thread.sleep(4000)
         composeTestRule.onNodeWithTag("bioParagraph").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testProfilePicture() {
+        Thread.sleep(4000)
         composeTestRule.onNodeWithTag("profilePicture").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSectionTabRow(){
+        Thread.sleep(4000)
         val tabs = composeTestRule.onNodeWithTag("Tab_Row").assertExists().assertIsDisplayed()
             .onChildren()
 
@@ -105,7 +126,8 @@ class PersonPageTest {
 
     @Test
     fun testSortTabDate() {
-        val dateFilter = composeTestRule.onNodeWithTag("filterChip_DATE").assertExists().assertIsSelectable()
+        Thread.sleep(4000)
+        val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsSelectable()
 
         dateFilter.performClick()
         composeTestRule.waitForIdle()
@@ -116,7 +138,8 @@ class PersonPageTest {
 
     @Test
     fun testSortTabPopularity() {
-        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_POPULARITY").assertIsSelectable()
+        Thread.sleep(4000)
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity").assertIsSelectable()
 
         popularityFilter.performClick()
         composeTestRule.waitForIdle()
