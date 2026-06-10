@@ -37,6 +37,7 @@ class FirebaseRepository @Inject constructor(
     private val db: FirebaseFirestore,
     @ApplicationScope private val appScope: CoroutineScope,
 ) : PersistRepository {
+    override var allowEnrichment = true
     // --- Auth state ---
     // Emit uid instead of email — anonymous users have a uid but no email
     override val authState: SharedFlow<AuthState> = callbackFlow {

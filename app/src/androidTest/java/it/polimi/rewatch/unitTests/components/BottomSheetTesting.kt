@@ -15,7 +15,6 @@ import it.polimi.rewatch.model.MediaDetail
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.PosterInfo
-import it.polimi.rewatch.utility.FakeBottomSheetViewModel
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.toKotlinLocalDateTime
 import org.junit.Test

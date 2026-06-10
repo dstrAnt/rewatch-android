@@ -1,6 +1,7 @@
 package it.polimi.rewatch.integrationTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
@@ -9,10 +10,13 @@ import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbShow
 import it.polimi.rewatch.common.FakeRepository
@@ -53,15 +57,18 @@ class TrackingPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val type: WatchTabItem = WatchTabItem.WATCHLIST
-    val mediaType: MediaType = MediaType.MOVIE
+    var type: WatchTabItem = WatchTabItem.WATCHED
+    val defaultMediaType: MediaType = MediaType.MOVIE
+
+    lateinit var expectedPageTitle : String
+    lateinit var expectedLabel : String
 
     var fakeRepo = FakeRepository()
 
     var destination: HomeTabItem? = null
 
     //@Before
-    fun setup() {
+    fun setup(mediaType : MediaType) {
          val actions = NavigationActions(onNavigateToPerson = { id -> },
 
             onNavigateToMedia = { id -> },
@@ -95,26 +102,32 @@ class TrackingPageTest {
             composeTestRule.waitForIdle()
             Thread.sleep(2000)
         }
+
+        expectedPageTitle = if(mediaType == MediaType.MOVIE) "Movies" else "Tv Shows"
+        expectedLabel = if(mediaType == MediaType.MOVIE) "Movies" else "Shows"
+    }
+
+    fun justScrollDown(grid: SemanticsNodeInteraction, times: Int){
+        for (i in List(times) { it }){
+            grid.performTouchInput { swipeUp(500f, 0f) }
+            composeTestRule.waitForIdle()
+            Thread.sleep(2000)
+        }
     }
 
     @Test
     fun testSortByDate() {
-        setup()
+        setup(defaultMediaType)
 
-        /*val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
-        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Date", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
-        val expectedResult = actualValues?.sortedWith(compareBy { it.date })
+        Thread.sleep(3000)
 
-        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.date })
-
-        val expectedResultDescending = actualValues?.sortedWith(
-            compareByDescending { it.date }
-        )
-
-        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.date })*/
-
-        val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsSelectable()
+        val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsDisplayed().assertIsSelectable()
 
         dateFilter.performClick()
         composeTestRule.waitForIdle()
@@ -122,38 +135,73 @@ class TrackingPageTest {
 
         dateFilter.assertIsSelected()
 
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
         if (type == WatchTabItem.WATCHED) {
             composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
-            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
+            justScrollDown(lazyGrid, 1)
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
         }
         else{
-            composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("2025").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun testSortByDateTvShows() {
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Date", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsDisplayed().assertIsSelectable()
+
+        dateFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        dateFilter.assertIsSelected()
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        if (type == WatchTabItem.WATCHED) {
+            composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
+            justScrollDown(lazyGrid, 1)
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+        }
+        else{
+            composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("2025").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
         }
     }
 
     @Test
     fun testSortByRating() {
-        setup()
+        setup(defaultMediaType)
 
-        /*val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
-        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Rating", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
-        val expectedResult = actualValues?.sortedWith(compareBy { it.rating })
+        Thread.sleep(3000)
 
-        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.rating })
-
-        val expectedResultDescending = actualValues?.sortedWith(
-            compareByDescending { it.rating }
-        )
-
-        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.rating })*/
-
-        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_RATING").assertIsSelectable()
+        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_Rating").assertIsDisplayed().assertIsSelectable()
 
         ratingFilter.performClick()
         composeTestRule.waitForIdle()
@@ -161,31 +209,59 @@ class TrackingPageTest {
 
         ratingFilter.assertIsSelected()
 
-        composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
         composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testSortByRatingTvShows() {
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Rating", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_Rating").assertIsDisplayed().assertIsSelectable()
+
+        ratingFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        ratingFilter.assertIsSelected()
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSortAlphabetically() {
-        setup()
+        setup(defaultMediaType)
 
-        /*val values = if (type == WatchTabItem.WATCHED) fakeRepo.watchedFlow else fakeRepo.watchlistFlow
-        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_A-Z", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
-        val expectedResult = actualValues?.sortedWith(compareBy { it.title })
+        Thread.sleep(3000)
 
-        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.title })
-
-        val expectedResultDescending = actualValues?.sortedWith(
-            compareByDescending { it.title }
-        )
-
-        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.title })*/
-
-        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_ALPHABETICAL").assertIsSelectable()
+        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_A-Z").assertIsDisplayed().assertIsSelectable()
 
         alphabeticFilter.performClick()
         composeTestRule.waitForIdle()
@@ -193,31 +269,59 @@ class TrackingPageTest {
 
         alphabeticFilter.assertIsSelected()
 
-        composeTestRule.onNodeWithText("A").assertExists().assertIsDisplayed()
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
         composeTestRule.onNodeWithText("B").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("F").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("S").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("D").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("K").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("L").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("T").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testSortAlphabeticallyTvShows() {
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_A-Z", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_A-Z").assertIsDisplayed().assertIsSelectable()
+
+        alphabeticFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        alphabeticFilter.assertIsSelected()
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("C").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("D").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("G").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("N").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("T").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testSortByPopularity() {
-        setup()
+        type = WatchTabItem.WATCHLIST
+        setup(defaultMediaType)
 
-        /*val values = fakeRepo.watchlistFlow
-        val actualValues = runBlocking { values.map { result -> result.getOrNull() }.first() }
 
-        val expectedResult = actualValues?.sortedWith(compareBy { it.popularity })
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Popularity", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
-        assertEquals(expectedResult, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(true) { it.popularity })
-
-        val expectedResultDescending = actualValues?.sortedWith(
-            compareByDescending { it.popularity }
-        )
-
-        assertEquals(expectedResultDescending, actualValues?.filter { it.id.type == mediaType }?.sortedByDirection(false) { it.popularity })*/
-
-        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_POPULARITY").assertIsSelectable()
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity").assertIsDisplayed().assertIsSelectable()
 
         popularityFilter.performClick()
         composeTestRule.waitForIdle()
@@ -225,21 +329,52 @@ class TrackingPageTest {
 
         popularityFilter.assertIsSelected()
 
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("Trending Worldwide").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Well Known").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testSortByPopularityTvShows() {
+        type = WatchTabItem.WATCHLIST
+        fakeRepo.allowEnrichment = false
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Popularity", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity").assertIsDisplayed().assertIsSelectable()
+
+        popularityFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        popularityFilter.assertIsSelected()
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
         composeTestRule.onNodeWithText("Trending Worldwide").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Well Known").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
         composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testOrdinaryContent(){
-        setup()
+        setup(defaultMediaType)
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        val expectedPageTitle = if(mediaType == MediaType.MOVIE) "Movies" else "Tv Shows"
         composeTestRule.onNodeWithText(expectedPageTitle).assertExists().assertIsDisplayed()
 
         composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
@@ -249,7 +384,7 @@ class TrackingPageTest {
     @Test
     fun testEmptyListCase(){
         fakeRepo = empty()
-        setup()
+        setup(defaultMediaType)
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
         composeTestRule.waitForIdle()
@@ -257,7 +392,7 @@ class TrackingPageTest {
 
         composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed()
 
-        val mediaText = if (mediaType == MediaType.MOVIE) "Movies" else "Shows"
+        val mediaText = expectedLabel
         val typeText = if (type == WatchTabItem.WATCHLIST) "in Watchlist" else "Watched"
 
         composeTestRule.onNodeWithText("No $mediaText $typeText").assertExists().assertIsDisplayed()
@@ -267,7 +402,7 @@ class TrackingPageTest {
     @Test
     fun testOnBackToHome(){
         fakeRepo = empty()
-        setup()
+        setup(defaultMediaType)
 
         composeTestRule.onNodeWithTag("tracking_page").assertExists()
         composeTestRule.waitForIdle()
@@ -276,6 +411,53 @@ class TrackingPageTest {
         composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
 
         assertEquals(HomeTabItem.MOVIES, destination)
+        Thread.sleep(3000)
+    }
+
+    @Test
+    fun testOrdinaryContentTvShows(){
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText(expectedPageTitle).assertExists().assertIsDisplayed()
+
+        composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+        Thread.sleep(3000)
+    }
+
+    @Test
+    fun testEmptyListCaseTvShows(){
+        fakeRepo = empty()
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed()
+
+        val mediaText = expectedLabel
+        val typeText = if (type == WatchTabItem.WATCHLIST) "in Watchlist" else "Watched"
+
+        composeTestRule.onNodeWithText("No $mediaText $typeText").assertExists().assertIsDisplayed()
+        Thread.sleep(3000)
+    }
+
+    @Test
+    fun testOnBackToHomeTvShows(){
+        fakeRepo = empty()
+        setup(MediaType.TV_SHOW)
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Explore").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
+
+        assertEquals(HomeTabItem.SHOWS, destination)
         Thread.sleep(3000)
     }
 }

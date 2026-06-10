@@ -29,6 +29,8 @@ interface PersistRepository {
     val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
     val watchedFlow: SharedFlow<Result<List<WatchedMedia>>>
 
+    var allowEnrichment: Boolean
+
     fun addToWatchlist(id: MediaId)
     fun removeFromWatchlist(id: MediaId)
     fun toggleWatchlist(id: MediaId)
@@ -67,6 +69,8 @@ class FakeRepository @Inject constructor() : PersistRepository {
 
     var emptyWatchList = false
     var emptyWatchedList = false
+
+    override var allowEnrichment = true
 
     private val _authState = MutableSharedFlow<AuthState>(replay = 1)
     override val authState = _authState.asSharedFlow()
@@ -239,7 +243,7 @@ val fakeWatchlist = listOf(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1390), mediaData = PosterInfo(TmdbShowDetail(popularity = 5f))
+        id = TvId(1390), mediaData = PosterInfo(TmdbShowDetail(popularity = 5000f))
     ),
     WatchlistMedia(
         id = TvId(1393),
@@ -247,7 +251,12 @@ val fakeWatchlist = listOf(
         date = shortLocalDateTime(2026, 2, 23)
     ),
     WatchlistMedia(
-        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 60f, voteAverage = 7.2f, name = "Feelings",))
+        id = MovieId(1393),
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers - The Movie",)),
+        date = shortLocalDateTime(2026, 2, 23)
+    ),
+    WatchlistMedia(
+        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 600f, voteAverage = 7.2f, name = "Feelings",))
     ),
     WatchlistMedia(
         id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders"))
@@ -270,7 +279,19 @@ val fakeWatchlist = listOf(
         date = shortLocalDateTime(2025, 12, 2)
     ),
     WatchlistMedia(
-        id = TvId(1394)
+        id = TvId(1394), mediaData = PosterInfo(TmdbShowDetail(popularity = 8f))
+    ),
+    WatchlistMedia(
+        id = MovieId(99396), mediaData = PosterInfo(TmdbShowDetail(popularity = 8000f))
+    ),
+    WatchlistMedia(
+        id = MovieId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f))
+    ),
+    WatchlistMedia(
+        id = TvId(93405), mediaData = PosterInfo(TmdbShowDetail(popularity = 1100f))
+    ),
+    WatchlistMedia(
+        id = TvId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f))
     )
 )
 val fakeWatch = listOf(
@@ -292,13 +313,19 @@ val fakeWatch = listOf(
         mediaData = PosterInfo(TmdbShowDetail(name = "A Man, a Legend"))
     ),
     WatchedMedia(
+        id = MovieId(10392),
+        rating = 0f,
+        date = LocalDateTime.of(2024, 3, 25, 0, 0),
+        mediaData = PosterInfo(TmdbShowDetail(name = "The Real(ity) Hero"))
+    ),
+    WatchedMedia(
         id = MovieId(549),
         rating = 2.0f,
         date = LocalDateTime.of(LocalDate.now().year, 4, 23, 0, 0),
     ),
     WatchedMedia(
         id = MovieId(83541),
-        rating = 2.5f,
+        rating = 8.5f,
         date = LocalDateTime.of(2026, 2, 23, 0, 0),
     ),
     WatchedMedia(
@@ -329,6 +356,11 @@ val fakeWatch = listOf(
         date = LocalDateTime.of(2026, 3, 10, 0, 0),
     ),
     WatchedMedia(
+        id = MovieId(8349),
+        rating = 7.5f,
+        date = LocalDateTime.of(2026, 3, 10, 0, 0),
+    ),
+    WatchedMedia(
         id = TvId(1329),
         rating = 7.2f,
         date = LocalDateTime.of(2026, 6, 7, 0, 0),
@@ -336,6 +368,11 @@ val fakeWatch = listOf(
     ),
     WatchedMedia(
         id = TvId(1339),
+        rating = 6.3f,
+        date = LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, 17, 0, 0),
+    ),
+    WatchedMedia(
+        id = MovieId(9340),
         rating = 6.3f,
         date = LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, 17, 0, 0),
     ),
