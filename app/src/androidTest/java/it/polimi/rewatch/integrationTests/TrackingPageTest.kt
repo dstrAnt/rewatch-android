@@ -88,6 +88,8 @@ class TrackingPageTest {
 
         val outerPadding = PaddingValues();
 
+        fakeRepo.allowEnrichment = false
+
         val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")), persistRepo = fakeRepo)
 
         composeTestRule.setContent {
@@ -185,6 +187,7 @@ class TrackingPageTest {
             composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("2025").assertExists().assertIsDisplayed()
+            justScrollDown(lazyGrid, 1)
             composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
         }
     }
@@ -271,11 +274,11 @@ class TrackingPageTest {
 
         val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
 
+        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("A").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("B").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("D").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("K").assertExists().assertIsDisplayed()
         justScrollDown(lazyGrid, 1)
-        composeTestRule.onNodeWithText("L").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("S").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("T").assertExists().assertIsDisplayed()
     }
 
@@ -301,12 +304,12 @@ class TrackingPageTest {
 
         val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
 
+        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("C").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("D").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("G").assertExists().assertIsDisplayed()
-        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("F").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("N").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("T").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("S").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -341,7 +344,6 @@ class TrackingPageTest {
     @Test
     fun testSortByPopularityTvShows() {
         type = WatchTabItem.WATCHLIST
-        fakeRepo.allowEnrichment = false
         setup(MediaType.TV_SHOW)
 
         composeTestRule.waitUntil(10_000) {
