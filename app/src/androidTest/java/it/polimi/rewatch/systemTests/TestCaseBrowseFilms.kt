@@ -1,6 +1,8 @@
 package it.polimi.rewatch.systemTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.assertAll
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
@@ -30,7 +32,15 @@ class TestCaseBrowseFilms {
 
         composeTestRule.onNodeWithTag("home_page").assertExists()
 
-        composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("posterItem_Trending", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performClick()
 
         composeTestRule.waitForIdle()
