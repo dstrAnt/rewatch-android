@@ -315,7 +315,7 @@ private fun SuccessContent(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onMerge, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = onMerge, modifier = Modifier.fillMaxWidth().testTag("doneButton")) {
             Text("Done")
         }
         Spacer(Modifier.height(16.dp))
