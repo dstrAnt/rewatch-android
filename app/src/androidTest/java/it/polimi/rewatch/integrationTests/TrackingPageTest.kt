@@ -155,6 +155,46 @@ class TrackingPageTest {
     }
 
     @Test
+    fun testInverseSortByDate() {
+        setup(defaultMediaType)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Date", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        /* This action is omitted for inverse date sorting as tab 'Date' is already selected in the opposite order*/
+
+        /*val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsDisplayed().assertIsSelectable()
+
+        dateFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        dateFilter.assertIsSelected()*/
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        if (type == WatchTabItem.WATCHED) {
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("April").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("March").assertExists().assertIsDisplayed()
+            justScrollDown(lazyGrid, 1)
+            composeTestRule.onNodeWithText("2024").assertExists().assertIsDisplayed()
+        }
+        else{
+            composeTestRule.onNodeWithText("This Month").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("May").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("February").assertExists().assertIsDisplayed()
+            justScrollDown(lazyGrid, 1)
+            composeTestRule.onNodeWithText("2025").assertExists().assertIsDisplayed()
+        }
+    }
+
+    @Test
     fun testSortByDateTvShows() {
         setup(MediaType.TV_SHOW)
 
@@ -223,6 +263,40 @@ class TrackingPageTest {
     }
 
     @Test
+    fun testInverseSortByRating() {
+        setup(defaultMediaType)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Rating", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        val ratingFilter = composeTestRule.onNodeWithTag("filterChip_Rating").assertIsDisplayed().assertIsSelectable()
+
+        ratingFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        ratingFilter.assertIsSelected()
+
+        ratingFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("Unrated").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
+    }
+
+    @Test
     fun testSortByRatingTvShows() {
         setup(MediaType.TV_SHOW)
 
@@ -283,6 +357,40 @@ class TrackingPageTest {
     }
 
     @Test
+    fun testInverseSortAlphabetically() {
+        setup(defaultMediaType)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_A-Z", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(3000)
+
+        val alphabeticFilter = composeTestRule.onNodeWithTag("filterChip_A-Z").assertIsDisplayed().assertIsSelectable()
+
+        alphabeticFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        alphabeticFilter.assertIsSelected()
+
+        alphabeticFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("T").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("S").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("B").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("A").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("#").assertExists().assertIsDisplayed()
+    }
+
+    @Test
     fun testSortAlphabeticallyTvShows() {
         setup(MediaType.TV_SHOW)
 
@@ -339,6 +447,39 @@ class TrackingPageTest {
         justScrollDown(lazyGrid, 1)
         composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testInverseSortByPopularity() {
+        type = WatchTabItem.WATCHLIST
+        setup(defaultMediaType)
+
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithTag("filterChip_Popularity", useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity").assertIsDisplayed().assertIsSelectable()
+
+        popularityFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        popularityFilter.assertIsSelected()
+
+        popularityFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
+
+        composeTestRule.onNodeWithText("Niche").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Well Known").assertExists().assertIsDisplayed()
+        justScrollDown(lazyGrid, 1)
+        composeTestRule.onNodeWithText("Very Popular").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Trending Worldwide").assertExists().assertIsDisplayed()
     }
 
     @Test
