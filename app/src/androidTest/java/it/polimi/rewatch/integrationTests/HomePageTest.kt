@@ -50,14 +50,6 @@ class HomePageTest {
 
     val defaultStartTab = HomeTabItem.MOVIES
 
-    /*var tmdbConfig = TmdbClientConfig()
-
-    lateinit var tmdb: Tmdb3
-
-    lateinit var repository : TmdbRepository
-
-    lateinit var homeViewModel : HomeViewModel*/
-
     val tmdb = Tmdb3("***REMOVED_TMDB_KEY***")
 
     val repository = TmdbRepository(tmdb)
@@ -85,10 +77,6 @@ class HomePageTest {
             })
 
         val outerPadding = PaddingValues();
-        /*tmdbConfig.tmdbApiKey = "***REMOVED_TMDB_KEY***"
-        tmdb = Tmdb3("***REMOVED_TMDB_KEY***")
-        repository = TmdbRepository(tmdb)
-        homeViewModel = HomeViewModel(repository)*/
 
         composeTestRule.setContent {
             HomePage(actions = actions, outerPadding = outerPadding, startTab = startTab, viewModel = homeViewModel)

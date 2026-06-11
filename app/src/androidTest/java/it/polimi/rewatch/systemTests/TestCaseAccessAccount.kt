@@ -23,6 +23,42 @@ class TestCaseAccessAccount {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
+    fun setupTrackingLists(){
+        composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
+            .performTouchInput { longClick() }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithContentDescription("Watch").performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+
+        contentPageNode.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onAllNodesWithTag("posterItem")[1].assertExists()
+            .performTouchInput { longClick() }
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithContentDescription("In watchlist").performClick()
+
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        val contentPageNode2 = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+
+        contentPageNode2.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+    }
+
     @Test
     fun testAuthPageLogin() {
 
@@ -83,42 +119,9 @@ class TestCaseAccessAccount {
 
     @Test
     fun testAuthPageCollisionResolve() {
-
         // On the Home Page, two casual poster items are selected
 
-        composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
-            .performTouchInput { longClick() }
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-
-        composeTestRule.onNodeWithContentDescription("Watch").performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-
-        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
-
-        contentPageNode.performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(5000)
-
-        composeTestRule.onAllNodesWithTag("posterItem")[1].assertExists()
-            .performTouchInput { longClick() }
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-
-        composeTestRule.onNodeWithContentDescription("In watchlist").performClick()
-
-        composeTestRule.waitForIdle()
-        Thread.sleep(3000)
-
-        val contentPageNode2 = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
-
-        contentPageNode2.performClick()
-        composeTestRule.waitForIdle()
-        Thread.sleep(5000)
+        setupTrackingLists()
 
         // Returning to the Profile Page first and then to the Authentication Page
 
