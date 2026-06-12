@@ -19,8 +19,18 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSibling
 import androidx.compose.ui.test.performClick
 import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.model.TmdbMovieDetail
+import app.moviebase.tmdb.model.TmdbPersonCredits
+import app.moviebase.tmdb.model.TmdbPersonDetail
+import app.moviebase.tmdb.model.TmdbPersonMovieCredits
+import app.moviebase.tmdb.model.TmdbPersonShowCredits
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.model.MediaDetail
+import it.polimi.rewatch.screens.media.MediaContent
+import it.polimi.rewatch.screens.media.MovieData
+import it.polimi.rewatch.screens.person.PersonContent
+import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.person.PersonViewModel
 import it.polimi.rewatch.theme.RewatchTheme
@@ -34,59 +44,72 @@ class PersonPageTest {
 
     val defaultPersonId = 33200
 
+    val defaultActions = NavigationActions(onNavigateToPerson = { id -> },
+        onNavigateToMedia = { id -> },
+        onNavigateBack = {},
+        onFullscreenImage = { url -> },
+        onBottomSheet = { info ->  },
+        onNavigateToLogin = {},
+        onBackToHome = { tab -> })
+
+    val defaultOuterPadding = PaddingValues();
+
     val defaultPersonViewModel = PersonViewModel(personId = defaultPersonId, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
     fun defaultSetup() {
-
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {},
-            onFullscreenImage = { url -> },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {},
-            onBackToHome = { tab -> })
-
-        val outerPadding = PaddingValues();
-
         composeTestRule.setContent {
             RewatchTheme(darkTheme = true) {
-                PersonPage(actions = actions, outerPadding = outerPadding, personId = defaultPersonId, viewModel = defaultPersonViewModel)
+                PersonPage(actions = defaultActions, outerPadding = defaultOuterPadding, personId = defaultPersonId, viewModel = defaultPersonViewModel)
             }
         }
     }
 
     @Test
-    fun testBirthInfo() {
-        /*Thread.sleep(4000)
-        composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithText("Born")
-                .fetchSemanticsNodes().isNotEmpty()
-        }*/
+    fun testEmptyPageInfo() {
+        defaultSetup()
         Thread.sleep(4000)
 
+        composeTestRule.onNodeWithText("Born").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Age").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Died").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("bioParagraph").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("profilePicture").assertDoesNotExist()
+    }
+
+    @Test
+    fun testNonEmptyPageInfo(){
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+
+        val personData = PersonDetailsData(
+            details = TmdbPersonDetail(),
+            movieCredits = TmdbPersonMovieCredits(),
+            showCredits = TmdbPersonShowCredits(),
+        )
+
+        composeTestRule.setContent {
+            PersonContent(
+                data = personData,
+                outerPadding = outerPadding,
+                actions = actions,
+                currentTab = TODO(),
+                availableTabs = TODO(),
+                sortOrder = TODO(),
+                isAscending = TODO(),
+                displayList = TODO(),
+                onTabSelected = TODO(),
+                onSortSelected = TODO(),
+            )
+        }
+
+        composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
         try {
-            composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
-            try {
-                composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
-            }catch (e: AssertionError){
-                composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
-            }
+            composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
+        }catch (e: AssertionError){
+            composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
         }
-        catch (e: AssertionError){
-            composeTestRule.onNodeWithText("Born").assertDoesNotExist()
-        }
-    }
 
-    @Test
-    fun testBio() {
-        Thread.sleep(4000)
         composeTestRule.onNodeWithTag("bioParagraph").assertExists().assertIsDisplayed()
-    }
-
-    @Test
-    fun testProfilePicture() {
-        Thread.sleep(4000)
         composeTestRule.onNodeWithTag("profilePicture").assertExists().assertIsDisplayed()
     }
 
