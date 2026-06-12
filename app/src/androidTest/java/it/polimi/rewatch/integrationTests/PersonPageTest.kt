@@ -32,35 +32,25 @@ class PersonPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val personId = 33200
+    val defaultPersonId = 33200
 
-    val personViewModel = PersonViewModel(personId = personId, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+    val defaultPersonViewModel = PersonViewModel(personId = defaultPersonId, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
-    @Before
-    fun setup() {
+    fun defaultSetup() {
 
         val actions = NavigationActions(onNavigateToPerson = { id -> },
-
             onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
+            onNavigateBack = {},
+            onFullscreenImage = { url -> },
             onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
+            onNavigateToLogin = {},
+            onBackToHome = { tab -> })
 
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
             RewatchTheme(darkTheme = true) {
-                PersonPage(actions = actions, outerPadding = outerPadding, personId = personId, viewModel = personViewModel)
+                PersonPage(actions = actions, outerPadding = outerPadding, personId = defaultPersonId, viewModel = defaultPersonViewModel)
             }
         }
     }
@@ -126,6 +116,8 @@ class PersonPageTest {
 
     @Test
     fun testSortTabDate() {
+        defaultSetup()
+
         Thread.sleep(4000)
         val dateFilter = composeTestRule.onNodeWithTag("filterChip_Date").assertExists().assertIsSelectable()
 
@@ -134,14 +126,21 @@ class PersonPageTest {
         Thread.sleep(5000)
 
         dateFilter.assertIsSelected()
+
+        dateFilter.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+        dateFilter.assertIsSelected()
     }
 
     @Test
     fun testSortTabPopularity() {
+        defaultSetup()
+
         Thread.sleep(4000)
         val popularityFilter = composeTestRule.onNodeWithTag("filterChip_Popularity").assertIsSelectable()
 
-        popularityFilter.performClick()
+        popularityFilter.assertIsSelected().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
