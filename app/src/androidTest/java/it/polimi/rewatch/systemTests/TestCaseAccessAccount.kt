@@ -23,6 +23,8 @@ class TestCaseAccessAccount {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
+    val emailAddress = "test.user@example.com"
+
     fun setupTrackingLists(){
         composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
             .performTouchInput { longClick() }
@@ -81,7 +83,7 @@ class TestCaseAccessAccount {
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        textField.assertIsFocused().performTextInput("test.user@example.com")
+        textField.assertIsFocused().performTextInput(emailAddress)
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
         sendLinkButton.assertIsEnabled()
@@ -92,14 +94,15 @@ class TestCaseAccessAccount {
 
         composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
 
-        val doneButton = composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithTag("profile_page").assertExists()
+
+        testAuthPageLogout()
     }
 
-    @Test
     fun testAuthPageLogout() {
 
         composeTestRule.onNodeWithContentDescription("Profile").assertExists()
@@ -136,8 +139,48 @@ class TestCaseAccessAccount {
         composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
 
 
+        // Same procedures for Standard Login + Merge Prompt
 
-        //... Same procedures for Standard Login + Merge Prompt
+        composeTestRule.onNodeWithText("Login").performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
+        val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
+
+        textField.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        textField.assertIsFocused().performTextInput(emailAddress)
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+        sendLinkButton.assertIsEnabled()
+
+        sendLinkButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(60000)
+
+        composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("You have lists saved as a guest. Do you want to merge them with your existing account?").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Merge my lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Discard guest lists").assertExists().assertIsDisplayed()
+
+        val mergeButton = composeTestRule.onNodeWithTag("mergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
+
+        // It is equivalent to execute this command: authViewModel.resolveCollision(true)
+        mergeButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithTag("auth_page").assertExists()
+
     }
 
 }
