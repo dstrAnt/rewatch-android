@@ -84,26 +84,17 @@ class MediaPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val defaultMedia = MovieId(0)
+    val defaultMedia = MovieId(83532)
     val fakeRepo = FakeRepository()
     lateinit var mediaViewModel: MediaViewModel
 
     val defaultActions = NavigationActions(onNavigateToPerson = { id -> },
-
         onNavigateToMedia = { id -> },
-        onNavigateBack = {
-
-        },
-        onFullscreenImage = { url ->
-
-        },
+        onNavigateBack = {},
+        onFullscreenImage = { url -> },
         onBottomSheet = { info ->  },
-        onNavigateToLogin = {
-
-        },
-        onBackToHome = { tab ->
-
-        })
+        onNavigateToLogin = {},
+        onBackToHome = { tab -> })
 
     val defaultOuterPadding = PaddingValues();
 
@@ -112,27 +103,8 @@ class MediaPageTest {
 
         mediaViewModel = MediaViewModel(mediaId = media, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
-        val actions = NavigationActions(onNavigateToPerson = { id -> },
-
-            onNavigateToMedia = { id -> },
-            onNavigateBack = {
-
-            },
-            onFullscreenImage = { url ->
-
-            },
-            onBottomSheet = { info ->  },
-            onNavigateToLogin = {
-
-            },
-            onBackToHome = { tab ->
-
-            })
-
-        val outerPadding = PaddingValues();
-
         composeTestRule.setContent {
-            MediaPage(media, actions = actions, outerPadding = outerPadding, viewModel = mediaViewModel)
+            MediaPage(media, actions = defaultActions, outerPadding = defaultOuterPadding, viewModel = mediaViewModel)
         }
     }
 
@@ -140,12 +112,24 @@ class MediaPageTest {
     fun testMediaHeaderItems(){
         setup(defaultMedia)
 
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
+
         composeTestRule.onNodeWithTag("header_backdrop").assertExists().assertIsDisplayed().assertHasClickAction()
         composeTestRule.onNodeWithTag("header_title").assertExists().assertIsDisplayed().assertHasClickAction()
         composeTestRule.onNodeWithTag("header_tagline").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithTag("header_ratings").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithTag("header_tracking").assertExists().assertIsDisplayed()
             .onChild().assertExists().assertIsDisplayed().assertHasClickAction()
+
+        Thread.sleep(4000)
     }
 
     @Test
@@ -153,11 +137,23 @@ class MediaPageTest {
 
         setup(defaultMedia)
 
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
+
         val watchedMedia = mediaViewModel.watchedListItem.value
         val watchlistMedia = mediaViewModel.watchlistItem.value
 
         assert(watchedMedia == null)
         assert(watchlistMedia == null)
+
+        Thread.sleep(4000)
 
         composeTestRule.onNodeWithText("Add to your lists").assertExists().assertIsDisplayed()
     }
