@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
@@ -94,7 +95,8 @@ fun AppearingTopBar(
                     onClick = onNavigateBack,
                     Modifier
                         .padding(start = 12.dp)
-                        .size(35.dp),
+                        .size(35.dp)
+                        .testTag("backButton"),
                     colors = IconButtonColors(
                         containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.08f),
                         contentColor = Color.White,
