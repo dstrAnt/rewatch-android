@@ -134,7 +134,40 @@ class PersonPageTest {
     }
 
     @Test
-    fun testSectionTabRow(){
+    fun testSectionTabRow(){val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+
+        val personData = PersonDetailsData(
+            details = TmdbPersonDetail(
+                birthday = LocalDate.now().toKotlinLocalDate(),
+                biography = "She participated in the cast of Avengers Endgame",
+                name = "Scarlett Johansson",
+            ),
+            movieCredits = TmdbPersonMovieCredits(),
+            showCredits = TmdbPersonShowCredits(),
+        )
+
+        val currentTab = runBlocking { defaultPersonViewModel.currentTab.first() }
+        val sortOrder = runBlocking { defaultPersonViewModel.sortOrder.first() }
+        val isAscending = runBlocking { defaultPersonViewModel.isAscending.first() }
+        val availableTabs = runBlocking { defaultPersonViewModel.availableTabs.first() }
+        val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
+
+        composeTestRule.setContent {
+            PersonContent(
+                data = personData,
+                outerPadding = outerPadding,
+                actions = actions,
+                currentTab = currentTab ?: "",
+                availableTabs = availableTabs,
+                sortOrder = sortOrder,
+                isAscending = isAscending,
+                displayList = displayList,
+                onTabSelected = defaultPersonViewModel::onTabSelected,
+                onSortSelected = defaultPersonViewModel::onSortSelected
+            )
+        }
+
         Thread.sleep(4000)
         val tabs = composeTestRule.onNodeWithTag("Tab_Row").assertExists().assertIsDisplayed()
             .onChildren()
@@ -144,17 +177,17 @@ class PersonPageTest {
         val firstTab = tabs.onFirst().assertExists().assertIsDisplayed().assertIsSelected()
         val lastTab = tabs.onLast().assertExists().assertIsDisplayed().assertIsNotSelected()
 
-        var currentTab = firstTab
+        var myCurrentTab = firstTab
 
         do{
-            currentTab = currentTab.onSibling()
+            myCurrentTab = myCurrentTab.onSibling()
 
-            currentTab.performClick()
+            myCurrentTab.performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
-            currentTab.assertIsSelected()
-        } while (currentTab != lastTab)
+            myCurrentTab.assertIsSelected()
+        } while (myCurrentTab != lastTab)
     }
 
     @Test
