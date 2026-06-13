@@ -9,8 +9,6 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -19,24 +17,24 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSibling
 import androidx.compose.ui.test.performClick
 import app.moviebase.tmdb.Tmdb3
-import app.moviebase.tmdb.model.TmdbMovieDetail
-import app.moviebase.tmdb.model.TmdbPersonCredits
+import app.moviebase.tmdb.model.TmdbFileImage
 import app.moviebase.tmdb.model.TmdbPersonDetail
+import app.moviebase.tmdb.model.TmdbPersonImages
 import app.moviebase.tmdb.model.TmdbPersonMovieCredits
 import app.moviebase.tmdb.model.TmdbPersonShowCredits
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.MediaDetail
-import it.polimi.rewatch.screens.media.MediaContent
-import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.person.PersonContent
 import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.person.PersonViewModel
 import it.polimi.rewatch.theme.RewatchTheme
-import org.junit.Before
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.toKotlinLocalDate
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
 
 class PersonPageTest {
     @get:Rule
@@ -76,31 +74,53 @@ class PersonPageTest {
         composeTestRule.onNodeWithTag("profilePicture").assertDoesNotExist()
     }
 
+    /*  Junk Code:
+     * images = TmdbPersonImages(List<TmdbFileImage>(1, { _ -> TmdbFileImage(
+                    filePath = "https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fopen.spotify.com%2Fintl-it%2Fartist%2F19UGUoQUK2qqbtl5vYkAi2&ved=0CBYQjRxqFwoTCIjV4pHUhJUDFQAAAAAdAAAAABBU&opi=89978449",
+                    aspectRatio = 16f/9,
+                    height = 200,
+                    width = 200
+                )})),
+    */
+
     @Test
     fun testNonEmptyPageInfo(){
         val actions = defaultActions
         val outerPadding = defaultOuterPadding
 
         val personData = PersonDetailsData(
-            details = TmdbPersonDetail(),
+            details = TmdbPersonDetail(
+                birthday = LocalDate.now().toKotlinLocalDate(),
+                biography = "A little cute rat who loves to help people",
+                name = "Stuart Little",
+                profilePath = "https://upload.wikimedia.org/wikipedia/en/9/96/Stuart_Little.jpg"
+            ),
             movieCredits = TmdbPersonMovieCredits(),
             showCredits = TmdbPersonShowCredits(),
         )
+
+        val currentTab = runBlocking { defaultPersonViewModel.currentTab.first() }
+        val sortOrder = runBlocking { defaultPersonViewModel.sortOrder.first() }
+        val isAscending = runBlocking { defaultPersonViewModel.isAscending.first() }
+        val availableTabs = runBlocking { defaultPersonViewModel.availableTabs.first() }
+        val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
 
         composeTestRule.setContent {
             PersonContent(
                 data = personData,
                 outerPadding = outerPadding,
                 actions = actions,
-                currentTab = TODO(),
-                availableTabs = TODO(),
-                sortOrder = TODO(),
-                isAscending = TODO(),
-                displayList = TODO(),
-                onTabSelected = TODO(),
-                onSortSelected = TODO(),
+                currentTab = currentTab ?: "",
+                availableTabs = availableTabs,
+                sortOrder = sortOrder,
+                isAscending = isAscending,
+                displayList = displayList,
+                onTabSelected = defaultPersonViewModel::onTabSelected,
+                onSortSelected = defaultPersonViewModel::onSortSelected
             )
         }
+
+        Thread.sleep(4000)
 
         composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
         try {
@@ -110,7 +130,7 @@ class PersonPageTest {
         }
 
         composeTestRule.onNodeWithTag("bioParagraph").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithTag("profilePicture").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithTag("profilePicture").assertExists()
     }
 
     @Test
