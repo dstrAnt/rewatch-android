@@ -754,10 +754,7 @@ class MediaPageTest {
 
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
-
-        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable().assertIsSelected()
         composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
 
         composeTestRule.onNodeWithText("Buy").assertExists().assertIsDisplayed()
@@ -787,7 +784,7 @@ class MediaPageTest {
 
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable().assertIsSelected()
 
         composeTestRule.onNodeWithText("Streaming").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Unknown Provider").assertExists().assertIsDisplayed()
@@ -817,7 +814,7 @@ class MediaPageTest {
 
         Thread.sleep(5000)
 
-        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable().assertIsSelected()
         composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
 
         composeTestRule.onNodeWithText("Buy").assertExists().assertIsDisplayed()
