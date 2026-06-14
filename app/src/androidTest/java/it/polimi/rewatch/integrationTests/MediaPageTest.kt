@@ -592,6 +592,12 @@ class MediaPageTest {
     fun testBackdropImage() {
         setup(defaultMedia)
 
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        Thread.sleep(5000)
         composeTestRule.onNodeWithContentDescription("backdrop image", substring = true).assertExists().assertIsDisplayed()
     }
 
