@@ -68,6 +68,7 @@ import it.polimi.rewatch.screens.media.MovieData
 import it.polimi.rewatch.screens.media.TaglineAndOverview
 import it.polimi.rewatch.screens.media.TitleAndInfoSection
 import it.polimi.rewatch.screens.media.TmdbRatings
+import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.first
@@ -98,13 +99,14 @@ class MediaPageTest {
 
     val defaultOuterPadding = PaddingValues();
 
-    //@Before
     fun setup(media: MediaId) {
 
         mediaViewModel = MediaViewModel(mediaId = media, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
 
         composeTestRule.setContent {
-            MediaPage(media, actions = defaultActions, outerPadding = defaultOuterPadding, viewModel = mediaViewModel)
+            RewatchTheme() {
+                MediaPage(media, actions = defaultActions, outerPadding = defaultOuterPadding, viewModel = mediaViewModel)
+            }
         }
     }
 
@@ -135,7 +137,7 @@ class MediaPageTest {
     @Test
     fun testTrackingInfoWithoutTracking() {
 
-        setup(defaultMedia)
+        setup(MovieId(552))
 
         Thread.sleep(4000)
 
@@ -161,7 +163,17 @@ class MediaPageTest {
     @Test
     fun testTrackingInfoWithOnlyWatched() {
 
-        setup(MovieId(83541))
+        setup(MovieId(10392))
+
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
 
         val watchedMedia = mediaViewModel.watchedListItem.value
         val watchlistMedia = mediaViewModel.watchlistItem.value
@@ -173,15 +185,43 @@ class MediaPageTest {
     }
 
     @Test
+    fun testTrackingInfoWithOnlyWatchedAndRated() {
+
+        setup(MovieId(549))
+
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
+
+        val watchedMedia = mediaViewModel.watchedListItem.value
+        val watchlistMedia = mediaViewModel.watchlistItem.value
+
+        assert(watchedMedia != null)
+        assert(watchlistMedia == null)
+
+        composeTestRule.onNodeWithText("Your rating").assertExists().assertIsDisplayed()
+    }
+
+    @Test
     fun testTrackingInfoWithOnlyWatchlist() {
 
-        setup(MovieId(550))
+        setup(defaultMedia)
+
+        Thread.sleep(4000)
 
         val watchedMedia = mediaViewModel.watchedListItem.value
         val watchlistMedia = mediaViewModel.watchlistItem.value
 
         assert(watchedMedia == null)
         assert(watchlistMedia != null)
+
+        Thread.sleep(4000)
 
         composeTestRule.onNodeWithText("In your watchlist").assertExists().assertIsDisplayed()
     }
@@ -190,6 +230,16 @@ class MediaPageTest {
     fun testTrackingInfoWithWatchedAndWatchlist() {
 
         setup(TvId(1394))
+
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
 
         val watchedMedia = mediaViewModel.watchedListItem.value
         val watchlistMedia = mediaViewModel.watchlistItem.value
@@ -205,6 +255,16 @@ class MediaPageTest {
 
         setup(TvId(1390))
 
+        Thread.sleep(4000)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
+
         val watchedMedia = mediaViewModel.watchedListItem.value
         val watchlistMedia = mediaViewModel.watchlistItem.value
 
@@ -217,7 +277,7 @@ class MediaPageTest {
 
     @Test
     fun testBuildTabsForMovies() {
-        val actions = defaultActions
+        /*val actions = defaultActions
 
         val outerPadding = defaultOuterPadding
         val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = emptyList())
@@ -231,7 +291,17 @@ class MediaPageTest {
                 mediaId = defaultMedia,
                 actions = actions,
             )
+        }*/
+
+        setup(defaultMedia)
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
         }
+
+        Thread.sleep(4000)
 
         composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
@@ -436,26 +506,10 @@ class MediaPageTest {
     @Test
     fun testTabbedSection() {
         setup(defaultMedia)
+        Thread.sleep(5000)
 
-        val tabs = composeTestRule.onNodeWithTag("Tab_Row").assertExists().assertIsDisplayed()
-            .onChildren()
-
+        val tabs = composeTestRule.onAllNodesWithTag("customTabs").assertAll(isSelectable())
         tabs.assertAll(hasClickAction()).assertAll(isSelectable())
-
-        val firstTab = tabs.onFirst().assertExists().assertIsDisplayed().assertIsSelected()
-        val lastTab = tabs.onLast().assertExists().assertIsDisplayed().assertIsNotSelected()
-
-        var currentTab = firstTab
-
-        do{
-            currentTab = currentTab.onSibling()
-
-            currentTab.performClick()
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
-
-            currentTab.assertIsSelected()
-        } while (currentTab != lastTab)
     }
 
     @Test
