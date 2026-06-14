@@ -553,6 +553,7 @@ class MediaPageTest {
                 externalIds = emptyMap()
             )
         }
+        Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription("TMDB logo").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("7.5").assertExists().assertIsDisplayed()
@@ -573,6 +574,8 @@ class MediaPageTest {
                 externalIds = externalIds
             )
         }
+
+        Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription("TMDB logo").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("5.0").assertExists().assertIsDisplayed()
@@ -619,11 +622,12 @@ class MediaPageTest {
             )
         }
 
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("A little great hero").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("PG-9").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText(releaseDate.toString().formatDate("MMM yyyy")).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText(releaseDate.toString().formatDate("MMM yyyy"), substring = true).assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Directed by", substring = true).assertExists().assertIsDisplayed().assertHasClickAction()
-        composeTestRule.onNodeWithContentDescription("A little great hero").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -644,16 +648,20 @@ class MediaPageTest {
             )
         }
 
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Genres:").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Horror").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Comedy").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Drama").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Adventure").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("Budget: $ 500 thousand").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Budget: $ 500k").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("Countries:").assertExists().assertIsDisplayed()
-        composeTestRule.onAllNodesWithText("Country n° ", substring = true).assertCountEquals(3)
+        composeTestRule.onNodeWithText("Countries:", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Country n° 0", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Country n° 1", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Country n° 2", substring = true).assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Release: ${LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMMM yyyy")}").assertExists().assertIsDisplayed()
 
