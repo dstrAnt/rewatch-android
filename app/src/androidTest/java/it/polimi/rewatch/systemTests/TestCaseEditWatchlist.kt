@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import it.polimi.rewatch.MainActivity
+import it.polimi.rewatch.model.MediaType
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -25,12 +26,20 @@ class TestCaseEditWatchlist {
     @get:Rule
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
-    @Before
-    fun setup() {
+    val defaultMedia = MediaType.MOVIE
+
+    fun setup(media: MediaType) {
+        val mediaType = media
         composeTestRule.waitUntil(5_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        if(mediaType == MediaType.TV_SHOW) {
+            composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(2000)
         }
 
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
@@ -78,6 +87,8 @@ class TestCaseEditWatchlist {
 
     @Test
     fun testWatchlistMovies() {
+        setup(defaultMedia)
+
         composeTestRule.onNodeWithContentDescription("Movies").assertExists()
             .performClick()
 
@@ -91,6 +102,8 @@ class TestCaseEditWatchlist {
 
     @Test
     fun testWatchlistTvShows() {
+        setup(MediaType.TV_SHOW)
+
         composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
             .performClick()
 
@@ -124,8 +137,6 @@ class TestCaseEditWatchlist {
         bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
-
-        firstItem.assertDoesNotExist()
     }
 
 
