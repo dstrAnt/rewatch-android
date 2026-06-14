@@ -15,6 +15,7 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChild
@@ -50,6 +51,7 @@ import app.moviebase.tmdb.model.TmdbProvider
 import app.moviebase.tmdb.model.TmdbProviders
 import app.moviebase.tmdb.model.TmdbResult
 import app.moviebase.tmdb.model.TmdbReview
+import app.moviebase.tmdb.model.TmdbReviewAuthor
 import app.moviebase.tmdb.model.TmdbSeason
 import app.moviebase.tmdb.model.TmdbSeasonDetail
 import app.moviebase.tmdb.model.TmdbShowDetail
@@ -431,6 +433,7 @@ class MediaPageTest {
                         author = "Giuseppe B. ($index)",
                         url = "",
                         content = "I don't like this movie ${if (index > 0) "sequel n° $index" else ""}, I'm ${if (index > 0) "still" else ""} disappointed",
+                        authorDetails = TmdbReviewAuthor(avatarPath = "/avatar", rating = 2.0f)
                     )
                 },
             ),
@@ -452,11 +455,10 @@ class MediaPageTest {
 
         composeTestRule.onNodeWithText("Reviews").assertExists().assertIsDisplayed()
         composeTestRule.onAllNodesWithTag("review_listItem").assertAll(hasClickAction())
-        //composeTestRule.onNodeWithContentDescription("Avatar for", substring = true).assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Giuseppe B. (2)").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("I don't like this movie sequel n° 1, I'm still disappointed", substring = true).assertExists().assertIsDisplayed()
-        //composeTestRule.onNodeWithContentDescription("Star rating icon").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithContentDescription("Star rating icon")[0].assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Show", substring = true).performClick()
         composeTestRule.waitForIdle()
@@ -520,15 +522,26 @@ class MediaPageTest {
             TaglineAndOverview(
                 16.dp,
                 overview = "This is a very large overview: since this overview is so long, it should provide the possibility to allow the user not only to read more," +
-                        " but also to shrink the entire content to a minimal number of text lines.",
-                tagline = "This still a great tagline"
+                        " but also to shrink the entire content to a minimal number of text lines. For some reason, I still have to talk in order to make this effect appear.",
+                tagline = "This is still a great tagline"
             )
         }
 
-        composeTestRule.onNodeWithText("This is a very large overview", substring = true).assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("This a great tagline").assertExists().assertIsDisplayed()
+        Thread.sleep(6000)
 
-        composeTestRule.onNodeWithTag("expandableText").assertExists().assertIsDisplayed().assertHasClickAction()
+        composeTestRule.onNodeWithText("This is a very large overview", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("This is still a great tagline").assertExists().assertIsDisplayed()
+
+        val expandText = composeTestRule.onNodeWithTag("expandableText").assertExists().assertIsDisplayed().assertHasClickAction()
+        expandText.performClick()
+
+        composeTestRule.waitUntil {
+            composeTestRule
+                .onAllNodesWithText("For some reason", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
     }
 
     @Test
