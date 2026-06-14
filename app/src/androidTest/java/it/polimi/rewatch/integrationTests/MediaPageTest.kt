@@ -700,13 +700,33 @@ class MediaPageTest {
     fun testPersonItem() {
         setup(defaultMedia)
 
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(5000)
+
         composeTestRule.onAllNodesWithTag("person_listItem").assertAll(hasClickAction())
-        composeTestRule.onNodeWithContentDescription("Dettagli attore").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithContentDescription("Dettagli attore")[0].assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testEpisodeItem() {
-        setup(EpisodeId(0, 1, 10))
+        setup(TvId(1394))
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Seasons").performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(1000)
 
         composeTestRule.onAllNodesWithTag("episode_listItem").assertAll(hasClickAction())
     }
@@ -731,6 +751,8 @@ class MediaPageTest {
                 actions = actions,
             )
         }
+
+        Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
@@ -763,6 +785,8 @@ class MediaPageTest {
             )
         }
 
+        Thread.sleep(5000)
+
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
 
         composeTestRule.onNodeWithText("Streaming").assertExists().assertIsDisplayed()
@@ -790,6 +814,8 @@ class MediaPageTest {
                 actions = actions,
             )
         }
+
+        Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertIsToggleable()
         composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
