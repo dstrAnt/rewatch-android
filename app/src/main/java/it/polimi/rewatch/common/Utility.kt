@@ -413,7 +413,7 @@ fun <T> CustomTabRow(
 ) {
     availableTabs.forEach {
         Tab(
-            modifier = Modifier.height(50.dp).testTag("Tab_${title(it)}"),
+            modifier = Modifier.height(50.dp).testTag("Tab_${title(it)}").testTag("customTabs"),
             selected = it == tabState,
             onClick = { onClick(it) },
             text = {

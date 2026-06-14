@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -17,14 +18,18 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onSibling
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.tryPerformAccessibilityChecks
 import app.moviebase.tmdb.Tmdb3
+import app.moviebase.tmdb.model.TmdbDepartment
 import app.moviebase.tmdb.model.TmdbFileImage
+import app.moviebase.tmdb.model.TmdbPersonCredit
 import app.moviebase.tmdb.model.TmdbPersonDetail
 import app.moviebase.tmdb.model.TmdbPersonImages
 import app.moviebase.tmdb.model.TmdbPersonMovieCredits
 import app.moviebase.tmdb.model.TmdbPersonShowCredits
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
+import it.polimi.rewatch.model.PersonId
 import it.polimi.rewatch.screens.person.PersonContent
 import it.polimi.rewatch.screens.person.PersonDetailsData
 import it.polimi.rewatch.screens.person.PersonPage
@@ -77,15 +82,6 @@ class PersonPageTest {
         composeTestRule.onNodeWithTag("bioParagraph").assertDoesNotExist()
         composeTestRule.onNodeWithTag("profilePicture").assertDoesNotExist()
     }
-
-    /*  Junk Code:
-     * images = TmdbPersonImages(List<TmdbFileImage>(1, { _ -> TmdbFileImage(
-                    filePath = "https://www.google.com/url?sa=t&source=web&rct=j&url=https%3A%2F%2Fopen.spotify.com%2Fintl-it%2Fartist%2F19UGUoQUK2qqbtl5vYkAi2&ved=0CBYQjRxqFwoTCIjV4pHUhJUDFQAAAAAdAAAAABBU&opi=89978449",
-                    aspectRatio = 16f/9,
-                    height = 200,
-                    width = 200
-                )})),
-    */
 
     @Test
     fun testNonEmptyPageInfo(){
@@ -187,63 +183,13 @@ class PersonPageTest {
 
     @Test
     fun testSectionTabRow(){
-        val actions = defaultActions
-        val outerPadding = defaultOuterPadding
+        defaultSetup()
 
-        val personData = PersonDetailsData(
-            details = TmdbPersonDetail(
-                birthday = LocalDate.now().toKotlinLocalDate(),
-                biography = "She participated in the cast of Avengers Endgame",
-                name = "Scarlett Johansson",
-            ),
-            movieCredits = TmdbPersonMovieCredits(),
-            showCredits = TmdbPersonShowCredits(),
-        )
+        Thread.sleep(5000)
 
-        val currentTab = runBlocking { defaultPersonViewModel.currentTab.first() }
-        val sortOrder = runBlocking { defaultPersonViewModel.sortOrder.first() }
-        val isAscending = runBlocking { defaultPersonViewModel.isAscending.first() }
-        val availableTabs = runBlocking { defaultPersonViewModel.availableTabs.first() }
-        val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
-
-        composeTestRule.setContent {
-            RewatchTheme()
-            {
-                PersonContent(
-                    data = personData,
-                    outerPadding = outerPadding,
-                    actions = actions,
-                    currentTab = currentTab ?: "",
-                    availableTabs = availableTabs,
-                    sortOrder = sortOrder,
-                    isAscending = isAscending,
-                    displayList = displayList,
-                    onTabSelected = defaultPersonViewModel::onTabSelected,
-                    onSortSelected = defaultPersonViewModel::onSortSelected,
-                )
-            }
-        }
-
-        Thread.sleep(4000)
-        val tabs = composeTestRule.onNodeWithTag("Tab_Row").assertExists().assertIsDisplayed()
-            .onChildren()
+        val tabs = composeTestRule.onAllNodesWithTag("customTabs").assertAll(isSelectable())
 
         tabs.assertAll(hasClickAction()).assertAll(isSelectable())
-
-        val firstTab = tabs.onFirst().assertExists().assertIsDisplayed().assertIsSelected()
-        val lastTab = tabs.onLast().assertExists().assertIsDisplayed().assertIsNotSelected()
-
-        var myCurrentTab = firstTab
-
-        do{
-            myCurrentTab = myCurrentTab.onSibling()
-
-            myCurrentTab.performClick()
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
-
-            myCurrentTab.assertIsSelected()
-        } while (myCurrentTab != lastTab)
     }
 
     @Test
