@@ -60,7 +60,7 @@ class TestCasePlaceIntoWatchlist {
         }
 
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
-            .performTouchInput { longClick() }
+            .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)

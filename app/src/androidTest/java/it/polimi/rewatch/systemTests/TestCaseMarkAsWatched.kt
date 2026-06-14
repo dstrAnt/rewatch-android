@@ -60,7 +60,7 @@ class TestCaseMarkAsWatched {
         }
 
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
-            .performTouchInput { longClick() }
+            .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
@@ -99,7 +99,7 @@ class TestCaseMarkAsWatched {
         }
 
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
-            .performTouchInput { longClick() }
+            .performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
@@ -117,7 +117,11 @@ class TestCaseMarkAsWatched {
 
         bottomSheetStarRating.performTouchInput { click(center) }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watched")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
