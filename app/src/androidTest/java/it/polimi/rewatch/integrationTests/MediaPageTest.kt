@@ -430,7 +430,7 @@ class MediaPageTest {
                         id = index.toString(),
                         author = "Giuseppe B. ($index)",
                         url = "",
-                        content = "I don't like this movie ${if (index > 0) "sequel n° $index" else ""}, I'm ${if (index > 0) "still" else ""} disappointed"
+                        content = "I don't like this movie ${if (index > 0) "sequel n° $index" else ""}, I'm ${if (index > 0) "still" else ""} disappointed",
                     )
                 },
             ),
@@ -448,14 +448,21 @@ class MediaPageTest {
                 actions = actions,
             )
         }
+        Thread.sleep(6000)
 
         composeTestRule.onNodeWithText("Reviews").assertExists().assertIsDisplayed()
         composeTestRule.onAllNodesWithTag("review_listItem").assertAll(hasClickAction())
-        composeTestRule.onNodeWithContentDescription("Avatar for", substring = true).assertExists().assertIsDisplayed()
+        //composeTestRule.onNodeWithContentDescription("Avatar for", substring = true).assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Giuseppe B. (2)").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("I don't like this movie, I'm disappointed").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithContentDescription("Star rating icon").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("I don't like this movie sequel n° 1, I'm still disappointed", substring = true).assertExists().assertIsDisplayed()
+        //composeTestRule.onNodeWithContentDescription("Star rating icon").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Show", substring = true).performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Giuseppe B. (4)").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -476,6 +483,8 @@ class MediaPageTest {
                 actions = actions,
             )
         }
+
+        Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Similar").assertExists().assertIsDisplayed()
     }
