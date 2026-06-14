@@ -23,6 +23,12 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsDirectly() {
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
@@ -47,6 +53,12 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsFromMediaPage() {
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
@@ -80,6 +92,12 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsFromMediaPageThroughRating() {
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 

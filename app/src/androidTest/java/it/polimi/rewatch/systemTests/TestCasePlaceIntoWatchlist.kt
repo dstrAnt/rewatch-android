@@ -3,12 +3,15 @@ package it.polimi.rewatch.systemTests
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import it.polimi.rewatch.MainActivity
 import org.junit.Rule
 import org.junit.Test
@@ -20,28 +23,44 @@ class TestCasePlaceIntoWatchlist {
 
     @Test
     fun testPlaceFilmsDirectly() {
-        composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        composeTestRule.onNodeWithContentDescription("In watchlist").performClick()
+        composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("In watchlist")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
-        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
-        contentPageNode.performClick()
+        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
     }
 
     @Test
     fun testPlaceFilmsFromMediaPage() {
-        composeTestRule.onAllNodesWithTag("posterItem")[0].assertExists()
-            .performClick()
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+            .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
@@ -55,14 +74,18 @@ class TestCasePlaceIntoWatchlist {
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        composeTestRule.onNodeWithContentDescription("In watchlist").performClick()
+        composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("In watchlist")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
-        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
-        contentPageNode.performClick()
+        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
     }

@@ -3,12 +3,15 @@ package it.polimi.rewatch.systemTests
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.longClick
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
 import it.polimi.rewatch.MainActivity
 import it.polimi.rewatch.model.MediaType
 import it.polimi.rewatch.screens.tracking.SortOption
@@ -25,10 +28,10 @@ class TestCaseSortFilms {
 
     @Before
     fun setup(){
-        trackItem(0, "In watchlist")
-        trackItem(1, "In watchlist")
-        trackItem(2, "In watchlist")
-        trackItem(3, "In watchlist")
+        trackItem(0, "Watchlist", true)
+        trackItem(1, "Watchlist", true)
+        trackItem(2, "Watchlist", true)
+        trackItem(3, "Watchlist", true)
 
         trackItem(4, "Watch")
         trackItem(5, "Watch")
@@ -36,21 +39,21 @@ class TestCaseSortFilms {
         trackItem(7, "Watch")
     }
 
-    fun trackItem(index: Int, option: String){
+    fun trackItem(index: Int, option: String, substring : Boolean = false){
         composeTestRule.onAllNodesWithTag("posterItem")[index].assertExists()
             .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        composeTestRule.onNodeWithContentDescription(option).performClick()
+        composeTestRule.onNodeWithContentDescription(option, substring).performClick()
 
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
-        contentPageNode.performClick()
+        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
     }

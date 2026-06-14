@@ -120,9 +120,9 @@ class TestCaseEditWatchedFilms {
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
-        val contentPageNode = composeTestRule.onNodeWithText("See content page").assertExists().assertIsDisplayed()
+        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
-        contentPageNode.performClick()
+        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
