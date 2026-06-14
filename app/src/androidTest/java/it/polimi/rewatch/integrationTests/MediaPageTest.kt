@@ -8,6 +8,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertIsToggleable
 import androidx.compose.ui.test.hasClickAction
@@ -277,22 +278,6 @@ class MediaPageTest {
 
     @Test
     fun testBuildTabsForMovies() {
-        /*val actions = defaultActions
-
-        val outerPadding = defaultOuterPadding
-        val movieData = MovieData(MediaDetail(TmdbMovieDetail()), similar = emptyList())
-
-        composeTestRule.setContent {
-            MediaContent(
-                data = movieData,
-                watchlistItem = null,
-                watchedListItem = null,
-                padding = outerPadding,
-                mediaId = defaultMedia,
-                actions = actions,
-            )
-        }*/
-
         setup(defaultMedia)
 
         composeTestRule.waitUntil(10_000) {
@@ -303,45 +288,38 @@ class MediaPageTest {
 
         Thread.sleep(4000)
 
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
-        composeTestRule.onNodeWithText("Details").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
-    }
-
-    @Test
-    fun testBuildTabsForMoviesWithDetails() {
-        val actions = defaultActions
-        val outerPadding = defaultOuterPadding
-
-        val movieData = MovieData(MediaDetail(TmdbMovieDetail(budget = 1000)), similar = emptyList())
-
-        composeTestRule.setContent {
-            MediaContent(
-                data = movieData,
-                watchlistItem = null,
-                watchedListItem = null,
-                padding = outerPadding,
-                mediaId = defaultMedia,
-                actions = actions,
-            )
-        }
-
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
-
-        composeTestRule.onNodeWithText("Details").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Details").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
         composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
     }
 
     @Test
     fun testBuildTabsForShows() {
+        setup(TvId(1394))
+
+        composeTestRule.waitUntil(10_000) {
+            composeTestRule
+                .onAllNodesWithText("Cast")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        Thread.sleep(4000)
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Seasons").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Watch").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+    }
+
+    @Test
+    fun testBuildTabsForShowsWithSeasons() {
         val actions = defaultActions
         val outerPadding = defaultOuterPadding
-        val seasons = List(2, {index -> TmdbSeason(id = index, airDate = LocalDate.now().toKotlinLocalDate(), name = "The Eyes $index", seasonNumber = index, episodeCount = index)})
+        val seasons = List(2, {index -> TmdbSeason(id = index, airDate = LocalDate.now().toKotlinLocalDate(), name = "The Eyes ${index + 1}", seasonNumber = index + 1, episodeCount = index + 1)})
 
         val showsData = MovieData(MediaDetail(TmdbShowDetail(seasons = seasons)), similar = emptyList())
 
@@ -356,27 +334,23 @@ class MediaPageTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Seasons").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
+        Thread.sleep(6000)
 
-        composeTestRule.onNodeWithText("Details").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Seasons").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
         composeTestRule.onNodeWithText("The Eyes 1").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("The Eyes 2").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText(LocalDate.now().toKotlinLocalDate().toString()).assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("1 episodes").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("2 episodes").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMM YYYY"), substring = true).assertCountEquals(2)
+        composeTestRule.onNodeWithText("1 episodes", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("2 episodes", substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testBuildTabsForTvShowSeasons() {
         val actions = defaultActions
         val outerPadding = defaultOuterPadding
-        val episodes = List(2, {index -> TmdbEpisode(id = index, airDate = LocalDate.now().toKotlinLocalDate(), name = "Scene $index", episodeNumber = index, runtime = 10 * index, seasonNumber = index)})
+        val episodes = List(2, {index -> TmdbEpisode(id = index, airDate = LocalDate.now().toKotlinLocalDate(), name = "Scene ${index + 1}", episodeNumber = index + 1, runtime = 10 * (index + 1), seasonNumber = index + 1)})
 
         val seasonsData = MovieData(MediaDetail(TmdbSeasonDetail(episodes = episodes)), similar = emptyList())
 
@@ -391,30 +365,26 @@ class MediaPageTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Episodes").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Similar").assertDoesNotExist()
+        Thread.sleep(6000)
 
-        composeTestRule.onNodeWithText("Details").assertDoesNotExist()
-        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Episodes").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
         composeTestRule.onNodeWithText("Scene 1").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Scene 2").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText(LocalDate.now().toKotlinLocalDate().toString()).assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("10 min").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("20 min").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText(LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMM YYYY"), substring = true).assertCountEquals(2)
+        composeTestRule.onNodeWithText("10 min", substring = true).assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("20 min", substring = true).assertExists().assertIsDisplayed()
     }
 
     @Test
     fun testBuildTabsForTvShowEpisode() {
         val actions = defaultActions
         val outerPadding = defaultOuterPadding
-        val cast = List(2, {index -> TmdbCast(name = "Bob Sullivan", character = "Albert von Wollenstein")})
-        val crew = List(2, {index -> TmdbCrew(name = "Alex Wasowski", job = "Producer")})
+        val cast = List(1, {index -> TmdbCast(name = "Bob Sullivan", character = "Albert von Wollenstein")})
+        val crew = List(1, {index -> TmdbCrew(name = "Alex Wasowski", job = "Producer")})
 
-        val episodeData = MovieData(MediaDetail(TmdbEpisodeDetail(guestStars = cast)), similar = emptyList())
+        val episodeData = MovieData(MediaDetail(TmdbEpisodeDetail(guestStars = cast, crew = crew)), similar = emptyList())
 
         composeTestRule.setContent {
             MediaContent(
@@ -427,11 +397,18 @@ class MediaPageTest {
             )
         }
 
-        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertIsToggleable()
-        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertIsToggleable()
+        Thread.sleep(6000)
+
+        composeTestRule.onNodeWithText("Cast").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
+        composeTestRule.onNodeWithText("Crew").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
         composeTestRule.onNodeWithText("Bob Sullivan").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Albert von Wollenstein").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Crew").performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
         composeTestRule.onNodeWithText("Alex Wasowski").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Producer").assertExists().assertIsDisplayed()
 
