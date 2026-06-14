@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.MainActivity
@@ -67,7 +68,7 @@ class TestCaseFilmSearch {
         val inputText2 = "Oppenheimer"
         val searchField2 = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
-        searchField2.performTextInput(inputText2)
+        searchField2.performTextReplacement(inputText2)
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 

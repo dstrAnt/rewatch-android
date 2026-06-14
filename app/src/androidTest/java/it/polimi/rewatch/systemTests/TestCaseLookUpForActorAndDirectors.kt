@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import it.polimi.rewatch.MainActivity
 import org.junit.Before
 import org.junit.Rule
@@ -63,7 +64,7 @@ class TestCaseLookUpForActorAndDirectors {
         val inputText2 = "Cillian Murphy"
         val searchField2 = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
-        searchField2.performTextInput(inputText2)
+        searchField2.performTextReplacement(inputText2)
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 
