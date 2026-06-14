@@ -3,6 +3,7 @@ package it.polimi.rewatch.integrationTests
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelectable
 import androidx.compose.ui.test.assertIsSelected
@@ -31,7 +32,10 @@ import it.polimi.rewatch.screens.person.PersonViewModel
 import it.polimi.rewatch.theme.RewatchTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDate
@@ -91,7 +95,7 @@ class PersonPageTest {
         val personData = PersonDetailsData(
             details = TmdbPersonDetail(
                 birthday = LocalDate.now().toKotlinLocalDate(),
-                biography = "A little cute rat who loves to help people",
+                biography = "A little cute mouse who loves to help people",
                 name = "Stuart Little",
                 profilePath = "https://upload.wikimedia.org/wikipedia/en/9/96/Stuart_Little.jpg"
             ),
@@ -106,35 +110,84 @@ class PersonPageTest {
         val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
 
         composeTestRule.setContent {
-            PersonContent(
-                data = personData,
-                outerPadding = outerPadding,
-                actions = actions,
-                currentTab = currentTab ?: "",
-                availableTabs = availableTabs,
-                sortOrder = sortOrder,
-                isAscending = isAscending,
-                displayList = displayList,
-                onTabSelected = defaultPersonViewModel::onTabSelected,
-                onSortSelected = defaultPersonViewModel::onSortSelected
-            )
+            RewatchTheme()
+            {
+                PersonContent(
+                    data = personData,
+                    outerPadding = outerPadding,
+                    actions = actions,
+                    currentTab = currentTab ?: "",
+                    availableTabs = availableTabs,
+                    sortOrder = sortOrder,
+                    isAscending = isAscending,
+                    displayList = displayList,
+                    onTabSelected = defaultPersonViewModel::onTabSelected,
+                    onSortSelected = defaultPersonViewModel::onSortSelected,
+                )
+            }
         }
 
         Thread.sleep(4000)
 
         composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
-        try {
-            composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
-        }catch (e: AssertionError){
-            composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
-        }
+
+        composeTestRule.onNodeWithText("Age").assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithTag("bioParagraph").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithTag("profilePicture").assertExists()
+        composeTestRule.onNodeWithTag("profilePicture").assertExists().assertIsNotDisplayed()
     }
 
     @Test
-    fun testSectionTabRow(){val actions = defaultActions
+    fun testDeadPersonInfo(){
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+        val birthDay = LocalDateTime(1971, 6, 12, 0,0).toJavaLocalDateTime().toLocalDate().toKotlinLocalDate()
+
+        val personData = PersonDetailsData(
+            details = TmdbPersonDetail(
+                birthday = birthDay,
+                deathday = LocalDate.now().toKotlinLocalDate(),
+                biography = "An English Murderer",
+                name = "Jack the Headchopper",
+                profilePath = "https://upload.wikimedia.org/wikipedia/en/9/96/Stuart_Little.jpg"
+            ),
+            movieCredits = TmdbPersonMovieCredits(),
+            showCredits = TmdbPersonShowCredits(),
+        )
+
+        val currentTab = runBlocking { defaultPersonViewModel.currentTab.first() }
+        val sortOrder = runBlocking { defaultPersonViewModel.sortOrder.first() }
+        val isAscending = runBlocking { defaultPersonViewModel.isAscending.first() }
+        val availableTabs = runBlocking { defaultPersonViewModel.availableTabs.first() }
+        val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
+
+        composeTestRule.setContent {
+            RewatchTheme()
+            {
+                PersonContent(
+                    data = personData,
+                    outerPadding = outerPadding,
+                    actions = actions,
+                    currentTab = currentTab ?: "",
+                    availableTabs = availableTabs,
+                    sortOrder = sortOrder,
+                    isAscending = isAscending,
+                    displayList = displayList,
+                    onTabSelected = defaultPersonViewModel::onTabSelected,
+                    onSortSelected = defaultPersonViewModel::onSortSelected,
+                )
+            }
+        }
+
+        Thread.sleep(4000)
+        composeTestRule.onNodeWithTag("birthInfo").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Died").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testSectionTabRow(){
+        val actions = defaultActions
         val outerPadding = defaultOuterPadding
 
         val personData = PersonDetailsData(
@@ -154,18 +207,21 @@ class PersonPageTest {
         val displayList = runBlocking { defaultPersonViewModel.displayList.first() }
 
         composeTestRule.setContent {
-            PersonContent(
-                data = personData,
-                outerPadding = outerPadding,
-                actions = actions,
-                currentTab = currentTab ?: "",
-                availableTabs = availableTabs,
-                sortOrder = sortOrder,
-                isAscending = isAscending,
-                displayList = displayList,
-                onTabSelected = defaultPersonViewModel::onTabSelected,
-                onSortSelected = defaultPersonViewModel::onSortSelected
-            )
+            RewatchTheme()
+            {
+                PersonContent(
+                    data = personData,
+                    outerPadding = outerPadding,
+                    actions = actions,
+                    currentTab = currentTab ?: "",
+                    availableTabs = availableTabs,
+                    sortOrder = sortOrder,
+                    isAscending = isAscending,
+                    displayList = displayList,
+                    onTabSelected = defaultPersonViewModel::onTabSelected,
+                    onSortSelected = defaultPersonViewModel::onSortSelected,
+                )
+            }
         }
 
         Thread.sleep(4000)
