@@ -562,6 +562,31 @@ class MediaPageTest {
     }
 
     @Test
+    fun testEmptyTmdbRatings() {
+        val externalIds = HashMap<String, String>(2)
+        externalIds["Imdb Link"] = ""
+        externalIds["Trailer Link"] = ""
+
+        composeTestRule.setContent {
+            TmdbRatings(
+                voteAverage = 0f,
+                voteCount = 0,
+                externalIds = externalIds
+            )
+        }
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithContentDescription("TMDB logo").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("6.5").assertDoesNotExist()
+        composeTestRule.onNodeWithText("/10").assertDoesNotExist()
+        composeTestRule.onNodeWithText("13 votes").assertDoesNotExist()
+
+        composeTestRule.onAllNodesWithTag("externalLink_row").assertAll(hasClickAction())
+        composeTestRule.onNodeWithText("imdb link").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("trailer link").assertExists().assertIsDisplayed()
+    }
+
+    @Test
     fun testTmdbRatingsWithExternalIds() {
         val externalIds = HashMap<String, String>(2)
         externalIds["Imdb Link"] = ""
@@ -703,6 +728,41 @@ class MediaPageTest {
     }
 
     @Test
+    fun testEmptyDetailsTab() {
+        val companies = emptyList<TmdbCompany>()
+
+        composeTestRule.setContent {
+            DetailsTab(pad = 16.dp,
+                MediaDetail(
+                    TmdbMovieDetail(
+                        genres = List<TmdbGenre>(4, { i -> genreDecider(i + 1)}),
+                        budget = 0,
+                        releaseDate = LocalDate.now().toKotlinLocalDate(),
+                        productionCountries = emptyList(),
+                        productionCompanies = companies
+                    )
+                )
+            )
+        }
+
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Genres:").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Horror").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Comedy").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Drama").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Adventure").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Budget: $ 500k").assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Countries:", substring = true).assertDoesNotExist()
+
+        composeTestRule.onNodeWithText("Release: ${LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMMM yyyy")}").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Production:").assertDoesNotExist()
+    }
+
+    @Test
     fun testPersonItem() {
         setup(defaultMedia)
 
@@ -828,5 +888,29 @@ class MediaPageTest {
 
         composeTestRule.onNodeWithText("Streaming").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Another Netflix").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testEmptyWatchTab(){
+        val actions = defaultActions
+        val outerPadding = defaultOuterPadding
+
+        val movieData = MovieData(MediaDetail(movie = TmdbMovieDetail(watchProviders = null)), similar = emptyList())
+
+        composeTestRule.setContent {
+            MediaContent(
+                data = movieData,
+                watchlistItem = null,
+                watchedListItem = null,
+                padding = outerPadding,
+                mediaId = defaultMedia,
+                actions = actions,
+            )
+        }
+
+        Thread.sleep(5000)
+
+        composeTestRule.onNodeWithText("Watch").assertDoesNotExist()
+        composeTestRule.onNodeWithText("Streaming").assertDoesNotExist()
     }
 }
