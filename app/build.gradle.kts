@@ -9,7 +9,8 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
 //    id("com.google.gms.google-services")
-    id("org.jetbrains.kotlinx.kover") version "0.9.8"
+//    id("org.jetbrains.kotlinx.kover") version "0.9.8"
+    id("jacoco")
 }
 
 val localProperties = Properties()
@@ -68,8 +69,43 @@ android {
     }
 }
 
-tasks.named("koverHtmlReport") {
+/*tasks.named("koverHtmlReport") {
     dependsOn("connectedDebugAndroidTest")
+}*/
+
+tasks.register<JacocoReport>("jacocoDebugReport") {
+
+    dependsOn("connectedDebugAndroidTest")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*"
+    )
+    val debugTree = project.fileTree(
+        mapOf(
+            "dir" to "$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
+            "excludes" to fileFilter
+        )
+    )
+
+    classDirectories.setFrom(files(debugTree))
+
+    sourceDirectories.setFrom(files(
+        "src/main/java",
+        "src/main/kotlin"
+    ))
+
+    executionData.setFrom(fileTree(buildDir).include(
+        "outputs/code_coverage/**/coverage.ec"
+    ))
 }
 
 dependencies {
