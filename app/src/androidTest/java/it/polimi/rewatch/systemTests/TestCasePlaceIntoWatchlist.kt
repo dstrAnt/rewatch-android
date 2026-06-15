@@ -29,10 +29,14 @@ class TestCasePlaceIntoWatchlist {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[6].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watchlist", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
@@ -59,7 +63,7 @@ class TestCasePlaceIntoWatchlist {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[5].assertExists()
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -71,7 +75,11 @@ class TestCasePlaceIntoWatchlist {
 
         composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watchlist", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()

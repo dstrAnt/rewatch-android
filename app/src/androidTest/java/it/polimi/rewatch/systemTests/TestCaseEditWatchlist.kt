@@ -42,7 +42,7 @@ class TestCaseEditWatchlist {
             Thread.sleep(2000)
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[4].assertExists()
             .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()
@@ -63,7 +63,7 @@ class TestCaseEditWatchlist {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[8].assertExists()
             .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()

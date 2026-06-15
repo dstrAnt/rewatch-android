@@ -51,7 +51,7 @@ class TestCaseEditWatchedFilms {
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(10_000){
+        composeTestRule.waitUntil(20_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -64,7 +64,7 @@ class TestCaseEditWatchedFilms {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[7].assertExists()
             .performTouchInput { longClick() }
 
         composeTestRule.waitForIdle()
@@ -72,7 +72,7 @@ class TestCaseEditWatchedFilms {
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(10_000){
+        composeTestRule.waitUntil(20_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()

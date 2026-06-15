@@ -30,8 +30,8 @@ class TestCaseSortFilms {
     val mediaType = MediaType.MOVIE
     var trackingInfo = WatchTabItem.WATCHED
 
-    @Before
-    fun setup(){
+
+    fun setupWatchlist(){
         composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
@@ -45,6 +45,17 @@ class TestCaseSortFilms {
         trackItem(1, "Watchlist", true)
         trackItem(2, "Watchlist", true)
         trackItem(3, "Watchlist", true)
+    }
+
+    fun setupWatched(){
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
+        if(mediaType == MediaType.TV_SHOW) composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
+        composeTestRule.waitForIdle()
 
         trackItem(4, "Watch")
         trackItem(5, "Watch")
@@ -56,7 +67,11 @@ class TestCaseSortFilms {
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[index].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription(option, substring = substring)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(1000)
 
         composeTestRule.onNodeWithContentDescription(option, substring = substring).performClick()
@@ -113,6 +128,8 @@ class TestCaseSortFilms {
 
     @Test
     fun testSortWatched() {
+        setupWatched()
+
         trackingInfo = WatchTabItem.WATCHED
         accessTrackingPage()
 
@@ -132,6 +149,8 @@ class TestCaseSortFilms {
 
     @Test
     fun testSortWatchlist() {
+        setupWatchlist()
+
         trackingInfo = WatchTabItem.WATCHLIST
         accessTrackingPage()
 

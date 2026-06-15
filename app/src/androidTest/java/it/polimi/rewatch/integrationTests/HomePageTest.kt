@@ -41,6 +41,7 @@ import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.screens.home.HomePage
 import it.polimi.rewatch.screens.home.HomeTabItem
 import it.polimi.rewatch.screens.home.HomeViewModel
+import it.polimi.rewatch.theme.RewatchTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -80,7 +81,9 @@ class HomePageTest {
         val outerPadding = PaddingValues();
 
         composeTestRule.setContent {
-            HomePage(actions = actions, outerPadding = outerPadding, startTab = startTab, viewModel = homeViewModel)
+            RewatchTheme(darkTheme = true) {
+                HomePage(actions = actions, outerPadding = outerPadding, startTab = startTab, viewModel = homeViewModel)
+            }
         }
     }
 

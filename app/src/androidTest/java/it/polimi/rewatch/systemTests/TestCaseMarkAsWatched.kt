@@ -29,10 +29,14 @@ class TestCaseMarkAsWatched {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watch")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
@@ -59,7 +63,7 @@ class TestCaseMarkAsWatched {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[2].assertExists()
             .performClick()
 
         composeTestRule.waitForIdle()
@@ -71,7 +75,11 @@ class TestCaseMarkAsWatched {
 
         composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(10_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watch")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
@@ -98,7 +106,7 @@ class TestCaseMarkAsWatched {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
+        composeTestRule.onAllNodesWithTag("posterItem_Trending")[3].assertExists()
             .performClick()
 
         composeTestRule.waitForIdle()
