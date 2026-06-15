@@ -20,6 +20,7 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChild
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -143,6 +144,12 @@ class HomePageTest {
         val lazyGrid = composeTestRule.onNodeWithTag("lazyGrid")
 
         composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
 
         composeTestRule.onNodeWithText("Trending").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Top Rated").assertExists().assertIsDisplayed()

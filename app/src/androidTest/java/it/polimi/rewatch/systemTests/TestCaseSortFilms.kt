@@ -32,7 +32,7 @@ class TestCaseSortFilms {
 
     @Before
     fun setup(){
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()

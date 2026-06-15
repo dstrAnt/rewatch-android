@@ -208,6 +208,8 @@ class TestCaseAccessAccount {
 
         goToTrackedMovies()
         goToTrackedShows()
+
+        testAuthPageLogout()
     }
 
     fun goToTrackedMovies(){

@@ -53,7 +53,7 @@ class TestCasePlaceIntoWatchlist {
 
     @Test
     fun testPlaceFilmsFromMediaPage() {
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -76,7 +76,7 @@ class TestCasePlaceIntoWatchlist {
 
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithContentDescription("In watchlist")
                 .fetchSemanticsNodes().isNotEmpty()

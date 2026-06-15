@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -69,7 +70,11 @@ class TestCaseFilmSearch {
         val searchField2 = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         searchField2.performTextReplacement(inputText2)
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithContentDescription(inputText2, substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         val searchResult2 = composeTestRule.onAllNodesWithContentDescription(inputText2, substring = true)[0]

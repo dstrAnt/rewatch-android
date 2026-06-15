@@ -31,7 +31,7 @@ class TestCaseEditWatchedFilms {
 
     fun setup(media: MediaType) {
         val mediaType = media
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()

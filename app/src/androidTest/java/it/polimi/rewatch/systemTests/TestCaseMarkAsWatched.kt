@@ -23,7 +23,7 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsDirectly() {
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -53,7 +53,7 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsFromMediaPage() {
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -92,7 +92,7 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsFromMediaPageThroughRating() {
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()

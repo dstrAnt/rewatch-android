@@ -23,6 +23,12 @@ class TestCaseFilmRating {
 
     @Test
     fun testRateFilmsDirectly() {
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
@@ -45,6 +51,12 @@ class TestCaseFilmRating {
 
     @Test
     fun testRateFilmsFromMediaPage() {
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithText("Trending")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performClick()
 
