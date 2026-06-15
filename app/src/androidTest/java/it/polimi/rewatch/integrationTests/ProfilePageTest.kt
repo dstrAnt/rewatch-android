@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -85,16 +86,16 @@ class ProfilePageTest {
         var watchlistMovies = profileViewModel.watchlistMovies; var nWatchlistMovies = runBlocking { watchlistMovies.first() }
 
         composeTestRule.onNodeWithText("Movies in watchlist").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$nWatchedMovies").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("$nWatchedMovies")[0].assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Movies watched").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$nWatchedShows").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("$nWatchedShows")[0].assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Tv Shows in watchlist").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$nWatchlistShows").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("$nWatchlistShows")[0].assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithText("Tv Shows watched").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("$nWatchlistMovies").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("$nWatchlistMovies")[0].assertExists().assertIsDisplayed()
         Thread.sleep(5000)
 
         profileViewModel.repository.addToWatchlist(MovieId(0))
@@ -116,13 +117,13 @@ class ProfilePageTest {
         nWatchlistShows = runBlocking { watchlistShows.first() }
         nWatchlistMovies = runBlocking { watchlistMovies.first() }
 
-        composeTestRule.onNodeWithText("${nWatchedMovies}").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("${nWatchedMovies}")[0].assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("${nWatchedShows}").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("${nWatchedShows}")[0].assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("${nWatchlistShows}").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("${nWatchlistShows}")[0].assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("${nWatchlistMovies}").assertExists().assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("${nWatchlistMovies}")[0].assertExists().assertIsDisplayed()
     }
 
     @Test
