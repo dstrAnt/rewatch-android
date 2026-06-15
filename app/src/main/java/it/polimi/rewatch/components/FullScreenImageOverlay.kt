@@ -112,7 +112,7 @@ fun FullScreenImageOverlay(
                                     animatedScale = animatedScale,
                                     onOffsetChange = { offsetY = it },
                                     onDismiss = onDismiss,
-                                ),
+                                ).testTag("imageContentToDismissBySwipe"),
                         )
                     }
                 } else {

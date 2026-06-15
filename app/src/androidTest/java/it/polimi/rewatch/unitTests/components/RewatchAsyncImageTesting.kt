@@ -1,7 +1,11 @@
 package it.polimi.rewatch.unitTests.components
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import it.polimi.rewatch.R
 import it.polimi.rewatch.components.RewatchAsyncImage
 import org.junit.Rule
 import org.junit.Test
@@ -13,15 +17,10 @@ class RewatchAsyncImageTesting {
 
     @Test
     fun testRewatchAsyncImage(){
+        composeTestRule.setContent { RewatchAsyncImage("app/src/main/res/drawable/ticket1.png", "ticketImage", modifier = Modifier, fallbackResId = R.drawable.ticket1) }
 
-        try {
-            val asyncImage = composeTestRule.setContent { RewatchAsyncImage(null, null, modifier = Modifier) }
+        Thread.sleep(4000)
 
-            assert(true);
-        } catch (_: NullPointerException){
-            assert(false);
-        }
-
-
+        composeTestRule.onNodeWithContentDescription("ticketImage").assertExists().assertIsDisplayed()
     }
 }
