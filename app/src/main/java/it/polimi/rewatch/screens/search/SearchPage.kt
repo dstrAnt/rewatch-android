@@ -339,7 +339,7 @@ private fun SearchResultsList(
 
     LazyColumn(
         state = listState,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().testTag("searchResultListState"),
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
         items(results) { item ->

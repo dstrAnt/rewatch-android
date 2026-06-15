@@ -1,6 +1,7 @@
 package it.polimi.rewatch.integrationTests
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -11,14 +12,22 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
+import androidx.test.espresso.action.ViewActions.swipeLeft
 import app.moviebase.tmdb.Tmdb3
 import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.common.NavigationActions
@@ -27,6 +36,7 @@ import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.search.SearchPage
 import it.polimi.rewatch.screens.search.SearchViewModel
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -131,7 +141,6 @@ class SearchPageTest {
 
         val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
 
-        //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
         searchResult.assertExists().assertIsDisplayed()
 
         val inputText2 = "Chris Hemsworth"
@@ -220,5 +229,57 @@ class SearchPageTest {
 
         composeTestRule.onNodeWithText("No results").assertExists().assertIsDisplayed()
         composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
+    }
+
+    @Test
+    fun testFocusOnImeAction(){
+        val startSearchButton = composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
+
+        startSearchButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsFocused()
+
+        searchField.performTextInput("Christian Bale")
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.performImeAction()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsNotFocused()
+    }
+
+    @Test
+    fun testFocusOnScroll(){
+        val startSearchButton = composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
+
+        startSearchButton.performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsFocused()
+
+        composeTestRule.onNodeWithText("Search for", substring = true).performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsNotFocused()
+
+        searchField.performTextInput("Christian Bale")
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsFocused()
+
+        composeTestRule.onNodeWithTag("searchResultListState").performTouchInput { swipeDown() }
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        searchField.assertIsNotFocused()
     }
 }
