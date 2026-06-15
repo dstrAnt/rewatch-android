@@ -9,6 +9,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
 //    id("com.google.gms.google-services")
+    id("org.jetbrains.kotlinx.kover") version "0.9.8"
 }
 
 val localProperties = Properties()
@@ -54,7 +55,7 @@ android {
             enableUnitTestCoverage = true
 
             //  Enables coverage for instrumented tests (emulators/real devices)
-            enableAndroidTestCoverage = false
+            enableAndroidTestCoverage = true
         }
     }
     compileOptions {
@@ -65,6 +66,10 @@ android {
         compose = true
         buildConfig = true
     }
+}
+
+tasks.named("koverHtmlReport") {
+    dependsOn("connectedDebugAndroidTest")
 }
 
 dependencies {
