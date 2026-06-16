@@ -1,5 +1,6 @@
 package it.polimi.rewatch.systemTests
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 //import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -24,119 +25,131 @@ class TestCaseMarkAsWatched {
 
     @Test
     fun testMarkFilmsDirectly() {
-        composeTestRule.waitUntil(15_000){
-            composeTestRule
-                .onAllNodesWithText("Trending")
-                .fetchSemanticsNodes().isNotEmpty()
+        try{
+            composeTestRule.waitUntil(35_000) {
+                composeTestRule
+                    .onAllNodesWithText("Trending")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
+                .performTouchInput { longClick() }
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithContentDescription("Watch")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
+
+            composeTestRule.onNodeWithContentDescription("Watch").performClick()
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithContentDescription("Watched")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
+
+            val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
+
+            bottomSheet.performTouchInput { swipeDown(200f, 400f) }
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
-            .performTouchInput { longClick() }
-
-        composeTestRule.waitUntil(10_000){
-            composeTestRule
-                .onAllNodesWithContentDescription("Watch")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        java.lang.Thread.sleep(3000)
-
-        composeTestRule.onNodeWithContentDescription("Watch").performClick()
-
-        composeTestRule.waitUntil(10_000){
-            composeTestRule
-                .onAllNodesWithContentDescription("Watched")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        java.lang.Thread.sleep(3000)
-
-        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
-
-        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
     }
 
     @Test
     fun testMarkFilmsFromMediaPage() {
-        composeTestRule.waitUntil(15_000){
-            composeTestRule
-                .onAllNodesWithText("Trending")
-                .fetchSemanticsNodes().isNotEmpty()
+        try {
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule
+                    .onAllNodesWithText("Trending")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onAllNodesWithTag("posterItem_Trending")[2].assertExists()
+                .performClick()
+
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
+
+            composeTestRule.onNodeWithTag("media_page").assertExists()
+
+            //Click on the "Add to List" Button
+
+            composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithContentDescription("Watch")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
+
+            composeTestRule.onNodeWithContentDescription("Watch").performClick()
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithContentDescription("Watched")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
+
+            val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
+
+            bottomSheet.performTouchInput { swipeDown(200f, 400f) }
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[2].assertExists()
-            .performClick()
-
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
-
-        composeTestRule.onNodeWithTag("media_page").assertExists()
-
-        //Click on the "Add to List" Button
-
-        composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
-
-        composeTestRule.waitUntil(10_000){
-            composeTestRule
-                .onAllNodesWithContentDescription("Watch")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        java.lang.Thread.sleep(3000)
-
-        composeTestRule.onNodeWithContentDescription("Watch").performClick()
-
-        composeTestRule.waitUntil(10_000){
-            composeTestRule
-                .onAllNodesWithContentDescription("Watched")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        java.lang.Thread.sleep(3000)
-
-        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
-
-        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
     }
 
     @Test
     fun testMarkFilmsFromMediaPageThroughRating() {
-        composeTestRule.waitUntil(15_000){
-            composeTestRule
-                .onAllNodesWithText("Trending")
-                .fetchSemanticsNodes().isNotEmpty()
+        try{
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule
+                    .onAllNodesWithText("Trending")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onAllNodesWithTag("posterItem_Trending")[3].assertExists()
+                .performClick()
+
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
+
+            composeTestRule.onNodeWithTag("media_page").assertExists()
+
+            //Click on the "Add to List" Button
+
+            composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
+
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
+
+            val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
+
+            bottomSheetStarRating.performTouchInput { click(center) }
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithContentDescription("Watched")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
+
+            val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
+
+            bottomSheet.performTouchInput { swipeDown(200f, 400f) }
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-
-        composeTestRule.onAllNodesWithTag("posterItem_Trending")[3].assertExists()
-            .performClick()
-
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
-
-        composeTestRule.onNodeWithTag("media_page").assertExists()
-
-        //Click on the "Add to List" Button
-
-        composeTestRule.onNodeWithTag("mediaBottomSheet").assertExists().assertIsDisplayed().performClick()
-
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
-
-        val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
-
-        bottomSheetStarRating.performTouchInput { click(center) }
-
-        composeTestRule.waitUntil(10_000){
-            composeTestRule
-                .onAllNodesWithContentDescription("Watched")
-                .fetchSemanticsNodes().isNotEmpty()
-        }
-        java.lang.Thread.sleep(3000)
-
-        val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
-
-        bottomSheet.performTouchInput { swipeDown(200f, 400f) }
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
     }
 }

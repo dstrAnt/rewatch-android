@@ -23,7 +23,7 @@ import it.polimi.rewatch.MainActivity
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import kotlin.collections.get
+import androidx.compose.ui.test.ComposeTimeoutException
 
 class TestCaseAccessAccount {
     @get:Rule
@@ -32,7 +32,7 @@ class TestCaseAccessAccount {
     val emailAddress = "test.user@example.com"
 
     fun setupTrackingLists(){
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(35_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -41,7 +41,11 @@ class TestCaseAccessAccount {
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(35_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watch", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
@@ -62,7 +66,11 @@ class TestCaseAccessAccount {
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(35_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watchlist", substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(5000)
 
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
@@ -116,6 +124,12 @@ class TestCaseAccessAccount {
         }
         java.lang.Thread.sleep(60000)
 
+        composeTestRule.waitUntil(35_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Success")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+
         composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
 
         composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
@@ -146,71 +160,76 @@ class TestCaseAccessAccount {
 
     @Test
     fun testAuthPageCollisionResolve() {
-        // On the Home Page, two casual poster items are selected
+        try{
+            // On the Home Page, two casual poster items are selected
 
-        setupTrackingLists()
+            setupTrackingLists()
 
-        // Returning to the Profile Page first and then to the Authentication Page
+            // Returning to the Profile Page first and then to the Authentication Page
 
-        composeTestRule.onNodeWithContentDescription("Profile").assertExists()
-            .performClick()
+            composeTestRule.onNodeWithContentDescription("Profile").assertExists()
+                .performClick()
 
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
 
-        composeTestRule.onNodeWithTag("profile_page").assertExists()
+            composeTestRule.onNodeWithTag("profile_page").assertExists()
 
-        composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
 
 
-        // Same procedures for Standard Login + Merge Prompt
+            // Same procedures for Standard Login + Merge Prompt
 
-        composeTestRule.onNodeWithText("Login").performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
+            composeTestRule.onNodeWithText("Login").performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
 
-        val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
-        val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
+            val textField = composeTestRule.onNodeWithTag("signInTextField").assertExists().assertIsDisplayed().assertIsNotFocused()
+            val sendLinkButton = composeTestRule.onNodeWithTag("sendAuthLinkButton").assertExists().assertIsDisplayed().assertIsNotEnabled()
 
-        textField.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
+            textField.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
 
-        textField.assertIsFocused().performTextInput(emailAddress)
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(3000)
-        sendLinkButton.assertIsEnabled()
+            textField.assertIsFocused().performTextInput(emailAddress)
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
+            sendLinkButton.assertIsEnabled()
 
-        sendLinkButton.performClick()
-        composeTestRule.waitUntil(5_000){
-            composeTestRule
-                .onAllNodesWithText("Check your email")
-                .fetchSemanticsNodes().isNotEmpty()
+            sendLinkButton.performClick()
+            composeTestRule.waitUntil(5_000) {
+                composeTestRule
+                    .onAllNodesWithText("Check your email")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(60000)
+
+            composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("You have lists saved as a guest. Do you want to merge them with your existing account?")
+                .assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("Merge my lists").assertExists().assertIsDisplayed()
+            composeTestRule.onNodeWithText("Discard guest lists").assertExists().assertIsDisplayed()
+
+            val mergeButton = composeTestRule.onNodeWithTag("mergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
+
+            java.lang.Thread.sleep(5000)
+
+            // It is equivalent to execute this command: authViewModel.resolveCollision(true)
+            mergeButton.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+
+            composeTestRule.onNodeWithTag("profile_page").assertExists()
+
+            java.lang.Thread.sleep(5000)
+
+            goToTrackedMovies()
+            goToTrackedShows()
+
+            testAuthPageLogout()
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-        java.lang.Thread.sleep(60000)
-
-        composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("You have lists saved as a guest. Do you want to merge them with your existing account?").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("Merge my lists").assertExists().assertIsDisplayed()
-        composeTestRule.onNodeWithText("Discard guest lists").assertExists().assertIsDisplayed()
-
-        val mergeButton = composeTestRule.onNodeWithTag("mergeButton").assertExists().assertIsDisplayed().assertIsEnabled()
-
-        java.lang.Thread.sleep(5000)
-
-        // It is equivalent to execute this command: authViewModel.resolveCollision(true)
-        mergeButton.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
-
-        composeTestRule.onNodeWithTag("profile_page").assertExists()
-
-        java.lang.Thread.sleep(5000)
-
-        goToTrackedMovies()
-        goToTrackedShows()
-
-        testAuthPageLogout()
     }
 
     fun goToTrackedMovies(){

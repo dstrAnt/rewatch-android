@@ -108,6 +108,7 @@ class BottomSheetTesting {
 
         composeTestRule.onNodeWithText("Content watched on ").assertExists()
         val watchDateTrigger = composeTestRule.onNodeWithTag("watchDateTrigger").assertExists()
+        Thread.sleep(1000)
         watchDateTrigger.assertIsDisplayed()
         watchDateTrigger.performClick()
         composeTestRule.waitForIdle()

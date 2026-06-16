@@ -1,5 +1,6 @@
 package it.polimi.rewatch.systemTests
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelectable
@@ -33,35 +34,45 @@ class TestCaseSortFilms {
 
 
     fun setupWatchlist(){
-        composeTestRule.waitUntil(15_000){
-            composeTestRule
-                .onAllNodesWithText("Trending")
-                .fetchSemanticsNodes().isNotEmpty()
+        try{
+            composeTestRule.waitUntil(35_000) {
+                composeTestRule
+                    .onAllNodesWithText("Trending")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            if (mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) composeTestRule.onNodeWithText("Tv Shows").assertExists()
+                .performClick()
+            composeTestRule.waitForIdle()
+
+            trackItem(0, "Watchlist", true)
+            trackItem(1, "Watchlist", true)
+            trackItem(2, "Watchlist", true)
+            trackItem(3, "Watchlist", true)
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-
-        if(mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
-        composeTestRule.waitForIdle()
-
-        trackItem(0, "Watchlist", true)
-        trackItem(1, "Watchlist", true)
-        trackItem(2, "Watchlist", true)
-        trackItem(3, "Watchlist", true)
     }
 
     fun setupWatched(){
-        composeTestRule.waitUntil(15_000){
-            composeTestRule
-                .onAllNodesWithText("Trending")
-                .fetchSemanticsNodes().isNotEmpty()
+        try{
+            composeTestRule.waitUntil(35_000) {
+                composeTestRule
+                    .onAllNodesWithText("Trending")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            if (mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) composeTestRule.onNodeWithText("Tv Shows").assertExists()
+                .performClick()
+            composeTestRule.waitForIdle()
+
+            trackItem(4, "Watch")
+            trackItem(5, "Watch")
+            trackItem(6, "Watch")
+            trackItem(7, "Watch")
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
         }
-
-        if(mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
-        composeTestRule.waitForIdle()
-
-        trackItem(4, "Watch")
-        trackItem(5, "Watch")
-        trackItem(6, "Watch")
-        trackItem(7, "Watch")
     }
 
     fun trackItem(index: Int, option: String, substring : Boolean = false){

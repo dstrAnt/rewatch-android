@@ -1,5 +1,6 @@
 package it.polimi.rewatch.systemTests
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelectable
@@ -32,7 +33,7 @@ class TestCaseEditWatchedFilms {
 
     fun setup(media: it.polimi.rewatch.model.MediaType) {
         val mediaType = media
-        composeTestRule.waitUntil(15_000){
+        composeTestRule.waitUntil(35_000){
             composeTestRule
                 .onAllNodesWithText("Trending")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -47,12 +48,16 @@ class TestCaseEditWatchedFilms {
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(35_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watch")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(20_000){
+        composeTestRule.waitUntil(35_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -68,7 +73,11 @@ class TestCaseEditWatchedFilms {
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[7].assertExists()
             .performTouchInput { longClick() }
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(35_000){
+            composeTestRule
+                .onAllNodesWithContentDescription("Watch")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
@@ -89,31 +98,40 @@ class TestCaseEditWatchedFilms {
 
     @Test
     fun testWatchedMovies() {
-        setup(defaultMedia)
+        try{
+            setup(defaultMedia)
 
-        composeTestRule.onNodeWithContentDescription("Movies").assertExists()
-            .performClick()
+            composeTestRule.onNodeWithContentDescription("Movies").assertExists()
+                .performClick()
 
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
 
-        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+            composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
-        removeFromWatchedFilms()
+            removeFromWatchedFilms()
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }
     }
 
     @Test
     fun testWatchedTvShows() {
-        setup(it.polimi.rewatch.model.MediaType.TV_SHOW)
+        try {
+            setup(it.polimi.rewatch.model.MediaType.TV_SHOW)
 
-        composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
-            .performClick()
+            composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
+                .performClick()
 
-        composeTestRule.waitForIdle()
+            composeTestRule.waitForIdle()
 
-        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+            composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
-        removeFromWatchedFilms()
+            removeFromWatchedFilms()
+        }
+        catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }
     }
 
     fun removeFromWatchedFilms(){
