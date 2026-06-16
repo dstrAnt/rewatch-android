@@ -30,6 +30,11 @@ import it.polimi.rewatch.model.MovieId
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Case designed to test Composable FullScreenImageOverlay
+ */
+
+
 class FullScreenImageOverlayTesting {
 
     @get:Rule

@@ -27,6 +27,10 @@ import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Case designed to test Class PosterItem
+ */
+
 class PosterItemTesting {
     @get:Rule
     val composeTestRule = createComposeRule()

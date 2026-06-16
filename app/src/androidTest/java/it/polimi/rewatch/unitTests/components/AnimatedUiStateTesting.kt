@@ -17,6 +17,11 @@ import it.polimi.rewatch.model.PosterInfo
 import org.junit.Test
 import org.junit.Rule
 
+/**
+ * Test Case designed to test Composable AnimatedUiState
+ */
+
+
 class AnimatedUiStateTesting {
 
     @get:Rule

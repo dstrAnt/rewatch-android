@@ -29,6 +29,10 @@ import it.polimi.rewatch.components.StarRating
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Case designed to test Composable StarRating
+ */
+
 class StarRatingTesting {
 
     @get:Rule

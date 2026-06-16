@@ -23,7 +23,13 @@ import org.junit.Rule
 import org.junit.Test
 import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertIsSelectable
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+
+/**
+ * Test Cases designed to test Interaction Scenario "Browse Films"
+ */
+
 
 class TestCaseBrowseFilms {
     @get:Rule
@@ -155,7 +161,11 @@ class TestCaseBrowseFilms {
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithTag("Tab_Watched").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(15_000) {
+            composeTestRule
+                .onAllNodesWithTag("backToHomeButton")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         Thread.sleep(3000)
 
         composeTestRule.onNodeWithTag("backToHomeButton").assertExists().assertIsDisplayed().assertHasClickAction().performClick()

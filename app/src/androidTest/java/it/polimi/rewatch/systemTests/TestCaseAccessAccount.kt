@@ -25,6 +25,11 @@ import org.junit.Rule
 import org.junit.Test
 import androidx.compose.ui.test.ComposeTimeoutException
 
+/**
+ * Test Cases designed to test Interaction Scenario "Access Account"
+ */
+
+
 class TestCaseAccessAccount {
     @get:Rule
     val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
@@ -245,6 +250,12 @@ class TestCaseAccessAccount {
 
             composeTestRule.onNodeWithTag("profile_page").assertExists()
 
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule
+                    .onAllNodesWithText("Login")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
             composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
 
 
@@ -355,6 +366,12 @@ class TestCaseAccessAccount {
             java.lang.Thread.sleep(3000)
 
             composeTestRule.onNodeWithTag("profile_page").assertExists()
+
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule
+                    .onAllNodesWithText("Login")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
 
             composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
 

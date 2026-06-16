@@ -10,6 +10,10 @@ import it.polimi.rewatch.components.RewatchAsyncImage
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Case designed to test Composable RewatchAsyncImage
+ */
+
 class RewatchAsyncImageTesting {
 
     @get:Rule

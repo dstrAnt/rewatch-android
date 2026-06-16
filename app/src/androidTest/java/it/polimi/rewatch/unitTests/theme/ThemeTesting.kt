@@ -25,6 +25,10 @@ import it.polimi.rewatch.theme.*;
 import org.junit.Before
 import org.junit.Rule
 
+/**
+ * Test Cases designed to test Class Theme, which defines Composable RewatchTheme
+ */
+
 internal class ThemeTesting {
 
     @get:Rule
