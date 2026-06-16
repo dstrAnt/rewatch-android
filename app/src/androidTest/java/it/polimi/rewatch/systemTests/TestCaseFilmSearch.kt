@@ -29,7 +29,7 @@ import kotlin.collections.get
 
 class TestCaseFilmSearch {
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
+    val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
 
     @Test
     fun testFilmSearch() {
@@ -48,7 +48,11 @@ class TestCaseFilmSearch {
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         searchField.performTextInput(inputText)
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithContentDescription(inputText, substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(3000)
 
         val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]

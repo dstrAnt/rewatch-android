@@ -27,7 +27,7 @@ import kotlin.collections.get
 
 class TestCaseEditWatchedFilms {
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
+    val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
 
     val defaultMedia = it.polimi.rewatch.model.MediaType.MOVIE
 
@@ -112,9 +112,9 @@ class TestCaseEditWatchedFilms {
             removeFromWatchedFilms()
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
-        }catch (e: AssertionError){
+        }/*catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
-        }
+        }*/
     }
 
     @Test
@@ -133,9 +133,9 @@ class TestCaseEditWatchedFilms {
         }
         catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
-        }catch (e: AssertionError){
+        }/*catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
-        }
+        }*/
     }
 
     fun removeFromWatchedFilms(){

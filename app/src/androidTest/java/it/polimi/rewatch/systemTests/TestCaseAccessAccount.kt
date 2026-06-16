@@ -27,7 +27,7 @@ import androidx.compose.ui.test.ComposeTimeoutException
 
 class TestCaseAccessAccount {
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
+    val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
 
     val emailAddress = "test.user@example.com"
 
@@ -95,7 +95,11 @@ class TestCaseAccessAccount {
         composeTestRule.onNodeWithContentDescription("Profile").assertExists()
             .performClick()
 
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(5_000){
+            composeTestRule
+                .onAllNodesWithText("Login")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(3000)
 
         composeTestRule.onNodeWithTag("profile_page").assertExists()
@@ -233,9 +237,9 @@ class TestCaseAccessAccount {
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
         }
-        catch (e: AssertionError){
+        /*catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
-        }
+        }*/
     }
 
     fun goToTrackedMovies(){
