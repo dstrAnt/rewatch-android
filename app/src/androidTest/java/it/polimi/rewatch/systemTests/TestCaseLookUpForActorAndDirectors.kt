@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -80,5 +81,49 @@ class TestCaseLookUpForActorAndDirectors {
         java.lang.Thread.sleep(3000)
 
         composeTestRule.onNodeWithTag("person_page").assertExists()
+    }
+
+    @Test
+    fun testActorContent(){
+        composeTestRule.onNodeWithContentDescription("Search").assertExists()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("search_page").assertExists()
+
+        val peopleTab = composeTestRule.onNodeWithTag("Tab_People").assertExists().assertIsDisplayed().assertHasClickAction()
+
+        peopleTab.performClick()
+        composeTestRule.waitForIdle()
+        java.lang.Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        java.lang.Thread.sleep(3000)
+
+        val inputText = "Scarlett Johansson"
+        val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
+
+        searchField.performTextInput(inputText)
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithContentDescription(inputText, substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        java.lang.Thread.sleep(3000)
+
+        val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
+
+        searchResult.performClick()
+        composeTestRule.waitForIdle()
+        java.lang.Thread.sleep(3000)
+
+        composeTestRule.onNodeWithTag("person_page").assertExists()
+
+        composeTestRule.onNodeWithText("Directing").assertHasClickAction().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
     }
 }

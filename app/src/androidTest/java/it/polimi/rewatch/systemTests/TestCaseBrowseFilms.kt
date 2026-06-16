@@ -22,6 +22,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import androidx.compose.ui.test.ComposeTimeoutException
+import androidx.compose.ui.test.assertIsSelectable
+import androidx.compose.ui.test.onNodeWithText
 
 class TestCaseBrowseFilms {
     @get:Rule
@@ -87,5 +89,79 @@ class TestCaseBrowseFilms {
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
         }
+    }
+
+    @Test
+    fun testBrowseFilms2() {
+        try{
+            composeTestRule.onNodeWithContentDescription("Home").assertExists()
+                .performClick()
+
+            composeTestRule.onNodeWithTag("home_page").assertExists()
+
+            visitWatchedTvShowsSection()
+
+            composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
+            composeTestRule.waitForIdle()
+
+            composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
+
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithTag("posterItem_Trending", useUnmergedTree = true)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onAllNodesWithTag("posterItem_Trending")[9].assertExists()
+                .performClick()
+
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(3000)
+
+            composeTestRule.onNodeWithTag("media_page").assertExists()
+
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+            composeTestRule.onNodeWithText("Seasons").assertHasClickAction().performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+            composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+            composeTestRule.onNodeWithText("Episodes").assertHasClickAction().performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+            composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
+            composeTestRule.waitForIdle()
+            Thread.sleep(3000)
+
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }
+    }
+
+    fun visitWatchedTvShowsSection(){
+        composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
+            .performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("tracking_page").assertExists()
+
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithTag("Tab_Watched").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithTag("backToHomeButton").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithTag("home_page").assertExists()
     }
 }

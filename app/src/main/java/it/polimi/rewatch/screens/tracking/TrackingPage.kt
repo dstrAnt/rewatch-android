@@ -204,6 +204,7 @@ fun TrackingPage(
                             Spacer(Modifier.height(16.dp))
                             Button(
                                 onClick = { actions.onBackToHome(getHomeTab(type)) },
+                                modifier = Modifier.testTag("backToHomeButton")
                             ) {
                                 Text("Explore")
                             }
