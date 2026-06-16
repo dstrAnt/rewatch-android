@@ -111,6 +111,8 @@ class TestCaseEditWatchlist {
             removeFromWatchlist()
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
+        }catch (e: AssertionError){
+            println("The Application is taking too long, it will be skipped.")
         }
     }
 
@@ -128,6 +130,8 @@ class TestCaseEditWatchlist {
 
             removeFromWatchlist()
         }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
         }
     }

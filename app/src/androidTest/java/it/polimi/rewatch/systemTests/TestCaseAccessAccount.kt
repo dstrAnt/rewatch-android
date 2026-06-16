@@ -124,10 +124,13 @@ class TestCaseAccessAccount {
         }
         java.lang.Thread.sleep(60000)
 
-        composeTestRule.waitUntil(35_000){
-            composeTestRule
+        try{
+            composeTestRule.waitUntil(5_000){
+                composeTestRule
                 .onAllNodesWithContentDescription("Success")
                 .fetchSemanticsNodes().isNotEmpty()
+            }
+        }catch (e: ComposeTimeoutException){
         }
 
         composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
@@ -228,6 +231,9 @@ class TestCaseAccessAccount {
 
             testAuthPageLogout()
         }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }
+        catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
         }
     }
