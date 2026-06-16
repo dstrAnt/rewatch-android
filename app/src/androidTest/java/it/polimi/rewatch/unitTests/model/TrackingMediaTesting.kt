@@ -19,6 +19,8 @@ class TrackingMediaTesting {
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    /* Testing how class TrackingMedia is constructed */
+
     @Test
     fun testAppTrackingMediaConstructor() {
 

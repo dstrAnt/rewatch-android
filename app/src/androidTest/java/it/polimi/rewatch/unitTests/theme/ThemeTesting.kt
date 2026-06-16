@@ -48,7 +48,7 @@ internal class ThemeTesting {
 
     val defaultOuterPadding = PaddingValues();
 
-
+    // Setup for Dark/Light Mode
     fun setup(dark: Boolean) {
 
         mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
@@ -60,6 +60,7 @@ internal class ThemeTesting {
         }
     }
 
+    // Setup for Dark/Light Mode without Dynamic Coloring
     fun setupNoDynamicColor(dark: Boolean) {
 
         mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
@@ -75,6 +76,7 @@ internal class ThemeTesting {
     fun testAppDarkTheme() {
         setup(true)
 
+        // Obliging Test Compose to wait for Content
         composeTestRule.waitUntil(10_000) {
             composeTestRule
                 .onAllNodesWithText("Cast")

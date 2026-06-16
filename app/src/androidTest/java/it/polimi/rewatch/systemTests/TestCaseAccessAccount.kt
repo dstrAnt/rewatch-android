@@ -36,6 +36,7 @@ class TestCaseAccessAccount {
 
     val emailAddress = "test.user@example.com"
 
+    // Setup Procedure to add initial Watchlist & Watched Movies for Collision scenarios
     fun setupTrackingLists(){
         composeTestRule.waitUntil(35_000){
             composeTestRule
@@ -94,6 +95,7 @@ class TestCaseAccessAccount {
         java.lang.Thread.sleep(5000)
     }
 
+    // Setup Procedure to add initial Watchlist & Watched Tv Shows for Collision scenarios
     fun setupTrackingLists2(){
         composeTestRule.waitUntil(35_000){
             composeTestRule
@@ -158,6 +160,8 @@ class TestCaseAccessAccount {
     @Test
     fun testAuthPageLogin() {
 
+        // Entering the Profile Page
+
         composeTestRule.onNodeWithContentDescription("Profile").assertExists()
             .performClick()
 
@@ -170,6 +174,8 @@ class TestCaseAccessAccount {
 
         composeTestRule.onNodeWithTag("profile_page").assertExists()
 
+        // Initiating Login Procedure in the Auth Page
+
         composeTestRule.onNodeWithText("Login").performClick()
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)
@@ -181,11 +187,13 @@ class TestCaseAccessAccount {
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)
 
+        // Inserting email address
         textField.assertIsFocused().performTextInput(emailAddress)
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)
         sendLinkButton.assertIsEnabled()
 
+        // Sending email Sign In link
         sendLinkButton.performClick()
         composeTestRule.waitUntil(5_000){
             composeTestRule
@@ -201,15 +209,17 @@ class TestCaseAccessAccount {
                 .fetchSemanticsNodes().isNotEmpty()
             }
 
-        composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
+            // Returning successfully to Profile Page
 
-        composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
 
-        composeTestRule.onNodeWithTag("profile_page").assertExists()
+            composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
 
-        testAuthPageLogout()
+            composeTestRule.onNodeWithTag("profile_page").assertExists()
+
+            testAuthPageLogout()
 
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, this test will be skipped.")
@@ -258,7 +268,6 @@ class TestCaseAccessAccount {
 
             composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
 
-
             // Same procedures for Standard Login + Merge Prompt
 
             composeTestRule.onNodeWithText("Login").performClick()
@@ -300,20 +309,19 @@ class TestCaseAccessAccount {
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
 
+            // Returning successfully to Profile Page
+
             composeTestRule.onNodeWithTag("profile_page").assertExists()
 
             java.lang.Thread.sleep(5000)
 
-            goToTrackedMovies()
+            goToTrackedMovies()         // Showing Merge Results
            // goToTrackedShows()
 
             testAuthPageLogout()
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, this test will be skipped.")
         }
-        /*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
     }
 
     fun goToTrackedMovies(){
@@ -402,6 +410,8 @@ class TestCaseAccessAccount {
             }
             java.lang.Thread.sleep(60000)
 
+            // Beginning of Merge Prompt Content
+
             composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
             composeTestRule.onNodeWithText("You have lists saved as a guest. Do you want to merge them with your existing account?")
                 .assertExists().assertIsDisplayed()
@@ -416,19 +426,18 @@ class TestCaseAccessAccount {
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
 
+            // Returning successfully to Profile Page
+
             composeTestRule.onNodeWithTag("profile_page").assertExists()
 
             java.lang.Thread.sleep(5000)
 
             //goToTrackedMovies()
-            goToTrackedShows()
+            goToTrackedShows()           // Showing that no Merge occurred
 
             testAuthPageLogout()
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, this test will be skipped.")
         }
-        /*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
     }
 }
