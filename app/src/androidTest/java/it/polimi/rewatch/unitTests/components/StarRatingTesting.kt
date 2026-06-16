@@ -60,6 +60,8 @@ class StarRatingTesting {
             click(center)
         }
 
+        Thread.sleep(2000)
+
         // 3. Verification of the result
         composeTestRule.runOnIdle {
             assert(finalRating == 2.5f)
@@ -69,6 +71,8 @@ class StarRatingTesting {
             click(Offset(left, center.y))
         }
 
+        Thread.sleep(2000)
+
         composeTestRule.runOnIdle {
             assert(finalRating == 0f)
         }
@@ -76,6 +80,8 @@ class StarRatingTesting {
         node.performTouchInput {
             click(Offset(right, center.y))
         }
+
+        Thread.sleep(2000)
 
         composeTestRule.runOnIdle {
             assert(finalRating == 5f)
@@ -99,6 +105,8 @@ class StarRatingTesting {
             // I swiper from 20% width to 80% width
             swipeRight(startX = width * 0.2f, endX = width * 0.8f)
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         // Verifying that the value had changed to 4 (80% width corresponds to 4 of 5 stars)
         assert(finalRating == 4f)
@@ -107,6 +115,8 @@ class StarRatingTesting {
             // I swiper from 80% width to 40% width
             swipeLeft(startX = width * 0.8f, endX = width * 0.4f)
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         // Verifying that the value had changed to 2 (40% width corresponds to 2 of 5 stars)
         assert(finalRating == 2f)
@@ -115,6 +125,8 @@ class StarRatingTesting {
             // I swiper from 40% width to 100% width
             swipeRight(startX = width * 0.4f, endX = width * 1f)
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         // Verifying that the value had changed to 5 (100% width corresponds to 5 of 5 stars)
         assert(finalRating == 5f)
@@ -123,6 +135,8 @@ class StarRatingTesting {
             // I swiper from 100% width to 0% width
             swipeLeft(startX = width * 1f, endX = width * 0f)
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         // Verifying that the value had changed to 0 (0% width corresponds to 0 of 5 stars)
         assert(finalRating == 0f)

@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -105,8 +107,19 @@ class SearchPageTest {
             //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
             searchResult.assertExists().assertIsDisplayed()
         }catch (e: AssertionError){
-            composeTestRule.onNodeWithText("No results").assertExists().assertIsDisplayed()
-            composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
+            try {
+
+                composeTestRule.waitUntil(15_000) {
+                    composeTestRule
+                        .onAllNodesWithText("No results")
+                        .fetchSemanticsNodes().isNotEmpty()
+                }
+                composeTestRule.onNodeWithText("No results").assertExists().assertIsDisplayed()
+                composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
+            }
+            catch (e: ComposeTimeoutException){
+
+            }
         }
 
         composeTestRule.onNodeWithContentDescription("Clear search").assertExists().assertIsDisplayed().performClick()

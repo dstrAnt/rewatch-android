@@ -71,7 +71,11 @@ class TestCaseLookUpForActorAndDirectors {
         val searchField2 = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
         searchField2.performTextReplacement(inputText2)
-        composeTestRule.waitForIdle()
+        composeTestRule.waitUntil(15_000){
+            composeTestRule
+                .onAllNodesWithContentDescription(inputText2, substring = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         java.lang.Thread.sleep(3000)
 
         val searchResult2 = composeTestRule.onAllNodesWithContentDescription(inputText2, substring = true)[0]

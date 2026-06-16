@@ -61,6 +61,8 @@ class PosterItemTesting {
         posterItem.performTouchInput {
             click()
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         posterItem.assertExists()
 
@@ -69,6 +71,8 @@ class PosterItemTesting {
         posterItem.performTouchInput {
             longClick()
         }
+        composeTestRule.waitForIdle()
+        Thread.sleep(2000)
 
         assert(flag)
     }

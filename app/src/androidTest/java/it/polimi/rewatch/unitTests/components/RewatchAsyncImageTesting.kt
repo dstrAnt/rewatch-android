@@ -19,7 +19,7 @@ class RewatchAsyncImageTesting {
     fun testRewatchAsyncImage(){
         composeTestRule.setContent { RewatchAsyncImage("app/src/main/res/drawable/ticket1.png", "ticketImage", modifier = Modifier, fallbackResId = R.drawable.ticket1) }
 
-        Thread.sleep(4000)
+        Thread.sleep(3000)
 
         composeTestRule.onNodeWithContentDescription("ticketImage").assertExists().assertIsDisplayed()
     }

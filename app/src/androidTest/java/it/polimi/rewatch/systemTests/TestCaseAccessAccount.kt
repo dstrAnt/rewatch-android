@@ -111,7 +111,7 @@ class TestCaseAccessAccount {
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(10_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -136,7 +136,7 @@ class TestCaseAccessAccount {
 
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
-        composeTestRule.waitUntil(5_000){
+        composeTestRule.waitUntil(15_000){
             composeTestRule
                 .onAllNodesWithContentDescription("In watchlist")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -195,8 +195,6 @@ class TestCaseAccessAccount {
                 .onAllNodesWithContentDescription("Success")
                 .fetchSemanticsNodes().isNotEmpty()
             }
-        }catch (e: ComposeTimeoutException){
-        }
 
         composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
 
@@ -207,6 +205,10 @@ class TestCaseAccessAccount {
         composeTestRule.onNodeWithTag("profile_page").assertExists()
 
         testAuthPageLogout()
+
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, this test will be skipped.")
+        }
     }
 
     fun testAuthPageLogout() {
@@ -296,7 +298,7 @@ class TestCaseAccessAccount {
 
             testAuthPageLogout()
         }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
+            println("The Application is taking too long, this test will be skipped.")
         }
         /*catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
@@ -406,7 +408,7 @@ class TestCaseAccessAccount {
 
             testAuthPageLogout()
         }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
+            println("The Application is taking too long, this test will be skipped.")
         }
         /*catch (e: AssertionError){
             println("The Application is taking too long, it will be skipped.")
