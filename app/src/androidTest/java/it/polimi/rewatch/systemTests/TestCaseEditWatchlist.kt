@@ -110,10 +110,8 @@ class TestCaseEditWatchlist {
 
             removeFromWatchlist()
         }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
-        }/*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
+            println("The Application is taking too long, this test will be skipped.")
+        }
     }
 
     @Test
@@ -130,10 +128,8 @@ class TestCaseEditWatchlist {
 
             removeFromWatchlist()
         }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
-        }/*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
+            println("The Application is taking too long, this test will be skipped.")
+        }
     }
 
     fun removeFromWatchlist(){

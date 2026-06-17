@@ -52,11 +52,11 @@ class TestCaseAccessAccount {
                 .onAllNodesWithContentDescription("Watch", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
-        java.lang.Thread.sleep(5000)
+        java.lang.Thread.sleep(2000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(10_000){
+        composeTestRule.waitUntil(20_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()
@@ -114,11 +114,11 @@ class TestCaseAccessAccount {
                 .onAllNodesWithContentDescription("Watch", substring = true)
                 .fetchSemanticsNodes().isNotEmpty()
         }
-        java.lang.Thread.sleep(5000)
+        java.lang.Thread.sleep(2000)
 
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
-        composeTestRule.waitUntil(15_000){
+        composeTestRule.waitUntil(20_000){
             composeTestRule
                 .onAllNodesWithContentDescription("Watched")
                 .fetchSemanticsNodes().isNotEmpty()

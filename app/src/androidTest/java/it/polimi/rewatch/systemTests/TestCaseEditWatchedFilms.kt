@@ -111,10 +111,8 @@ class TestCaseEditWatchedFilms {
 
             removeFromWatchedFilms()
         }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
-        }/*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
+            println("The Application is taking too long, this test will be skipped.")
+        }
     }
 
     @Test
@@ -132,10 +130,8 @@ class TestCaseEditWatchedFilms {
             removeFromWatchedFilms()
         }
         catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, it will be skipped.")
-        }/*catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
-        }*/
+            println("The Application is taking too long, this test will be skipped.")
+        }
     }
 
     fun removeFromWatchedFilms(){

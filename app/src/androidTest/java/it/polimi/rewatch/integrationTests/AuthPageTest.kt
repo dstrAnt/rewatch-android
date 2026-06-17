@@ -120,6 +120,14 @@ class AuthPageTest {
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Failed to send link").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Try again").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Sign in to synchronize your lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Email").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Send link").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -144,6 +152,14 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("Sign-in failed").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Try again").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Sign in to synchronize your lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Email").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Send link").assertExists().assertIsDisplayed()
     }
 
     @Test
@@ -178,6 +194,14 @@ class AuthPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
         composeTestRule.onNodeWithText("Failed").assertExists().assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Try again").assertExists().assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+        Thread.sleep(3000)
+
+        composeTestRule.onNodeWithText("Sign in to synchronize your lists").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Email").assertExists().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Send link").assertExists().assertIsDisplayed()
     }
 
     @Test
