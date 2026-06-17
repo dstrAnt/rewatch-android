@@ -27,6 +27,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Cases designed to test Composable CustomLazyGrid
+ */
+
 class CustomLazyGridTesting {
 
     @get:Rule
@@ -77,6 +81,8 @@ class CustomLazyGridTesting {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        /* CustomLazyGrid will be tested with 3 different scenarios ("Appearances") */
+
         val customLazyGridNode = composeTestRule.onNodeWithTag("customLazyGrid")
 
         verifyFirstAppearance(composeTestRule)
@@ -102,6 +108,7 @@ private fun SemanticsNodeInteraction.scrollToNodeWithText(text: String) {
     this.performScrollToNode(hasText(text))
 }
 
+    /* Scenario where CustomLzaGrid shows the first items at the top */
 private fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("1").assertExists().assertIsDisplayed()
@@ -116,6 +123,7 @@ private fun verifyFirstAppearance(composeTestRule: ComposeContentTestRule){
 
 }
 
+/* Scenario where CustomLzaGrid does not show the first items at the top */
 private fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("14").assertExists().assertIsDisplayed()
@@ -127,6 +135,7 @@ private fun verifySecondAppearance(composeTestRule: ComposeContentTestRule){
 
 }
 
+/* Scenario where CustomLzaGrid shows the last items at the bottom */
 private fun verifyThirdAppearance(composeTestRule: ComposeContentTestRule){
 
     composeTestRule.onNodeWithText("80").assertExists().assertIsDisplayed()

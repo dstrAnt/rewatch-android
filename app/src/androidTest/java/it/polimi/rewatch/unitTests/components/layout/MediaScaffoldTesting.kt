@@ -16,10 +16,16 @@ import it.polimi.rewatch.components.layout.MediaScaffold
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Case designed to test Composable MediaScaffold
+ */
+
 class MediaScaffoldTesting {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    /* Test Case to verify MediaScaffold Compositions */
 
     @Test
     fun testMediaScaffold(){

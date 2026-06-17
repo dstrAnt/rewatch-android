@@ -23,6 +23,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Cases designed to test Composable AuthPage
+ */
+
 class AuthPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()

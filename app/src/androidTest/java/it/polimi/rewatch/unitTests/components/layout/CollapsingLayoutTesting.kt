@@ -37,6 +37,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+/**
+ * Test Cases designed to test Composable CollapsingLayout
+ */
+
 class CollapsingLayoutTesting {
 
     @get:Rule
@@ -44,6 +48,7 @@ class CollapsingLayoutTesting {
 
     val trivialList = List(200) { it }
 
+    /* Initializing Composable CollapsingLayout with similar Content with respect to the ReWatch Application*/
     @Before
     fun setup(){
         composeTestRule.setContent {
@@ -53,12 +58,10 @@ class CollapsingLayoutTesting {
                 pinnedBottomHeight = 50.dp,
                 Modifier.testTag("collapsingLayout"),
                 collapsingTopBar = {
-                    //Row() {}
                     Row(
                         Modifier
                             .fillMaxWidth()
                             .background(headerColor)
-                            //  .padding(top = 16.dp)
                             .padding(top = 10.dp)
                             .testTag("collapseTopBar"),
                         horizontalArrangement = Arrangement.Center,
@@ -83,7 +86,6 @@ class CollapsingLayoutTesting {
                     }
                 },
                 content = { listState, _ ->
-                    //Row() {}
                     CustomLazyGrid(state = listState, modifier = Modifier.padding(vertical = 120.dp).testTag("myLazyGrid")) {
                         items(
                             items = trivialList,
