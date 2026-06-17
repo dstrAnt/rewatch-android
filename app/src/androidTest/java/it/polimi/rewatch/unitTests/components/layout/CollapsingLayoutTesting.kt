@@ -48,7 +48,7 @@ class CollapsingLayoutTesting {
 
     val trivialList = List(200) { it }
 
-    /* Initializing Composable CollapsingLayout with similar Content with respect to the ReWatch Application*/
+    /* Initializing Composable CollapsingLayout with similar Content with respect to the ReWatch Application */
     @Before
     fun setup(){
         composeTestRule.setContent {

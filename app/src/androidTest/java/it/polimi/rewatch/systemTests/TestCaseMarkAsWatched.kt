@@ -25,6 +25,10 @@ import org.junit.Test
 import java.time.LocalDate
 import kotlin.collections.get
 
+/**
+ * Test Cases designed to test Interaction Scenario "Mark As Watched"
+ */
+
 class TestCaseMarkAsWatched {
     @get:Rule
     val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()

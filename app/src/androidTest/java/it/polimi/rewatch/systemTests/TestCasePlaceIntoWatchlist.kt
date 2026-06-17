@@ -18,6 +18,10 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.collections.get
 
+/**
+ * Test Cases designed to test Interaction Scenario "Place Into Watchlist"
+ */
+
 class TestCasePlaceIntoWatchlist {
 
     @get:Rule

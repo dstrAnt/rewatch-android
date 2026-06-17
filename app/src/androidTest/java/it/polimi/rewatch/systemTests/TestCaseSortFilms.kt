@@ -25,6 +25,10 @@ import kotlin.collections.get
 import kotlin.math.floor
 import kotlin.random.Random
 
+/**
+ * Test Cases designed to test Interaction Scenario "Sort Films"
+ */
+
 class TestCaseSortFilms {
     @get:Rule
     val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()

@@ -33,16 +33,18 @@ import androidx.compose.ui.test.onNodeWithText
 
 class TestCaseBrowseFilms {
     @get:Rule
-    val composeTestRule = createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
+    val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
 
     @Test
     fun testBrowseFilms() {
         try{
+            // Tap on HOME Bottom Bar
             composeTestRule.onNodeWithContentDescription("Home").assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
 
+            // Assertion verifying that the Home Page is loaded correctly
             composeTestRule.onNodeWithTag("home_page").assertExists()
 
             composeTestRule.onAllNodesWithTag("posterItem").assertAll(hasClickAction())
@@ -53,14 +55,17 @@ class TestCaseBrowseFilms {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Click on the first Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(3000)
 
+            // Assertion verifying that the Media Page is loaded correctly
             composeTestRule.onNodeWithTag("media_page").assertExists()
 
+            // Click on the Backdrop Image
             composeTestRule.onNodeWithTag("header_backdrop").assertExists().assertHasClickAction().performClick()
 
             composeTestRule.waitUntil(10_000) {
@@ -74,10 +79,12 @@ class TestCaseBrowseFilms {
 
             asyncImage.assertIsDisplayed()
 
+            // Swipe up to clear the Image
             asyncImage.performTouchInput { swipeUp(320f) }
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
+            // Click on the Main Image
             composeTestRule.onNodeWithTag("header_title").assertExists().assertHasClickAction().performClick()
 
             composeTestRule.waitUntil(10_000) {
@@ -89,6 +96,7 @@ class TestCaseBrowseFilms {
 
             asyncImage.assertIsDisplayed()
 
+            // Swipe up to clear the Image
             asyncImage.performTouchInput { swipeUp(320f) }
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
@@ -107,6 +115,7 @@ class TestCaseBrowseFilms {
 
             visitWatchedTvShowsSection()
 
+            // Tapping on "Tv Shows" Top Bar to see all the Shows in the Trending section
             composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
             composeTestRule.waitForIdle()
 
@@ -118,6 +127,7 @@ class TestCaseBrowseFilms {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Click on the tenth Tv Show in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[9].assertExists()
                 .performClick()
 
@@ -129,18 +139,22 @@ class TestCaseBrowseFilms {
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
+            // Tapping on "Seasons" Bar
             composeTestRule.onNodeWithText("Seasons").assertHasClickAction().performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
+            // Click on the first // Click on the first proposed Season Season
             composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
+            // Tapping on "Episodes" Bar
             composeTestRule.onNodeWithText("Episodes").assertHasClickAction().performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
 
+            // Click on the first proposed Episode
             composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
             composeTestRule.waitForIdle()
             Thread.sleep(3000)
@@ -150,6 +164,7 @@ class TestCaseBrowseFilms {
         }
     }
 
+    /* Function which allows to see the empty Tracking Page in the "Watched" Section */
     fun visitWatchedTvShowsSection(){
         composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
             .performClick()
@@ -168,6 +183,7 @@ class TestCaseBrowseFilms {
         }
         Thread.sleep(3000)
 
+        // Click on Home Button to go back to the Home Page and Explore new Films
         composeTestRule.onAllNodesWithTag("backToHomeButton")[0].assertExists().assertIsDisplayed().assertHasClickAction().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(3000)

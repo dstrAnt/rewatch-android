@@ -25,6 +25,10 @@ import org.junit.Rule
 import org.junit.Test
 import kotlin.collections.get
 
+/**
+ * Test Cases designed to test Interaction Scenario "Edit Watched Films"
+ */
+
 class TestCaseEditWatchedFilms {
     @get:Rule
     val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()
