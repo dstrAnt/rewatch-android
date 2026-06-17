@@ -41,6 +41,7 @@ class PosterItemTesting {
         var mediaId = 0
         var flag = false
 
+        // Setting a PosterItem for Compose Content
         composeTestRule.setContent {
             mediaId = rememberSaveable { media.parentId }
             //flag = rememberSaveable{ false }
@@ -59,6 +60,8 @@ class PosterItemTesting {
                 modifier = Modifier.testTag("posterItem")
             )
         }
+
+        /* Verifying that clicks and long clicks trigger the right callback */
 
         val posterItem = composeTestRule.onNodeWithTag("posterItem").assertExists()
 

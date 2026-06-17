@@ -168,7 +168,7 @@ class TestCaseBrowseFilms {
         }
         Thread.sleep(3000)
 
-        composeTestRule.onNodeWithTag("backToHomeButton").assertExists().assertIsDisplayed().assertHasClickAction().performClick()
+        composeTestRule.onAllNodesWithTag("backToHomeButton")[0].assertExists().assertIsDisplayed().assertHasClickAction().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
 

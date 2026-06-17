@@ -27,6 +27,8 @@ class AnimatedUiStateTesting {
     @get:Rule
     val composeTestRule = createComposeRule()
 
+    /* Testing how callbacks are invoked in Composable AnimatedUiState, for Success, Error and Loading UiState*/
+
     @Test
     fun testAnimatedUIStateLoading() {
         composeTestRule.setContent {

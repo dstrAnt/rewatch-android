@@ -213,17 +213,18 @@ class TestCaseAccessAccount {
 
             composeTestRule.onNodeWithText("Success").assertExists().assertIsDisplayed()
 
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, this assert will be skipped.")
+        }
+
             composeTestRule.onNodeWithTag("doneButton").assertExists().assertIsDisplayed().performClick()
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
 
             composeTestRule.onNodeWithTag("profile_page").assertExists()
 
-            testAuthPageLogout()
 
-        }catch (e: ComposeTimeoutException){
-            println("The Application is taking too long, this test will be skipped.")
-        }
+        testAuthPageLogout()
     }
 
     fun testAuthPageLogout() {

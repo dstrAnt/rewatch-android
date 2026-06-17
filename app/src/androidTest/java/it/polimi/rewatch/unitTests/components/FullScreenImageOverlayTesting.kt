@@ -45,6 +45,7 @@ class FullScreenImageOverlayTesting {
     @Test
     fun testImageOverlaySwipeDismiss(){
 
+        // Setting Content for FullScreenImageOverlay
         composeTestRule.setContent {
             var isOverlayVisible by remember { mutableStateOf(true) }
 

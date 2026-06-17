@@ -21,6 +21,7 @@ class RewatchAsyncImageTesting {
 
     @Test
     fun testRewatchAsyncImage(){
+        // Setting Compose Content with a fictitious Image to simulate RewatchAsyncImage Composition
         composeTestRule.setContent { RewatchAsyncImage("app/src/main/res/drawable/ticket1.png", "ticketImage", modifier = Modifier, fallbackResId = R.drawable.ticket1) }
 
         Thread.sleep(3000)

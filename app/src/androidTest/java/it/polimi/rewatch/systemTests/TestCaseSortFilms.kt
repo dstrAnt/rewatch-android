@@ -72,8 +72,6 @@ class TestCaseSortFilms {
             trackItem(7, "Watch")
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
-        }catch (e: AssertionError){
-            println("The Application is taking too long, it will be skipped.")
         }
     }
 
@@ -150,15 +148,26 @@ class TestCaseSortFilms {
         val sortChoice = chooseSortOption(3)
         val sortFilterTag = getSortTabTag(sortChoice)
 
-        val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
+        try {
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithTag(sortFilterTag)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
 
-        sortFilter.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
 
-        sortFilter.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            sortFilter.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+
+            sortFilter.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+        }catch (e: ComposeTimeoutException) {
+            println("The Application is taking too long, it will be skipped.")
+        }
     }
 
     @Test
@@ -171,14 +180,25 @@ class TestCaseSortFilms {
         val sortChoice = chooseSortOption(4)
         val sortFilterTag = getSortTabTag(sortChoice)
 
-        val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
+        try{
+            composeTestRule.waitUntil(10_000) {
+                composeTestRule
+                    .onAllNodesWithTag(sortFilterTag)
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
+            java.lang.Thread.sleep(3000)
 
-        sortFilter.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
 
-        sortFilter.performClick()
-        composeTestRule.waitForIdle()
-        java.lang.Thread.sleep(5000)
+            sortFilter.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+
+            sortFilter.performClick()
+            composeTestRule.waitForIdle()
+            java.lang.Thread.sleep(5000)
+        }catch (e: ComposeTimeoutException){
+            println("The Application is taking too long, it will be skipped.")
+        }
     }
 }

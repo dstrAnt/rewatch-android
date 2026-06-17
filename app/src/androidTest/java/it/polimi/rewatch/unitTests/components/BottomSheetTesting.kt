@@ -68,10 +68,12 @@ class BottomSheetTesting {
         composeTestRule.onNodeWithText("Select").assertDoesNotExist()
         composeTestRule.onNodeWithText("Content watched on ").assertDoesNotExist()
 
+        // Triggering "Watch" Icon on BottomSheet to mark the Film as Watched
         composeTestRule.onNodeWithTag("bottomSheetActions").onChildren().onFirst().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Triggering WatchDate Menu
         composeTestRule.onNodeWithText("Content watched on ").assertExists()
         val watchDateTrigger = composeTestRule.onNodeWithTag("watchDateTrigger").assertExists()
         watchDateTrigger.assertIsDisplayed()
@@ -91,6 +93,7 @@ class BottomSheetTesting {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Submit the choice of Date
         datePickerDialogConfirmButton.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
@@ -107,10 +110,12 @@ class BottomSheetTesting {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Triggering "Watch" Icon on BottomSheet to mark the Film as Watched
         composeTestRule.onNodeWithTag("bottomSheetActions").onChildren().onFirst().performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Triggering WatchDate Menu
         composeTestRule.onNodeWithText("Content watched on ").assertExists()
         val watchDateTrigger = composeTestRule.onNodeWithTag("watchDateTrigger").assertExists()
         Thread.sleep(1000)
