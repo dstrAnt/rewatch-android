@@ -5,9 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 sealed interface UiState<out T> {
     data object Loading : UiState<Nothing> // Use 'object Loading' if your Kotlin version is older than 1.9
@@ -25,7 +23,7 @@ abstract class UiFetchViewModel<T> : ViewModel() {
     protected fun executeFetch() = viewModelScope.launch {
         uiState = UiState.Loading
         uiState = try {
-            val data = withContext(Dispatchers.IO) { fetchData() }
+            val data = fetchData()
             UiState.Success(data)
         } catch (e: Exception) {
             UiState.Error(e.localizedMessage ?: "Errore di connessione")

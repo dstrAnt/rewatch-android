@@ -1,6 +1,5 @@
-package it.polimi.rewatch.unitTests.components.layout
+package it.polimi.rewatch.widgetTests.components.layout
 
-import android.R.attr.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding

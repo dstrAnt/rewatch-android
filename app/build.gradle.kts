@@ -8,9 +8,9 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization")
-//    id("com.google.gms.google-services")
-//    id("org.jetbrains.kotlinx.kover") version "0.9.8"
+
     id("jacoco")
+//    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
@@ -35,7 +35,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
+//        testInstrumentationRunner = "it.polimi.rewatch.CustomTestRunner"
         buildConfigField(
             "String",
             "TMDB_API_KEY",
@@ -69,45 +69,6 @@ android {
     }
 }
 
-/*tasks.named("koverHtmlReport") {
-    dependsOn("connectedDebugAndroidTest")
-}*/
-
-tasks.register<JacocoReport>("jacocoDebugReport") {
-
-    dependsOn("connectedDebugAndroidTest")
-
-    reports {
-        html.required.set(true)
-        xml.required.set(true)
-    }
-
-    val fileFilter = listOf(
-        "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*"
-    )
-    val debugTree = project.fileTree(
-        mapOf(
-            "dir" to "$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes",
-            "excludes" to fileFilter
-        )
-    )
-
-    classDirectories.setFrom(files(debugTree))
-
-    sourceDirectories.setFrom(files(
-        "src/main/java",
-        "src/main/kotlin"
-    ))
-
-    executionData.setFrom(fileTree(buildDir).include(
-        "outputs/code_coverage/**/coverage.ec"
-    ))
-}
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -124,6 +85,9 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -170,6 +134,56 @@ dependencies {
 
     // to unlock in case of dealing with animations
     // androidTestImplementation("androidx.compose.ui:ui-test:1.6.0")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.2")
+    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.59.2")
 
+}
 
+tasks.register<JacocoReport>("jacocoCombinedTestReport") {
+    dependsOn("testDebugUnitTest", "createDebugCoverageReport")
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+
+    // Filtri potenti per Hilt e Compose
+    val fileFilter = arrayListOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/*_MembersInjector.class",
+        "**/Dagger*.*",
+        "**/*_Factory*.*",
+        "**/*_HiltModules*",
+        "**/hilt_aggregated_deps/**",
+        "**/*_ComponentTree*.*",
+        "**/*\$Result*.*",
+        "**/*\$*.*",
+    )
+
+    val mainSrc = "${project.projectDir}/src/main/java"
+    sourceDirectories.setFrom(files(mainSrc))
+
+    // LA SUPER RETE A STRASCICO (Include il tuo nuovo percorso)
+    val buildDir = project.layout.buildDirectory.get().asFile
+    val javaClasses = fileTree("$buildDir/intermediates/javac/debug/classes") { exclude(fileFilter) }
+    val kotlinClassesOld = fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(fileFilter) }
+    val kotlinClassesNew = fileTree("$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") { exclude(fileFilter) }
+
+    // Passiamo tutte e tre le cartelle a JaCoCo: dovunque siano le classi, le troverà.
+    classDirectories.setFrom(javaClasses, kotlinClassesOld, kotlinClassesNew)
+
+    // Unisce Unit Test (.exec) e Android Test (.ec)
+    executionData.setFrom(
+        fileTree(buildDir) {
+            include(
+                "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec",
+                "outputs/code_coverage/debugAndroidTest/connected/**/*.ec",
+            )
+        },
+    )
 }

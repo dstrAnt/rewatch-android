@@ -1,4 +1,4 @@
-package it.polimi.rewatch.unitTests.components
+package it.polimi.rewatch.widgetTests.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
@@ -8,14 +8,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import it.polimi.rewatch.common.UiState
 import it.polimi.rewatch.components.AnimatedUiState
-import it.polimi.rewatch.components.BottomSheet
-import it.polimi.rewatch.model.MovieId
-import it.polimi.rewatch.model.PosterInfo
-import org.junit.Test
 import org.junit.Rule
+import org.junit.Test
 
 /**
  * Test Case designed to test Composable AnimatedUiState

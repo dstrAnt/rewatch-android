@@ -1,30 +1,20 @@
 package it.polimi.rewatch.systemTests
 
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertAll
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
-import it.polimi.rewatch.MainActivity
-import it.polimi.rewatch.common.NavigationActions
-import it.polimi.rewatch.screens.home.HomePage
-import it.polimi.rewatch.screens.home.HomeTabItem
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import androidx.compose.ui.test.ComposeTimeoutException
-import androidx.compose.ui.test.assertIsSelectable
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
 
 /**
  * Test Cases designed to test Interaction Scenario "Browse Films"
@@ -126,43 +116,46 @@ class TestCaseBrowseFilms {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
-            // Click on the tenth Tv Show in the "Trending" Section
-            composeTestRule.onAllNodesWithTag("posterItem_Trending")[9].assertExists()
+            composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
                 .performClick()
 
-            composeTestRule.waitForIdle()
-            java.lang.Thread.sleep(3000)
-
-            composeTestRule.onNodeWithTag("media_page").assertExists()
-
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule
+                    .onAllNodesWithTag("media_page")
+                    .fetchSemanticsNodes().isNotEmpty()
+            }
 
             // Tapping on "Seasons" Bar
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule.onAllNodesWithText("Seasons").fetchSemanticsNodes().isNotEmpty()
+            }
             composeTestRule.onNodeWithText("Seasons").assertHasClickAction().performClick()
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
 
-            // Click on the first // Click on the first proposed Season Season
+            // Click on the first proposed Season
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule.onAllNodesWithTag("episode_listItem").fetchSemanticsNodes().isNotEmpty()
+            }
             composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
+
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule.onAllNodesWithText("Episodes").fetchSemanticsNodes().isNotEmpty()
+            }
 
             // Tapping on "Episodes" Bar
             composeTestRule.onNodeWithText("Episodes").assertHasClickAction().performClick()
-            composeTestRule.waitForIdle()
-            Thread.sleep(3000)
 
             // Click on the first proposed Episode
+            composeTestRule.waitUntil(15_000) {
+                composeTestRule.onAllNodesWithTag("episode_listItem").fetchSemanticsNodes().isNotEmpty()
+            }
             composeTestRule.onAllNodesWithTag("episode_listItem")[0].assertHasClickAction().performClick()
             composeTestRule.waitForIdle()
-            Thread.sleep(3000)
+            Thread.sleep(3000) // Unico sleep rimasto alla fine per dare il tempo di vedere a schermo cosa succede
 
         }catch (e: ComposeTimeoutException){
             println("The Application is taking too long, it will be skipped.")
         }
     }
-
     /* Function which allows to see the empty Tracking Page in the "Watched" Section */
     fun visitWatchedTvShowsSection(){
         composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()

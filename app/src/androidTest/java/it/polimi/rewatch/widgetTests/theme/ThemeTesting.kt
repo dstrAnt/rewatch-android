@@ -1,29 +1,18 @@
-package it.polimi.rewatch.unitTests.theme
+package it.polimi.rewatch.widgetTests.theme
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.DarkMode
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onParent
-import androidx.compose.ui.test.printToLog
-import androidx.compose.ui.test.printToString
 import app.moviebase.tmdb.Tmdb3
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
-import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.screens.media.MediaPage
 import it.polimi.rewatch.screens.media.MediaViewModel
-import org.junit.Test
-import it.polimi.rewatch.theme.*;
-import org.junit.Before
+import it.polimi.rewatch.theme.RewatchTheme
 import org.junit.Rule
+import org.junit.Test
 
 /**
  * Test Cases designed to test Class Theme, which defines Composable RewatchTheme

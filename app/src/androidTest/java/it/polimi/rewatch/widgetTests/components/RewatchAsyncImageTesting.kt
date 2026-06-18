@@ -1,10 +1,9 @@
-package it.polimi.rewatch.unitTests.components
+package it.polimi.rewatch.widgetTests.components
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.onNodeWithText
 import it.polimi.rewatch.R
 import it.polimi.rewatch.components.RewatchAsyncImage
 import org.junit.Rule

@@ -1,30 +1,40 @@
-package it.polimi.rewatch.unitTests.components
+package it.polimi.rewatch.widgetTests.components
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.onChildren
+import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.unit.dp
 import app.moviebase.tmdb.model.TmdbMovieDetail
 import it.polimi.rewatch.common.FakeRepository
-import org.junit.Before
-import org.junit.Rule
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.formatDate
 import it.polimi.rewatch.components.BottomSheet
 import it.polimi.rewatch.components.BottomSheetViewModel
-import it.polimi.rewatch.components.PosterItem
 import it.polimi.rewatch.model.MediaDetail
-import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
 import it.polimi.rewatch.model.PosterInfo
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.toKotlinLocalDateTime
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import java.time.LocalDateTime
 
 /**
  * Test Case designed to test Composable BottomSheet
  */
-
-
 class BottomSheetTesting {
 
     lateinit var actions : NavigationActions
@@ -38,22 +48,24 @@ class BottomSheetTesting {
 
     @Before
     fun setup() {
-        actions = NavigationActions(onNavigateToPerson = { id -> },
+        actions = NavigationActions(
+            onNavigateToPerson = { id -> },
 
-        onNavigateToMedia = { id ->  },
-        onNavigateBack = {
+            onNavigateToMedia = { id -> },
+            onNavigateBack = {
 
-        },
-        onFullscreenImage = { url ->
+            },
+            onFullscreenImage = { url ->
 
-        },
-        onBottomSheet = { info ->  },
-        onNavigateToLogin = {
+            },
+            onBottomSheet = { info -> },
+            onNavigateToLogin = {
 
-        },
-        onBackToHome = { tab ->
+            },
+            onBackToHome = { tab ->
 
-        })
+            },
+        )
     }
 
     @Test
@@ -288,7 +300,8 @@ class BottomSheetTesting {
         snackbarShower.assertIsNotDisplayed()
 
         // Verifying that the user can finally remove the film from Watched list
-        composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(Offset(left.toLong())) }
+        // FIX SINTATTICO: Usa Offset(0f, center.y) per azzerare, anziché la castatura errata a Long
+        composeTestRule.onNodeWithTag("bottomSheetStarRating").performTouchInput { click(Offset(0f, center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
@@ -333,44 +346,45 @@ class BottomSheetTesting {
 
         val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
-        // Case 1: Below Average Rating
-        bottomSheetStarRating.performTouchInput { click(Offset(left + 100f, center.y)) }
+        // IL TRUCCO DEFINITIVO: Convertiamo i 45.dp esatti della tua stella in pixel reali del display!
+        val starWidthPx = with(composeTestRule.density) { 45.dp.toPx() }
+
+        // Case 1: Below Average Rating (2ª stella: partiamo dal centro e andiamo INDIETRO di 1 stella)
+        bottomSheetStarRating.performTouchInput { click(Offset(center.x - starWidthPx, center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Rate now").assertDoesNotExist()
-
         composeTestRule.onNodeWithText("Below Average").assertExists().assertIsDisplayed()
 
-        // Case 2: Average Rating
+        // Case 2: Average Rating (3ª stella: Esattamente al centro)
         bottomSheetStarRating.performTouchInput { click(Offset(center.x, center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Average").assertExists().assertIsDisplayed()
 
-        // Case 3: Above Average Rating ("Great" Rating)
-        bottomSheetStarRating.performTouchInput { click(Offset(right - 100f, center.y)) }
+        // Case 3: Above Average Rating ("Great" Rating) (4ª stella: dal centro andiamo AVANTI di 1 stella)
+        bottomSheetStarRating.performTouchInput { click(Offset(center.x + starWidthPx, center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Great").assertExists().assertIsDisplayed()
 
-        // Case 4: Masterpiece Rating
-        bottomSheetStarRating.performTouchInput { click(Offset(right, center.y)) }
+        // Case 4: Masterpiece Rating (5ª stella: dal centro andiamo AVANTI di 2 stelle)
+        bottomSheetStarRating.performTouchInput { click(Offset(center.x + (starWidthPx * 2), center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Masterpiece").assertExists().assertIsDisplayed()
 
-        // Case 5: Unrated Case
-        bottomSheetStarRating.performTouchInput { click(Offset(left, center.y)) }
+        // Case 5: Unrated Case (Bordo estremo sinistro: 0f per svuotare il rating)
+        bottomSheetStarRating.performTouchInput { click(Offset(0f, center.y)) }
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
         composeTestRule.onNodeWithText("Rate now").assertExists().assertIsDisplayed()
     }
-
     @Test
     fun testBottomSheetWatchStatus(){
 

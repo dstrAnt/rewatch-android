@@ -1,38 +1,33 @@
-package it.polimi.rewatch.unitTests.components.layout
+package it.polimi.rewatch.widgetTests.components.layout
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.ui.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
-import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import it.polimi.rewatch.components.layout.CollapsingLayout
-import androidx.compose.ui.unit.*
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.text.font.FontWeight
-import androidx.test.espresso.action.ViewActions.swipeDown
+import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.Logo
 import it.polimi.rewatch.common.headerColor
+import it.polimi.rewatch.components.layout.CollapsingLayout
 import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.theme.Purple80
-import it.polimi.rewatch.theme.RewatchTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -86,7 +81,12 @@ class CollapsingLayoutTesting {
                     }
                 },
                 content = { listState, _ ->
-                    CustomLazyGrid(state = listState, modifier = Modifier.padding(vertical = 120.dp).testTag("myLazyGrid")) {
+                    CustomLazyGrid(
+                        state = listState,
+                        modifier = Modifier
+                            .padding(vertical = 120.dp)
+                            .testTag("myLazyGrid"),
+                    ) {
                         items(
                             items = trivialList,
                             key = { it.toString() },

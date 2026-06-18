@@ -1,5 +1,5 @@
 [versions]
-agp = "9.1.0"
+agp = "9.1.1"
 coreKtx = "1.18.0"
 coreSplashscreen = "1.2.0"
 firebaseBom = "34.11.0"
@@ -12,6 +12,9 @@ kotlin = "2.3.20"
 composeBom = "2026.03.01"
 material3 = "1.5.0-alpha16"
 navigationCompose = "2.9.7"
+mockk = "1.13.17"
+kotlinxCoroutinesTest = "1.10.1"
+turbine = "1.2.0"
 
 spotless = "8.4.0"
 coilCompose = "3.4.0"
@@ -54,6 +57,9 @@ firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "uiTestJunit4" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,5 +1,6 @@
 package it.polimi.rewatch.systemTests
 
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -7,7 +8,6 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsSelectable
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -19,11 +19,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
-import it.polimi.rewatch.MainActivity
-import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import androidx.compose.ui.test.ComposeTimeoutException
 
 /**
  * Test Cases designed to test Interaction Scenario "Access Account"
@@ -157,6 +155,7 @@ class TestCaseAccessAccount {
         java.lang.Thread.sleep(5000)
     }
 
+    @Ignore("Requires human interaction")
     @Test
     fun testAuthPageLogin() {
 
@@ -244,6 +243,7 @@ class TestCaseAccessAccount {
         composeTestRule.onNodeWithText("Login").assertExists().assertIsDisplayed()
     }
 
+    @Ignore("Requires human interaction")
     @Test
     fun testAuthPageCollisionResolve() {
         try{
@@ -359,6 +359,7 @@ class TestCaseAccessAccount {
         java.lang.Thread.sleep(2000)
     }
 
+    @Ignore("Requires human interaction")
     @Test
     fun testAuthPageCollisionResolveRefusingMerge() {
         try{
