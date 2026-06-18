@@ -1,9 +1,5 @@
 package it.polimi.rewatch.screens.media
 
-/**
- * A reusable helper to avoid repeating Box + Clip + Shimmer
- */
-// ... imports stay mostly the same, add FastOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +16,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.SkeletonPart
 import it.polimi.rewatch.common.relativeMove
@@ -30,48 +25,59 @@ import it.polimi.rewatch.common.relativeMove
 fun MovieSkeleton() {
     val pad = 16.dp
 
-    LazyColumn(modifier = Modifier.fillMaxSize(), userScrollEnabled = false) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        userScrollEnabled = false,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
         // 1. Backdrop
         item {
             SkeletonPart(
                 Modifier
                     .fillMaxWidth()
-                    .height(210.dp),
+                    .height(230.dp),
                 shape = RoundedCornerShape(0.dp),
             )
         }
-
         // 2. Header Section (Title, Poster, Info)
         item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = pad)
-                    .relativeMove((-15).dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                    .relativeMove((-24).dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Spacer(Modifier.height(0.dp))
-                    SkeletonPart(width = 180.dp, height = 28.dp) // Title
-                    Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                        SkeletonPart(width = 40.dp, height = 18.dp)
-                        SkeletonPart(width = 80.dp, height = 18.dp)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Spacer(Modifier.height(32.dp))
+                    SkeletonPart(width = 220.dp, height = 28.dp) // Title
+                    Row(
+                        modifier = Modifier.padding(top = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        SkeletonPart(width = 40.dp, height = 18.dp) // Cert
+                        SkeletonPart(width = 120.dp, height = 18.dp) // Date/Time
                     }
-                    SkeletonPart(width = 120.dp, height = 16.dp) // Director
+                    SkeletonPart(
+                        width = 160.dp,
+                        height = 16.dp,
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) // Director
                 }
                 SkeletonPart(
-                    width = 100.dp, height = 150.dp, shape = RoundedCornerShape(8.dp),
+                    width = 100.dp, height = 150.dp, shape = RoundedCornerShape(5.dp),
                 ) // Poster
             }
         }
-
         // 3. Overview Section
         item {
             Column(
-                Modifier.padding(horizontal = pad, vertical = 10.dp),
+                Modifier.padding(horizontal = pad),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                SkeletonPart(width = 200.dp, height = 16.dp) // Tagline
+                Spacer(modifier = Modifier.height(5.dp))
+                SkeletonPart(width = 200.dp, height = 18.dp) // Tagline
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
                     SkeletonPart(Modifier.fillMaxWidth(), height = 14.dp)
@@ -79,40 +85,50 @@ fun MovieSkeleton() {
                 }
             }
         }
-
-        // 4. Stats Pill & Tabs
+        // 4. Ratings
         item {
             Box(
                 Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp),
+                    .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 SkeletonPart(width = 250.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
             }
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                SkeletonPart(width = 330.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
-            }
-            HorizontalDivider(color = Color.Gray.copy(alpha = 0.1f))
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .padding(horizontal = pad),
-                horizontalArrangement = Arrangement.SpaceAround,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(4) { SkeletonPart(width = 60.dp, height = 20.dp) }
+        }
+        // 5. Tracking
+        item {
+            Column {
+                HorizontalDivider()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 12.dp, bottom = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    SkeletonPart(width = 380.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
+                }
             }
         }
-
-        // 5. Cast List Items
+        // 6. Tabs
+        item {
+            Column {
+                HorizontalDivider()
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .padding(horizontal = 25.dp),
+                    horizontalArrangement = Arrangement.spacedBy(35.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    repeat(3) { SkeletonPart(width = 50.dp, height = 18.dp) }
+                }
+                Spacer(Modifier.height(7.dp))
+            }
+        }
+        // 7. Cast List Items
         items(5) {
             Row(
                 Modifier
@@ -121,9 +137,9 @@ fun MovieSkeleton() {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 SkeletonPart(width = 55.dp, height = 60.dp, shape = RoundedCornerShape(7.dp))
-                Spacer(Modifier.width(12.dp))
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    SkeletonPart(width = 140.dp, height = 18.dp)
+                Spacer(Modifier.width(16.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SkeletonPart(width = 140.dp, height = 20.dp)
                     SkeletonPart(width = 90.dp, height = 14.dp)
                 }
             }
