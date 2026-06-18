@@ -3,8 +3,11 @@ package it.polimi.rewatch.screens.media
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,24 +19,36 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.SkeletonPart
+import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
 
 
 @Composable
-fun MovieSkeleton() {
+fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
     val pad = 16.dp
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         userScrollEnabled = false,
         verticalArrangement = Arrangement.spacedBy(3.dp),
+        contentPadding = PaddingValues(
+            start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = outerPadding.calculateEndPadding(LayoutDirection.Ltr),
+            bottom = outerPadding.calculateBottomPadding(),
+        ),
     ) {
         // 1. Backdrop
         item {
+            val horizontalPadding =
+                outerPadding.calculateStartPadding(LayoutDirection.Ltr) + outerPadding.calculateEndPadding(
+                    LayoutDirection.Ltr,
+                )
             SkeletonPart(
                 Modifier
+                    .layoutEvade(horizontalPadding)
                     .fillMaxWidth()
                     .height(230.dp),
                 shape = RoundedCornerShape(0.dp),

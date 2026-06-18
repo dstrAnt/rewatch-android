@@ -128,7 +128,7 @@ fun MediaPage(
 
     AnimatedUiState(
         state = viewModel.uiState,
-        loadingContent = ::MovieSkeleton,
+        loadingContent = { MovieSkeleton(outerPadding) },
         modifier = modifier.testTag("media_page"),
     ) { data ->
         MediaContent(
@@ -266,7 +266,8 @@ private fun LazyListScope.mediaHeaderItems(
                     movie.backdropImage?.let {
                         actions.onFullscreenImage(build(it, width = screenSize, height = screenSize))
                     }
-                }.testTag("header_backdrop"),
+                }
+                .testTag("header_backdrop"),
         )
     }
 
@@ -288,12 +289,15 @@ private fun LazyListScope.mediaHeaderItems(
                     movie.posterImage?.let {
                         actions.onFullscreenImage(build(it, width = screenSize, height = screenSize))
                     }
-                }.testTag("header_title"),
+                }
+                .testTag("header_title"),
         )
     }
 
     item(key = "header_tagline") {
-        Box(modifier = Modifier.animateItem().testTag("header_tagline")) {
+        Box(modifier = Modifier
+            .animateItem()
+            .testTag("header_tagline")) {
             TaglineAndOverview(
                 pad = spacing,
                 overview = movie.overview,
@@ -304,7 +308,9 @@ private fun LazyListScope.mediaHeaderItems(
     }
 
     item(key = "header_ratings") {
-        Box(modifier = Modifier.animateItem().testTag("header_ratings")) {
+        Box(modifier = Modifier
+            .animateItem()
+            .testTag("header_ratings")) {
             TmdbRatings(
                 voteCount = movie.voteCount,
                 voteAverage = movie.voteAverage,
@@ -315,7 +321,9 @@ private fun LazyListScope.mediaHeaderItems(
 
     if (mediaId.type == MediaType.MOVIE || mediaId.type == MediaType.TV_SHOW) {
         item(key = "header_tracking") {
-            Box(modifier = Modifier.animateItem().testTag("header_tracking")) {
+            Box(modifier = Modifier
+                .animateItem()
+                .testTag("header_tracking")) {
                 TrackingInfo(
                     watchlistItem = watchlistItem,
                     watchedListItem = watchedListItem,
@@ -1030,7 +1038,8 @@ fun PersonItem(
     },
     modifier = modifier
         .fillMaxWidth()
-        .clickable(onClick = onClick).testTag("person_listItem"),
+        .clickable(onClick = onClick)
+        .testTag("person_listItem"),
 )
 
 @Composable
@@ -1170,5 +1179,7 @@ fun EpisodeItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
     },
-    modifier = modifier.clickable(onClick = onNavigateToMedia).testTag("episode_listItem"),
+    modifier = modifier
+        .clickable(onClick = onNavigateToMedia)
+        .testTag("episode_listItem"),
 )
