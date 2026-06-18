@@ -159,7 +159,6 @@ class HomePageTest {
         val trendingButton = composeTestRule.onNodeWithTag("button_Trending").assertExists().assertIsDisplayed().assertHasClickAction()
         testHomeButton(trendingButton, "Trending")
 
-        //justScrollUp(lazyGrid, 2)
         justScrollDown(lazyGrid, 2)
 
         val ratedButton = composeTestRule.onNodeWithTag("button_Top Rated").assertExists().assertIsDisplayed().assertHasClickAction()
@@ -195,14 +194,6 @@ class HomePageTest {
     fun justScrollDown(grid: SemanticsNodeInteraction, times: Int){
         for (i in List(times) { it }){
             grid.performTouchInput { swipeUp(500f, 0f) }
-            composeTestRule.waitForIdle()
-            Thread.sleep(2000)
-        }
-    }
-
-    fun justScrollUp(grid: SemanticsNodeInteraction, times: Int){
-        for (i in List(times) { it }){
-            grid.performTouchInput { swipeDown(0f, 300f) }
             composeTestRule.waitForIdle()
             Thread.sleep(2000)
         }

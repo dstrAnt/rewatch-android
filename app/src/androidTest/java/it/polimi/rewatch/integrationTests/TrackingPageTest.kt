@@ -88,6 +88,7 @@ class TrackingPageTest {
 
         val outerPadding = PaddingValues();
 
+        // Ensuring that item enrichment does not happen during tests
         fakeRepo.allowEnrichment = false
 
         val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")), persistRepo = fakeRepo)
@@ -97,8 +98,8 @@ class TrackingPageTest {
         }
         composeTestRule.waitForIdle()
         val watchedTab = composeTestRule.onNodeWithTag("Tab_Watched").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
-        //val watchlistTab = composeTestRule.onNodeWithTag("Tab_Watchlist").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 
+        // If the tracking media are from Watched List, the Watched Tab is selected
         if(type == WatchTabItem.WATCHED){
             watchedTab.performClick()
             composeTestRule.waitForIdle()

@@ -182,7 +182,6 @@ class AuthPageTest {
         composeTestRule.onNodeWithText("Check your email").assertExists().assertIsDisplayed()
 
         authViewModel.handleDeepLink(" ")
-        //composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
         Thread.sleep(3000)
         composeTestRule.onNodeWithText("Account already exists").assertExists().assertIsDisplayed()
@@ -307,7 +306,7 @@ class AuthPageTest {
 
         authViewModel.handleDeepLink(" ")
         composeTestRule.waitForIdle()
-        //Thread.sleep(3000)
+
         composeTestRule.onNodeWithText("Signing in…").assertExists().assertIsDisplayed()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)

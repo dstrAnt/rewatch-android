@@ -95,16 +95,17 @@ class SearchPageTest {
 
         val inputText = "Avengers"
 
+        // Inserting search query for "Avengers"
         searchField.performTextInput(inputText)
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Assertion to state that button "Start Searching" is not displayed
         composeTestRule.onNodeWithText("Start Searching").assertDoesNotExist()
 
         try {
             val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
 
-            //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
             searchResult.assertExists().assertIsDisplayed()
         }catch (e: AssertionError){
             try {
@@ -139,6 +140,7 @@ class SearchPageTest {
         val movieTab = composeTestRule.onNodeWithTag("Tab_Movies").assertExists().assertIsDisplayed().assertHasClickAction()
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Select Movie Filter
         movieTab.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
@@ -170,6 +172,7 @@ class SearchPageTest {
         val showsTab = composeTestRule.onNodeWithTag("Tab_Tv Shows").assertExists().assertIsDisplayed().assertHasClickAction()
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Select Tv Show Filter
         showsTab.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
@@ -202,6 +205,7 @@ class SearchPageTest {
         val peopleTab = composeTestRule.onNodeWithTag("Tab_People").assertExists().assertIsDisplayed().assertHasClickAction()
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Select People Filter
         peopleTab.performClick()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
@@ -215,10 +219,8 @@ class SearchPageTest {
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
-        //val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
         val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText)[0]
 
-        //composeTestRule.onNodeWithContentDescription(inputText, substring = true).assertExists().assertIsDisplayed()
         searchResult.assertExists().assertIsDisplayed()
 
         val inputText2 = "Kung Fu Panda"
@@ -232,6 +234,7 @@ class SearchPageTest {
         Thread.sleep(5000)
     }
 
+    /* Test Case to show the scenario with no Search Results Available */
     @Test
     fun testEmptySearchState(){
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed()
@@ -244,6 +247,7 @@ class SearchPageTest {
         composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
     }
 
+    /* Testing IME Action (IME Action = Search) */
     @Test
     fun testFocusOnImeAction(){
         val startSearchButton = composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()
@@ -266,6 +270,7 @@ class SearchPageTest {
         searchField.assertIsNotFocused()
     }
 
+    /* Testing Focus Dynamics */
     @Test
     fun testFocusOnScroll(){
         val startSearchButton = composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed()

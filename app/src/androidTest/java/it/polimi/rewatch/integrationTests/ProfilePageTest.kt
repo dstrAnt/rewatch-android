@@ -80,6 +80,7 @@ class ProfilePageTest {
     @Test
     fun testProfileBoxRows() {
 
+        // Calculating the number of tracked Films
         var watchedMovies = profileViewModel.watchedMovies; var nWatchedMovies = runBlocking { watchedMovies.first() }
         var watchedShows = profileViewModel.watchedShows; var nWatchedShows = runBlocking { watchedShows.first() }
         var watchlistShows = profileViewModel.watchlistShows; var nWatchlistShows = runBlocking { watchlistShows.first() }
@@ -98,15 +99,18 @@ class ProfilePageTest {
         composeTestRule.onAllNodesWithText("$nWatchlistMovies")[0].assertExists().assertIsDisplayed()
         Thread.sleep(5000)
 
+        // Adding two Films for the Watchlist and the Watched List
         profileViewModel.repository.addToWatchlist(MovieId(0))
         profileViewModel.repository.addToWatchedList(MovieId(0), 0.0f, LocalDateTime.now())
         profileViewModel.repository.addToWatchedList(TvId(0), 0.0f, LocalDateTime.now())
         profileViewModel.repository.addToWatchlist(TvId(0))
 
+        // Calculating the number of tracked Films
         composeTestRule.onNodeWithTag("profile_page").assertExists()
         composeTestRule.waitForIdle()
         Thread.sleep(5000)
 
+        // Realculating the number of tracked Films
         watchedMovies = profileViewModel.watchedMovies
          watchedShows = profileViewModel.watchedShows
          watchlistShows = profileViewModel.watchlistShows
@@ -128,12 +132,13 @@ class ProfilePageTest {
 
     @Test
     fun testLogOut() {
-        //val authState = profileViewModel.state
 
+        // Simulate a correct Login
         val email = "mark.zuck@meta.com"
         runBlocking {  repo.verifySignInLink(email,"") }
         Thread.sleep(5000)
 
+        // Find and click on the Logout Button
         val logButton = composeTestRule.onNodeWithTag("logButton").assertExists().assertIsDisplayed()
         Thread.sleep(5000)
         try {
