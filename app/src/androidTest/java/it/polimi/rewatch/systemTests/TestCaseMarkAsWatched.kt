@@ -42,6 +42,7 @@ class TestCaseMarkAsWatched {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Long Click on the first Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[1].assertExists()
                 .performTouchInput { longClick() }
 
@@ -52,6 +53,7 @@ class TestCaseMarkAsWatched {
             }
             java.lang.Thread.sleep(3000)
 
+            // Tapping on "Watch Icon"
             composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
             composeTestRule.waitUntil(10_000) {
@@ -63,6 +65,7 @@ class TestCaseMarkAsWatched {
 
             val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
+            // Dismissing Bottom Sheet
             bottomSheet.performTouchInput { swipeDown(200f, 400f) }
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
@@ -80,12 +83,14 @@ class TestCaseMarkAsWatched {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Click on the third Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[2].assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(3000)
 
+            // Assertion verifying that the Media Page is loaded correctly
             composeTestRule.onNodeWithTag("media_page").assertExists()
 
             //Click on the "Add to List" Button
@@ -144,6 +149,7 @@ class TestCaseMarkAsWatched {
 
             val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
+            // Tapping at the center of the Stars Row
             bottomSheetStarRating.performTouchInput { click(center) }
 
             composeTestRule.waitUntil(10_000) {
@@ -172,6 +178,7 @@ class TestCaseMarkAsWatched {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Tapping on "Tv Shows" Top Bar to see all the Shows in the Trending section
             composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
             composeTestRule.waitForIdle()
 
@@ -194,6 +201,7 @@ class TestCaseMarkAsWatched {
             }
             java.lang.Thread.sleep(3000)
 
+            // Setting WatchDate with the Date Dialog
             setWatchDate()
 
             val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
@@ -207,22 +215,12 @@ class TestCaseMarkAsWatched {
     }
 
     fun setWatchDate(){
-        //composeTestRule.onNodeWithTag("bottomSheetActions").onChildren().onFirst().performClick()
-        /*composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithContentDescription("Content watched on")
-                .fetchSemanticsNodes().isNotEmpty()
-        }*/
+
         Thread.sleep(3000)
 
-       // composeTestRule.onNodeWithText("Content watched on ").assertExists()
         val watchDateTrigger = composeTestRule.onNodeWithText(LocalDate.now().toKotlinLocalDate().toString().formatDate("d MMM yyyy")).assertExists().assertIsDisplayed()
         watchDateTrigger.performClick()
-        /*composeTestRule.waitUntil(10_000) {
-            composeTestRule
-                .onAllNodesWithContentDescription("Select")
-                .fetchSemanticsNodes().isNotEmpty()
-        }*/
+
         Thread.sleep(5000)
 
         val datePickerDialogConfirmButton = composeTestRule.onNodeWithText("Select").assertExists().assertIsDisplayed()

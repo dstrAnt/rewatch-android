@@ -36,6 +36,7 @@ class TestCasePlaceIntoWatchlist {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Long Click on the seventh Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[6].assertExists()
                 .performTouchInput { longClick() }
 
@@ -46,6 +47,7 @@ class TestCasePlaceIntoWatchlist {
             }
             java.lang.Thread.sleep(3000)
 
+            // Tapping on "Watchlist Icon"
             composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
             composeTestRule.waitUntil(5_000) {
@@ -57,6 +59,7 @@ class TestCasePlaceIntoWatchlist {
 
             val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
+            // Dismissing Bottom Sheet
             bottomSheet.performTouchInput { swipeDown(200f, 400f) }
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
@@ -80,6 +83,7 @@ class TestCasePlaceIntoWatchlist {
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(3000)
 
+            // Assertion verifying that the Media Page is loaded correctly
             composeTestRule.onNodeWithTag("media_page").assertExists()
 
             //Click on the "Add to List" Button

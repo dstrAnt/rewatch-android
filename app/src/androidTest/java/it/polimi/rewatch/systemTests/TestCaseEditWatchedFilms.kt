@@ -35,6 +35,8 @@ class TestCaseEditWatchedFilms {
 
     val defaultMedia = it.polimi.rewatch.model.MediaType.MOVIE
 
+    // Setup procedure to populate the Watchlist and the Watched List
+
     fun setup(media: it.polimi.rewatch.model.MediaType) {
         val mediaType = media
         composeTestRule.waitUntil(35_000){
@@ -43,12 +45,14 @@ class TestCaseEditWatchedFilms {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
+        // Tapping on "Tv Shows" Top Bar to see all the Shows in the Trending section
         if(mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) {
             composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(2000)
         }
 
+        // Long Click on the first Film in the "Trending" Section
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
             .performTouchInput { longClick() }
 
@@ -59,6 +63,7 @@ class TestCaseEditWatchedFilms {
         }
         java.lang.Thread.sleep(3000)
 
+        // Tapping on "Watch Icon"
         composeTestRule.onNodeWithContentDescription("Watch").performClick()
 
         composeTestRule.waitUntil(35_000){
@@ -70,6 +75,7 @@ class TestCaseEditWatchedFilms {
 
         val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
+        // Dismiss the BottomSheet
         bottomSheet.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(5000)
@@ -105,12 +111,14 @@ class TestCaseEditWatchedFilms {
         try{
             setup(defaultMedia)
 
+            // Tap on MOVIES Bottom Bar
             composeTestRule.onNodeWithContentDescription("Movies").assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
 
+            // Assertion verifying that the Tracking Page is loaded correctly
             composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
             removeFromWatchedFilms()
@@ -124,6 +132,7 @@ class TestCaseEditWatchedFilms {
         try {
             setup(it.polimi.rewatch.model.MediaType.TV_SHOW)
 
+            // Tap on SHOWS Bottom Bar
             composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
                 .performClick()
 
@@ -138,6 +147,7 @@ class TestCaseEditWatchedFilms {
         }
     }
 
+    /* Removing the first Film within the Watched List */
     fun removeFromWatchedFilms(){
         val watchedTab = composeTestRule.onNodeWithTag("Tab_Watched").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 

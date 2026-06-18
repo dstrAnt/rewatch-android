@@ -37,11 +37,14 @@ class TestCaseFilmSearch {
 
     @Test
     fun testFilmSearch() {
+
+        // Tap on SEARCH Bottom Bar
         composeTestRule.onNodeWithContentDescription("Search").assertExists()
             .performClick()
 
         composeTestRule.waitForIdle()
 
+        // Assertion verifying that the Search Page is loaded correctly
         composeTestRule.onNodeWithTag("search_page").assertExists()
 
         composeTestRule.onNodeWithText("Start Searching").assertExists().assertIsDisplayed().performClick()
@@ -51,6 +54,7 @@ class TestCaseFilmSearch {
         val inputText = "The Devil Wears Prada"
         val searchField = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Inserting search query for "The Devil Wears Prada"
         searchField.performTextInput(inputText)
         composeTestRule.waitUntil(15_000){
             composeTestRule
@@ -61,6 +65,7 @@ class TestCaseFilmSearch {
 
         val searchResult = composeTestRule.onAllNodesWithContentDescription(inputText, substring = true)[0]
 
+        // Tapping on the first search result
         searchResult.performClick()
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)
@@ -69,6 +74,7 @@ class TestCaseFilmSearch {
 
         val backButton = composeTestRule.onNodeWithTag("backButton").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Tapping on the back button
         backButton.performClick()
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)
@@ -78,6 +84,7 @@ class TestCaseFilmSearch {
         val inputText2 = "Oppenheimer"
         val searchField2 = composeTestRule.onNodeWithTag("textField").assertExists().assertIsDisplayed().assertHasClickAction()
 
+        // Inserting search query for "Oppenheimer"
         searchField2.performTextReplacement(inputText2)
         composeTestRule.waitUntil(15_000){
             composeTestRule
@@ -88,6 +95,7 @@ class TestCaseFilmSearch {
 
         val searchResult2 = composeTestRule.onAllNodesWithContentDescription(inputText2, substring = true)[0]
 
+        // Tapping on the first search result
         searchResult2.performClick()
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(3000)

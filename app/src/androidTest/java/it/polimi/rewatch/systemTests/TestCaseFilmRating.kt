@@ -36,6 +36,7 @@ class TestCaseFilmRating {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Long Click on the first Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
                 .performTouchInput { longClick() }
 
@@ -44,6 +45,7 @@ class TestCaseFilmRating {
 
             val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
+            // Tapping at the center of the Stars Row
             bottomSheetStarRating.performTouchInput { click(center) }
 
             composeTestRule.waitForIdle()
@@ -68,12 +70,14 @@ class TestCaseFilmRating {
                     .fetchSemanticsNodes().isNotEmpty()
             }
 
+            // Click on the first Movie in the "Trending" Section
             composeTestRule.onAllNodesWithTag("posterItem_Trending")[0].assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(3000)
 
+            // Assertion verifying that the Media Page is loaded correctly
             composeTestRule.onNodeWithTag("media_page").assertExists()
 
             //Click on the "Add to List" Button
@@ -85,6 +89,7 @@ class TestCaseFilmRating {
 
             val bottomSheetStarRating = composeTestRule.onNodeWithTag("bottomSheetStarRating").assertExists()
 
+            // Tapping at the center of the Stars Row
             bottomSheetStarRating.performTouchInput { click(center) }
 
             composeTestRule.waitForIdle()
@@ -92,6 +97,7 @@ class TestCaseFilmRating {
 
             val bottomSheet = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
+            // Dismissing Bottom Sheet
             bottomSheet.performTouchInput { swipeDown(200f, 400f) }
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)

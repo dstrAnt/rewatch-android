@@ -42,12 +42,14 @@ class TestCaseEditWatchlist {
                 .fetchSemanticsNodes().isNotEmpty()
         }
 
+        // Tapping on "Tv Shows" Top Bar to see all the Shows in the Trending section
         if(mediaType == it.polimi.rewatch.model.MediaType.TV_SHOW) {
             composeTestRule.onNodeWithText("Tv Shows").assertExists().performClick()
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(2000)
         }
 
+        // Long Click on the fourth Movie in the "Trending" Section
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[4].assertExists()
             .performTouchInput { longClick() }
 
@@ -58,6 +60,7 @@ class TestCaseEditWatchlist {
         }
         java.lang.Thread.sleep(3000)
 
+        // Tapping on "Watchlist Icon"
         composeTestRule.onNodeWithContentDescription("Watchlist", substring = true).performClick()
 
         composeTestRule.waitUntil(5_000){
@@ -94,6 +97,7 @@ class TestCaseEditWatchlist {
 
         val bottomSheet2 = composeTestRule.onNodeWithTag("RewatchBottomSheet").assertExists().assertIsDisplayed()
 
+        // Dismiss the BottomSheet
         bottomSheet2.performTouchInput { swipeDown(200f, 400f) }
         composeTestRule.waitForIdle()
         java.lang.Thread.sleep(5000)
@@ -104,12 +108,14 @@ class TestCaseEditWatchlist {
         try{
             setup(defaultMedia)
 
+            // Tap on MOVIES Bottom Bar
             composeTestRule.onNodeWithContentDescription("Movies").assertExists()
                 .performClick()
 
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
 
+            // Assertion verifying that the Tracking Page is loaded correctly
             composeTestRule.onNodeWithTag("tracking_page").assertExists()
 
             removeFromWatchlist()
@@ -123,6 +129,7 @@ class TestCaseEditWatchlist {
         try{
             setup(it.polimi.rewatch.model.MediaType.TV_SHOW)
 
+            // Tap on SHOWS Bottom Bar
             composeTestRule.onNodeWithContentDescription("Tv Shows").assertExists()
                 .performClick()
 
@@ -136,6 +143,7 @@ class TestCaseEditWatchlist {
         }
     }
 
+    /* Removing the first Film within the Watchlist */
     fun removeFromWatchlist(){
         val watchedTab = composeTestRule.onNodeWithTag("Tab_Watchlist").assertExists().assertIsDisplayed().assertHasClickAction().assertIsSelectable()
 

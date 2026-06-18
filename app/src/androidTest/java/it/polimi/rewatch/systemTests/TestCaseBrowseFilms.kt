@@ -30,7 +30,6 @@ import androidx.compose.ui.test.onNodeWithText
  * Test Cases designed to test Interaction Scenario "Browse Films"
  */
 
-
 class TestCaseBrowseFilms {
     @get:Rule
     val composeTestRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<it.polimi.rewatch.MainActivity>()

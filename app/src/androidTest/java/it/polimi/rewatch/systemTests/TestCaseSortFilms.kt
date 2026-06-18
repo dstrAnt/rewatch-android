@@ -37,6 +37,7 @@ class TestCaseSortFilms {
     var trackingInfo = it.polimi.rewatch.screens.tracking.WatchTabItem.WATCHED
 
 
+    // Procedure to populate the Watchlist
     fun setupWatchlist(){
         try{
             composeTestRule.waitUntil(35_000) {
@@ -58,6 +59,7 @@ class TestCaseSortFilms {
         }
     }
 
+    // Procedure to populate the Watched list
     fun setupWatched(){
         try{
             composeTestRule.waitUntil(35_000) {
@@ -79,6 +81,7 @@ class TestCaseSortFilms {
         }
     }
 
+    // Add Film Item according to the selected option (Watchlist or Watched Films)
     fun trackItem(index: Int, option: String, substring : Boolean = false){
         composeTestRule.onAllNodesWithTag("posterItem_Trending")[index].assertExists()
             .performTouchInput { longClick() }
@@ -147,7 +150,7 @@ class TestCaseSortFilms {
         setupWatched()
 
         trackingInfo = it.polimi.rewatch.screens.tracking.WatchTabItem.WATCHED
-        accessTrackingPage()
+        accessTrackingPage()    // Accessing Watched Films
 
         val sortChoice = chooseSortOption(3)
         val sortFilterTag = getSortTabTag(sortChoice)
@@ -161,6 +164,8 @@ class TestCaseSortFilms {
             java.lang.Thread.sleep(3000)
 
             val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
+
+            // Tapping the Sort Tab twice
 
             sortFilter.performClick()
             composeTestRule.waitForIdle()
@@ -179,7 +184,7 @@ class TestCaseSortFilms {
         setupWatchlist()
 
         trackingInfo = it.polimi.rewatch.screens.tracking.WatchTabItem.WATCHLIST
-        accessTrackingPage()
+        accessTrackingPage()    // Accessing Watchlist Films
 
         val sortChoice = chooseSortOption(4)
         val sortFilterTag = getSortTabTag(sortChoice)
@@ -194,6 +199,7 @@ class TestCaseSortFilms {
 
             val sortFilter = composeTestRule.onNodeWithTag(sortFilterTag).assertExists().assertIsDisplayed().assertIsSelectable()
 
+            // Tapping the Sort Tab twice
             sortFilter.performClick()
             composeTestRule.waitForIdle()
             java.lang.Thread.sleep(5000)
