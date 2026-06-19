@@ -3,8 +3,18 @@ package it.polimi.rewatch.common
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+/**
+ * Test suite for common utility and extension functions.
+ * Verifies the correctness of general data formatting logic used throughout the application.
+ */
 class UtilityTest {
 
+    /**
+     * Verifies the [formatDate] string extension function.
+     * Ensures that valid date strings are successfully converted to the specified target pattern
+     * (e.g., "yyyy-MM-dd" to "dd/MM/yyyy"), and that invalid or unparseable date strings gracefully
+     * fall back by returning the original input string.
+     */
     @Test
     fun testFormatDate() {
         val inputDate = "2026-06-17"
@@ -15,6 +25,12 @@ class UtilityTest {
         assertEquals("not-a-date", invalidDate.formatDate("dd/MM/yyyy"))
     }
 
+    /**
+     * Verifies the [getShortNotation] numeric extension function.
+     * Ensures that large numbers are correctly abbreviated into human-readable string formats
+     * (such as billions, millions, and thousands/k), small numbers are kept as is,
+     * and exactly zero is represented by a dash (" - ").
+     */
     @Test
     fun testGetShortNotation() {
         assertEquals("1.5 billion", 1_500_000_000.0.getShortNotation())

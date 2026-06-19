@@ -8,8 +8,17 @@ import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+/**
+ * Test suite for [TrackingMediaDto] mapping and conversion functions.
+ * Verifies that data is correctly preserved when converting between data transfer objects (DTOs)
+ * and domain models like [WatchedMedia] and [WatchlistMedia].
+ */
 class TrackingMediaTest {
 
+    /**
+     * Tests the instantiation of [TrackingMediaDto] under different scenarios,
+     * delegating to helper methods to verify default values and mapping from existing domain objects.
+     */
     @Test
     fun testAppTrackingMediaConstructor() {
         testEmptyTrackingMedia()
@@ -17,6 +26,11 @@ class TrackingMediaTest {
         testTrivialWatchedMedia2()
     }
 
+    /**
+     * Verifies the conversion from [TrackingMediaDto] to [WatchedMedia] for Movies.
+     * Ensures that properties like the parent ID, rating, and date are accurately mapped
+     * to a domain model using a [MovieId].
+     */
     @Test
     fun testAppTrackingMediaToWatchedMovies() {
         val trackingMedia = TrackingMediaDto()
@@ -52,6 +66,11 @@ class TrackingMediaTest {
         assertEquals(trackingMedia3.date, watched3.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
 
+    /**
+     * Verifies the conversion from [TrackingMediaDto] to [WatchedMedia] for TV Shows.
+     * Ensures that the generated domain object correctly uses a [TvId] instead of a [MovieId]
+     * and that all specific properties are maintained.
+     */
     @Test
     fun testAppTrackingMediaToWatchedTVShows() {
         val trackingMedia = TrackingMediaDto(mediaType = MediaType.TV_SHOW.name)
@@ -90,6 +109,11 @@ class TrackingMediaTest {
         assertEquals(trackingMedia3.date, watched3.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
 
+    /**
+     * Verifies the conversion from [TrackingMediaDto] to [WatchlistMedia] for Movies.
+     * Ensures that the movie ID and added date are correctly preserved,
+     * without including properties that don't belong to a watchlist (like ratings).
+     */
     @Test
     fun testAppTrackingMediaToWatchlistMovies() {
         val trackingMedia = TrackingMediaDto()
@@ -116,6 +140,10 @@ class TrackingMediaTest {
         assertEquals(trackingMedia3.date, watchlist3.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
 
+    /**
+     * Verifies the conversion from [TrackingMediaDto] to [WatchlistMedia] for TV Shows.
+     * Ensures that the generated domain object uses a [TvId] and properly preserves the date.
+     */
     @Test
     fun testAppTrackingMediaToWatchlistTVShows() {
         val trackingMedia = TrackingMediaDto(mediaType = MediaType.TV_SHOW.name)
@@ -145,6 +173,10 @@ class TrackingMediaTest {
         assertEquals(trackingMedia3.date, watchlist3.date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
     }
 
+    /**
+     * Helper method to verify that an empty [TrackingMediaDto] is initialized
+     * with the correct default values (empty strings, zero integers/floats, null dates).
+     */
     private fun testEmptyTrackingMedia() {
         val trackingMedia = TrackingMediaDto()
 
@@ -155,6 +187,10 @@ class TrackingMediaTest {
         assertNull(trackingMedia.date)
     }
 
+    /**
+     * Helper method to verify the mapping of a basic [WatchedMedia] (e.g., a Movie with just an ID)
+     * into a [TrackingMediaDto].
+     */
     private fun testTrivialWatchedMedia() {
         val watchedMedia = WatchedMedia(id = MovieId(0))
         val trackingMedia = TrackingMediaDto(watchedMedia)
@@ -166,6 +202,11 @@ class TrackingMediaTest {
         assertNotNull(trackingMedia.date)
     }
 
+    /**
+     * Helper method to verify the mapping of a fully populated [WatchedMedia]
+     * (e.g., a TV Show with a specific ID, rating, and date) into a [TrackingMediaDto],
+     * checking specifically for proper time zone and milliseconds conversion.
+     */
     private fun testTrivialWatchedMedia2() {
         val watchedMedia = WatchedMedia(
             id = TvId(1390),
