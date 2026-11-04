@@ -1,21 +1,15 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Firestore reads and writes this class through reflection.
+-keep class it.polimi.rewatch.model.TrackingMediaDto { *; }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# app/build.gradle.kts excludes these Google libraries on purpose.
+-dontwarn com.google.android.gms.auth.api.phone.SmsRetriever
+-dontwarn com.google.android.gms.auth.api.phone.SmsRetrieverClient
+-dontwarn com.google.android.play.core.integrity.IntegrityManagerFactory
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityException
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$PrepareIntegrityTokenRequest
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$PrepareIntegrityTokenRequest$Builder
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$StandardIntegrityToken
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$StandardIntegrityTokenProvider
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$StandardIntegrityTokenRequest
+-dontwarn com.google.android.play.core.integrity.StandardIntegrityManager$StandardIntegrityTokenRequest$Builder
