@@ -98,7 +98,7 @@ fun FullScreenImageOverlay(
                 animationSpec = tween(durationMillis = 600),
             ) { currentState ->
                 if (currentState is AsyncImagePainter.State.Success) {
-                    // A single Box replaces the nested boxes by using wrapContentSize to handle centering
+                    // wrapContentSize handles the centering
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center,
@@ -129,7 +129,7 @@ fun FullScreenImageOverlay(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun LoadingOverlay() {
-    // Dropped the Box here entirely; the modifier handles centering the indicator
+    // The modifier centers the indicator
     CircularWavyProgressIndicator(
         color = Color.White,
         modifier = Modifier
@@ -164,7 +164,7 @@ private fun Modifier.swipeToDismiss(
     onOffsetChange: (Float) -> Unit,
     onDismiss: () -> Unit,
 ): Modifier = composed {
-    // 1. Wrap the changing variables in rememberUpdatedState.
+    // Wrap the changing variables in rememberUpdatedState.
     // This creates a state object that always holds the latest value passed into the modifier.
     val currentOffsetY by rememberUpdatedState(offsetY)
     val currentOnOffsetChange by rememberUpdatedState(onOffsetChange)
@@ -180,10 +180,9 @@ private fun Modifier.swipeToDismiss(
         .pointerInput(Unit) {
             detectTapGestures(onTap = { /* Do nothing */ })
         }
-        .pointerInput(Unit) { // The block still runs only once...
+        .pointerInput(Unit) { // This block runs only once, but it reads the latest state
             detectVerticalDragGestures(
                 onDragEnd = {
-                    // 2. ...but now it reads the freshest state dynamically!
                     if (abs(currentOffsetY) > dismissThreshold) {
                         currentOnDismiss()
                     } else {

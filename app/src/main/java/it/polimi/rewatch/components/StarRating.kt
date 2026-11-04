@@ -67,15 +67,15 @@ fun StarRating(
     starSize: Dp = 15.dp,
 ) {
     var rowWidth by remember { mutableFloatStateOf(0f) }
-    // 1. Safely remember the latest callback so we don't restart gestures on recomposition
+    // Safely remember the latest callback so we don't restart gestures on recomposition
     val currentOnRatingChanged by rememberUpdatedState(onRatingChanged)
     val interactiveModifier = if (onRatingChanged != null) {
         Modifier
-            // 2. Use Unit as the key so the gesture detector never restarts mid-swipe
+            // Use Unit as the key so the gesture detector never restarts mid-swipe
             .pointerInput(Unit) {
                 detectTapGestures(
-                    // 3. Use onTap instead of onPress. It waits for finger lift.
-                    // If the user scrolls vertically, this tap is gracefully cancelled!
+                    // Use onTap instead of onPress. It waits for finger lift.
+                    // If the user scrolls vertically, this tap is cancelled
                     onTap = { offset ->
                         if (rowWidth > 0f) {
                             val x = offset.x.coerceIn(0f, rowWidth)
@@ -89,7 +89,7 @@ fun StarRating(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures(
                     onHorizontalDrag = { change, _ ->
-                        // 4. Consume the gesture ONLY when moving horizontally
+                        // Consume the gesture ONLY when moving horizontally
                         change.consume()
                         if (rowWidth > 0f) {
                             val x = change.position.x.coerceIn(0f, rowWidth)

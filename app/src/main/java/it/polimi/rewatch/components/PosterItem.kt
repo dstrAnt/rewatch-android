@@ -31,109 +31,6 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
 
-//@Composable
-//fun PosterItem3(
-//    id: Int,
-//    posterPath: String?,
-//    title: String?,
-//    mediaType: MediaType, // Added parameter
-//    modifier: Modifier = Modifier,
-//) {
-//    val shape = RoundedCornerShape(5.dp)
-//    LocalContext.current // Brought back for onMovieClick
-//    Box(
-//        modifier = modifier
-//            .aspectRatio(2f / 3f)
-//            .clip(shape)
-//            .border(1.dp, Color.Gray, shape)
-//            .clickable {
-//                // Click logic is now handled internally again
-//                //onMediaClick(id.toString(), mediaType, context)
-//            },
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        if (posterPath != null) {
-//            RewatchAsyncImage(
-//                model = TmdbImageUrlBuilder.build(posterPath, TmdbImageType.PROFILE, width = 70, height = 70),
-//                contentDescription = title,
-//                modifier = Modifier.fillMaxSize(),
-//                contentScale = ContentScale.Crop,
-//            )
-//        } else {
-//            Text(
-//                text = title.orEmpty(),
-//                modifier = Modifier.padding(5.dp),
-//                color = Color.Gray,
-//                textAlign = TextAlign.Center,
-//                style = MaterialTheme.typography.labelMedium,
-//                overflow = TextOverflow.Ellipsis,
-//            )
-//        }
-//    }
-//}
-
-//@Composable
-//fun PosterItem2(
-//    id: Int,
-//    posterPath: String?,
-//    title: String?,
-//    mediaType: MediaType, // Added parameter
-//    modifier: Modifier = Modifier,
-//) {
-//    val shape = RoundedCornerShape(5.dp)
-//    LocalContext.current // Brought back for onMovieClick
-//    val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit =
-//        {
-//            Box(contentAlignment = Alignment.Center) {
-//                Text(
-//                    text = title.orEmpty(),
-//                    modifier = Modifier.padding(5.dp),
-//                    color = Color.Gray,
-//                    textAlign = TextAlign.Center,
-//                    style = MaterialTheme.typography.labelMedium,
-//                    overflow = TextOverflow.Ellipsis,
-//                )
-//            }
-//        }
-//    val model = TmdbImageUrlBuilder.build(
-//        posterPath.orEmpty(), TmdbImageType.PROFILE, width = 70, height = 70,
-//    )
-//    Box(
-//        modifier = modifier
-//            .aspectRatio(2f / 3f)
-//            .clip(shape)
-//            .border(1.dp, Color.Gray, shape)
-//            .clickable {
-//                // Click logic is now handled internally again
-//                //onMediaClick(id.toString(), mediaType, context)
-//            },
-//        contentAlignment = Alignment.Center,
-//    ) {
-//        // 2. Pass it directly into the built-in slots
-//        AsyncImage(
-//            model = ImageRequest.Builder(LocalContext.current)
-//                .data(model)
-//                .crossfade(true)
-//                .build(),
-//            contentDescription = title,
-//            modifier = Modifier.fillMaxSize(),
-//        )
-//    }
-//}
-
-//@Composable
-//private fun PosterItem(
-//    media: PosterInfo,
-//    onNavigateToMedia: () -> Unit,
-//    modifier: Modifier = Modifier,
-//    onLong: (() -> Unit)? = null,
-//) = PosterItem(
-//    posterPath = media.posterPath,
-//    title = media.title,
-//    modifier = modifier,
-//    onNavigateToMedia,
-//    onLong = onLong,
-//)
 
 /**
  * A standard UI component for displaying media posters in a grid or list.
@@ -208,7 +105,6 @@ private fun PosterItem(
             }.testTag("posterItem"),
         contentAlignment = Alignment.Center,
     ) {
-        // 2. Pass it directly into the built-in slots
         SubcomposeAsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(model)

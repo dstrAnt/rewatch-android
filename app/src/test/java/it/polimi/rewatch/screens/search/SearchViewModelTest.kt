@@ -70,8 +70,7 @@ class SearchViewModelTest {
 
             viewModel.onQueryChange("Inception")
 
-            // Should emit Loading after debouncing?
-            // Actually SearchViewModel transformLatest emits Loading immediately, then delays.
+            // transformLatest emits Loading immediately, then delays
 
             val loading = awaitItem()
             assertTrue(loading is UiState.Loading)

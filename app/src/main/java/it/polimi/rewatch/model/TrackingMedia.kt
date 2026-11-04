@@ -10,9 +10,8 @@ import java.time.ZoneId
 interface TrackingMedia {
     val id: MediaId
     val mediaData: PosterInfo
-    val date: LocalDateTime? // Both implementations use this, so we can formalize it here
+    val date: LocalDateTime?
 
-    // Factorized common logic
     val title: String? get() = mediaData.title
     val rating: Float get() = 0f
     val popularity: Float? get() = null // Only Watchlist overrides this
@@ -24,7 +23,7 @@ data class WatchedMedia(
     override val mediaData: PosterInfo = PosterInfo(id),
     override val date: LocalDateTime = LocalDateTime.now(),
     override val rating: Float = 0f,
-) : TrackingMedia // Body removed completely
+) : TrackingMedia
 
 @RequiresApi(Build.VERSION_CODES.O)
 data class WatchlistMedia(
@@ -36,16 +35,15 @@ data class WatchlistMedia(
     override val popularity: Float get() = mediaData.popularity
 }
 
-// We rename it to represent both types of media!
+// Firestore document for both watched and watchlist media
 data class TrackingMediaDto(
     val documentId: String = "",
     val parentId: Int = 0,
     val mediaType: String = "",
     val rating: Float = 0f,
-    // Changed to Long? to support your nullable LocalDateTime? in the interface
     val date: Long? = null,
 ) {
-    // 1. Unified Constructor: Takes ANY TrackingMedia (Watchlist or Watched)
+    // Takes any TrackingMedia (watchlist or watched)
     constructor(media: TrackingMedia) : this(
         documentId = media.id.getUid(),
         parentId = media.id.parentId,
@@ -77,7 +75,7 @@ data class TrackingMediaDto(
     }
 
     // --- MAPPERS ---
-    // 2a. Convert back to WatchedMedia (Use this in your getWatchedFlow)
+    // Convert back to WatchedMedia
     @RequiresApi(Build.VERSION_CODES.O)
     fun toWatchedMedia(): WatchedMedia {
         return WatchedMedia(
@@ -87,12 +85,12 @@ data class TrackingMediaDto(
         )
     }
 
-    // 2b. Convert back to WatchlistMedia (Use this in your getWatchlistFlow)
+    // Convert back to WatchlistMedia
     @RequiresApi(Build.VERSION_CODES.O)
     fun toWatchlistMedia(): WatchlistMedia {
         return WatchlistMedia(
             id = reconstructId(),
-            // We ignore 'this.rating' here because WatchlistMedia pulls rating from PosterInfo!
+            // this.rating is ignored because WatchlistMedia takes its rating from PosterInfo
             date = reconstructDate(),
         )
     }

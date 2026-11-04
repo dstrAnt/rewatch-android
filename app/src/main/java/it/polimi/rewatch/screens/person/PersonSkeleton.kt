@@ -31,12 +31,12 @@ fun PersonSkeleton() {
 
     Scaffold(
         topBar = {
-            // TopBar vuota durante lo skeleton
+            // Empty top bar while loading
         },
     ) { padding ->
         LazyColumn(
             state = scrollState,
-            userScrollEnabled = false, // Evitiamo lo scroll durante il caricamento
+            userScrollEnabled = false, // No scrolling while loading
             modifier = Modifier.fillMaxSize(),
         ) {
             item {
@@ -46,7 +46,7 @@ fun PersonSkeleton() {
                         .padding(top = padding.calculateTopPadding()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    // --- Foto Profilo ---
+                    // --- Profile picture ---
                     SkeletonPart(
                         width = 150.dp,
                         height = 200.dp,
@@ -59,7 +59,7 @@ fun PersonSkeleton() {
                             .padding(vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        // --- Nome e Job ---
+                        // --- Name and job ---
                         SkeletonPart(width = 200.dp, height = 25.dp)
                         Spacer(Modifier.height(4.dp))
                         SkeletonPart(width = 120.dp, height = 15.dp)
@@ -84,7 +84,7 @@ fun PersonSkeleton() {
                                 SkeletonPart(width = 100.dp, height = 18.dp)
                             }
 
-                            // Linea centrale
+                            // Center line
                             Box(
                                 Modifier
                                     .fillMaxHeight()
@@ -112,7 +112,7 @@ fun PersonSkeleton() {
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth(),
                         ) {
-                            repeat(3) { // 3 righe di testo bio
+                            repeat(3) { // 3 lines of bio text
                                 SkeletonPart(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -137,7 +137,6 @@ fun PersonSkeleton() {
                         }
 
                         Spacer(Modifier.height(24.dp))
-//                        Spacer(Modifier.padding(top = 4.dp))
                         Row(
                             Modifier
                                 .padding(vertical = 5.dp, horizontal = 16.dp)

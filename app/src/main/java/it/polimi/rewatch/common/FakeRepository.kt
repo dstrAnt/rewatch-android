@@ -3,7 +3,6 @@ package it.polimi.rewatch.common
 
 import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.EmailAuthCredential
 import com.google.firebase.auth.EmailAuthProvider
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.MovieId
@@ -25,7 +24,6 @@ interface PersistRepository {
     suspend fun sendSignInLink(email: String): Result<Unit>
     suspend fun verifySignInLink(email: String, link: String): Result<LinkResult>
 
-    //val email: SharedFlow<String?>
     val watchlistFlow: SharedFlow<Result<List<WatchlistMedia>>>
     val watchedFlow: SharedFlow<Result<List<WatchedMedia>>>
 
@@ -119,7 +117,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
                 else -> 1111
             }
             if (email.equals(defaultMergeTestEmail) || email.equals(defaultMergeTestEmail2))
-//                return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredentialWithLink(email, link)))
                   return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredential("hello", "world")))
             else return Result.success(LinkResult.SignedIn)
         }
@@ -145,28 +142,22 @@ class FakeRepository @Inject constructor() : PersistRepository {
         return if(anonymousUid.equals("0")) Result.success(Unit) else Result.failure(Throwable())
     }
 
-    // The base helper we created earlier
     private inline fun <T> MutableSharedFlow<Result<List<T>>>.updateList(crossinline transform: (List<T>) -> List<T>) {
         val currentList = replayCache.firstOrNull()?.getOrNull() ?: emptyList()
         tryEmit(Result.success(transform(currentList)))
     }
 
-    // NEW: Extension property to easily read the current list state
     private val <T> MutableSharedFlow<Result<List<T>>>.currentList: List<T>
         get() = replayCache.firstOrNull()?.getOrNull() ?: emptyList()
 
-    // NEW: Generic Add
     private fun <T> MutableSharedFlow<Result<List<T>>>.addItem(item: T) {
         updateList { currentList -> currentList + item }
     }
 
-    // NEW: Generic Remove (using a condition)
     private inline fun <T> MutableSharedFlow<Result<List<T>>>.removeItem(crossinline condition: (T) -> Boolean) {
         updateList { currentList -> currentList.filterNot(condition) }
     }
 
-    // The Factorized Helper:
-// This handles all the messy Result unwrapping and SharedFlow emitting for you.
     override fun addToWatchlist(id: MediaId) =
         _watchlistFlow.addItem(WatchlistMedia(id))
 
@@ -200,7 +191,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     override fun toggleWatchedList(id: MediaId) {
-        // Grab the current state using our new property
         val existingItem = _watchedFlow.currentList.find { it.id == id }
 
         if (existingItem != null) {
@@ -216,7 +206,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     override fun setWatchDate(id: MediaId, newDate: LocalDateTime) {
-        // Use the updateList helper we made previously for map operations
         _watchedFlow.updateList { currentList ->
             currentList.map {
                 if (it.id == id) it.copy(date = newDate) else it
@@ -225,7 +214,6 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     override fun toggleWatchlist(id: MediaId) {
-        // Check state using the new property and route accordingly
         if (_watchlistFlow.currentList.any { it.id == id }) {
             removeFromWatchlist(id)
         } else {
@@ -262,7 +250,8 @@ val fakeWatchlist = listOf(
         id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders"))
     ),
     WatchlistMedia(
-        id = MovieId(1317288), mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 8.5f, name = "Betamax - The Return"))
+        id = MovieId(1317288),
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 8.5f, name = "Betamax - The Return"))
     ),
     WatchlistMedia(
         id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f, name = "1984"))

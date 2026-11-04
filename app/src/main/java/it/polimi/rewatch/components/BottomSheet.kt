@@ -77,12 +77,12 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
 
-// Da LocalDate a Long (Milliseconds UTC)
+// From LocalDate to Long (milliseconds, UTC)
 fun LocalDate.toMillis(): Long {
     return this.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 }
 
-// Da Long (Milliseconds UTC) a LocalDate
+// From Long (milliseconds, UTC) to LocalDate
 fun Long.toLocalDate(): LocalDate {
     return Instant.ofEpochMilli(this)
         .atZone(ZoneId.of("UTC"))
@@ -110,8 +110,6 @@ class BottomSheetViewModel @AssistedInject constructor(
     val watchlistItem = persistRepo.watchlistFlow
         .map { result ->
             val foundItem = result.getOrNull()?.find { it.id == id }
-            // 2. Check if our equality logic is working
-            println("DEBUG_FLOWSHEET: Searching for $id. Found: ${foundItem?.id}")
             foundItem
         }.stateIn(
             scope = viewModelScope,

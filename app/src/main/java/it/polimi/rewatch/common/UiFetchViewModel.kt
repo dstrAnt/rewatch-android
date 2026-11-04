@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 sealed interface UiState<out T> {
-    data object Loading : UiState<Nothing> // Use 'object Loading' if your Kotlin version is older than 1.9
+    data object Loading : UiState<Nothing>
     data class Success<T>(val data: T) : UiState<T>
     data class Error(val msg: String) : UiState<Nothing>
 }
@@ -26,7 +26,7 @@ abstract class UiFetchViewModel<T> : ViewModel() {
             val data = fetchData()
             UiState.Success(data)
         } catch (e: Exception) {
-            UiState.Error(e.localizedMessage ?: "Errore di connessione")
+            UiState.Error(e.localizedMessage ?: "Connection error")
         }
     }
 

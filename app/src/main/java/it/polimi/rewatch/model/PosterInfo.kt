@@ -65,15 +65,12 @@ data class PosterInfo(
     )
 
     constructor(credit: TmdbPersonCredit) : this(
-        // If 'id' and 'posterPath' are shared properties on the base TmdbPersonCredit class,
-        // you can call them directly like this:
         id = when (credit) {
             is Movie -> MovieId(credit.id)
             is Show -> TvId(credit.id)
         },
         posterImage = null,
         posterPath = credit.posterPath,
-        // For properties that differ, use inline 'when' statements:
         releaseDate = when (credit) {
             is Movie -> credit.releaseDate
             is Show -> credit.firstAirDate

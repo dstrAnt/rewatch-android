@@ -260,7 +260,6 @@ private fun SearchInputField(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
                 onSearch = {
-                    // Put your search execution logic here (if needed)
                     // This drops the focus and hides the keyboard
                     onClearFocus()
                 },

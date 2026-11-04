@@ -1,14 +1,11 @@
-// 1. Add this import at the very top
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-
-    id("com.google.devtools.ksp")
-    id("com.google.dagger.hilt.android")
-    kotlin("plugin.serialization")
-
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
     id("jacoco")
 }
 
@@ -46,7 +43,6 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-//        testInstrumentationRunner = "it.polimi.rewatch.CustomTestRunner"
         listOf("TMDB_API_KEY", "FIREBASE_API_KEY", "FIREBASE_PROJECT_ID", "FIREBASE_APP_ID").forEach { name ->
             buildConfigField("String", name, "\"${localProperty(name)}\"")
         }
@@ -86,7 +82,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-//    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material3.adaptive.navigation.suite)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.splashscreen)
@@ -112,12 +107,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
-    // Import the Firebase BoM
     implementation(platform(libs.firebase.bom)) {
         exclude(group = "com.google.android.gms")
         exclude(group = "com.google.android.play")
-    } // Use the latest version
-    // Add Auth and Firestore dependencies
+    }
     implementation(libs.firebase.auth) {
         exclude(group = "com.google.android.gms")
         exclude(group = "com.google.android.play")
@@ -127,25 +120,9 @@ dependencies {
         exclude(group = "com.google.android.gms", module = "play-services-ads-identifier")
         exclude(group = "com.google.android.play")
     }
-    //implementation(libs.firebase.auth)
-    //implementation(libs.firebase.firestore)
 
-    /* TESTING */
-
-    // basic JUnit 4
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-
-    // integrate Compose and JUnit 4
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
-
-    // to load composables
-    debugImplementation("androidx.compose.ui:ui-test-manifest:1.6.0")
-
-    // to unlock in case of dealing with animations
-    // androidTestImplementation("androidx.compose.ui:ui-test:1.6.0")
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.59.2")
-    kspAndroidTest("com.google.dagger:hilt-android-compiler:2.59.2")
-
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.android.compiler)
 }
 
 tasks.register<JacocoReport>("jacocoCombinedTestReport") {
@@ -156,7 +133,7 @@ tasks.register<JacocoReport>("jacocoCombinedTestReport") {
         xml.required.set(true)
     }
 
-    // Filtri potenti per Hilt e Compose
+    // Exclude generated Hilt and Compose classes
     val fileFilter = arrayListOf(
         "**/R.class",
         "**/R$*.class",
@@ -177,16 +154,15 @@ tasks.register<JacocoReport>("jacocoCombinedTestReport") {
     val mainSrc = "${project.projectDir}/src/main/java"
     sourceDirectories.setFrom(files(mainSrc))
 
-    // LA SUPER RETE A STRASCICO (Include il tuo nuovo percorso)
+    // AGP versions put compiled classes in different folders, so include all of them
     val buildDir = project.layout.buildDirectory.get().asFile
     val javaClasses = fileTree("$buildDir/intermediates/javac/debug/classes") { exclude(fileFilter) }
     val kotlinClassesOld = fileTree("$buildDir/tmp/kotlin-classes/debug") { exclude(fileFilter) }
     val kotlinClassesNew = fileTree("$buildDir/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes") { exclude(fileFilter) }
 
-    // Passiamo tutte e tre le cartelle a JaCoCo: dovunque siano le classi, le troverà.
     classDirectories.setFrom(javaClasses, kotlinClassesOld, kotlinClassesNew)
 
-    // Unisce Unit Test (.exec) e Android Test (.ec)
+    // Merge unit test (.exec) and instrumented test (.ec) results
     executionData.setFrom(
         fileTree(buildDir) {
             include(

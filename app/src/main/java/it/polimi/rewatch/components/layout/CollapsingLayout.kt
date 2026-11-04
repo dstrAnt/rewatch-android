@@ -60,7 +60,7 @@ fun CollapsingLayout(
         }
     }
 
-    // THE FIXED SNAPPING LOGIC
+    // Snap to a fully collapsed or expanded state
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }.collect { isScrolling ->
             if (!isScrolling && listState.firstVisibleItemIndex == 0) {
@@ -69,7 +69,7 @@ fun CollapsingLayout(
 
                 // If the bar is stuck in a partial state
                 if (currentScroll > 0 && currentScroll < maxOffset) {
-                    // 🔥 Isolate the animation in its own job so user-interruptions
+                    // Isolate the animation in its own job so user interruptions
                     // (CancellationExceptions) don't kill the LaunchedEffect listener
                     coroutineScope.launch {
                         if (currentScroll > maxOffset / 2) {
@@ -86,14 +86,14 @@ fun CollapsingLayout(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        // LAYER 1: YOUR CUSTOM SCROLLABLE CONTENT (Bottom Layer)
+        // Bottom layer: scrollable content
         content(listState, spacerHeight)
-        // LAYER 2: THE TOP BAR CONTAINER (Middle Layer)
+        // Middle layer: top bar container
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .offset { IntOffset(x = 0, y = topBarOffsetHeightPx.roundToInt()) }
-                .background(headerColor) // Assuming you pass this in or it's resolved
+                .background(headerColor)
                 .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()),
         ) {
             // The actual top bar UI

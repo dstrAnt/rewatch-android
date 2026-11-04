@@ -203,8 +203,8 @@ fun Double.getShortNotation(): String {
         this >= 1_000_000 -> String.format(Locale.US, "%.1f million", this / 1_000_000)
         this >= 1_000 -> String.format(Locale.US, "%.1fk", this / 1_000)
         this > 0 -> this.toInt().toString()
-        else -> " - " // TMDB spesso restituisce 0 se il budget è sconosciuto
-    }.replace(".0", "") // Toglie il decimale se è zero (es: 50.0 -> 50)
+        else -> " - " // TMDB often returns 0 when the budget is unknown
+    }.replace(".0", "") // Drop the decimal part when it is zero (e.g. 50.0 -> 50)
 }
 
 /**
@@ -222,7 +222,7 @@ fun SkeletonPart(
             .then(if (width != null) Modifier.width(width) else Modifier)
             .then(if (height != null) Modifier.height(height) else Modifier)
             .clip(shape)
-            .pulseEffect(), // Updated here
+            .pulseEffect(),
     )
 }
 
@@ -269,7 +269,6 @@ fun Modifier.layoutEvade(
 data class TabItem(
     val title: String,
     val isAvailable: () -> Boolean,
-    // We now pass the volatile state directly into the lambda when it executes
     val content: LazyListScope.() -> Unit,
 ) {
     companion object {
@@ -355,7 +354,7 @@ fun ExpandableText(
     val textMeasurer = rememberTextMeasurer()
     // BoxWithConstraints lets us know the exact width we have available to draw the text
     BoxWithConstraints {
-        // 1. Measure the text in the background based on the available width
+        // Measure the text in the background based on the available width
         val textLayoutResult = remember(text, constraints.maxWidth) {
             textMeasurer.measure(
                 text = text,
@@ -365,21 +364,20 @@ fun ExpandableText(
                 ),
             )
         }
-        // 2. Apply your rule: Clickable/Expandable ONLY if it exceeds maxLines + 1
+        // Clickable and expandable only if the text exceeds maxLines + 1
         val canExpand = textLayoutResult.lineCount > maxLines + 1
         val currentMaxLines = when {
             !canExpand -> Int.MAX_VALUE // If it's maxLines + 1 or less, just show it all
             isExpanded -> Int.MAX_VALUE // If the user clicked to expand, show it all
             else -> maxLines            // Otherwise, clip it at maxLines
         }
-        // 3. Render the text. It knows exactly what to do on Frame 1.
+        // Render the text
         Text(
             text = text,
             style = style,
             maxLines = currentMaxLines,
             overflow = if (canExpand && !isExpanded) TextOverflow.Ellipsis else TextOverflow.Clip,
             modifier = Modifier
-                // REMOVED .animateContentSize()
                 .then(
                     if (canExpand) Modifier.clickable { isExpanded = !isExpanded }
                     else Modifier,
@@ -419,8 +417,7 @@ fun <T> CustomTabRow(
             text = {
                 Text(
                     text = title(it),
-                    style = MaterialTheme.typography.labelLarge, // Explicitly setting it here
-//                                    style = MaterialTheme.typography.labelMedium,  // Use the Large Title style here
+                    style = MaterialTheme.typography.labelLarge,
                 )
             },
         )
@@ -450,10 +447,10 @@ fun getDeviceCornerRadius(): Dp {
  */
 fun Modifier.clipToDeviceCorners() = composed {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return@composed this
-    // 1. Observe the app's lifecycle state
+    // Observe the app's lifecycle state
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     val isResumed = lifecycleState != Lifecycle.State.RESUMED
-    // 2. If the app is pushed to Recents, drop the radius to 0 so the OS can handle it
+    // If the app is pushed to Recents, drop the radius to 0 so the OS can handle it
     val radiusDp = if (isResumed) {
         getDeviceCornerRadius()
     } else {

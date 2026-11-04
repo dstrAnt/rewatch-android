@@ -112,17 +112,16 @@ fun RewatchApp() {
     var pendingHomeTab by remember { mutableStateOf<HomeTabItem?>(null) }
     val searchViewModel = hiltViewModel<SearchViewModel>()
     val currentScreen = backStack.lastOrNull()
-    // 1. Define a state to control the visibility of the bottom bar
+    // The bottom bar is hidden on the login page
     val isBottomBarVisible = remember(currentScreen) {
         currentScreen != LoginNavPage
-    }    // Centralized Navigation Actions
+    }
     val navActions = remember(backStack) {
         NavigationActions(
             onNavigateToPerson = { id -> backStack.add(PersonNavPage(id)) },
             onNavigateToMedia = { id -> backStack.add(MediaNavPage(id)) },
             onNavigateBack = {
                 backStack.removeLastOrNull()
-//                isBottomBarVisible = true
             },
             onFullscreenImage = { url ->
                 fullScreenImageUrl = url
@@ -131,7 +130,6 @@ fun RewatchApp() {
             onBottomSheet = { info -> if (info.id is MediaId) bottomSheetMedia = info },
             onNavigateToLogin = {
                 backStack.add(LoginNavPage)
-//                isBottomBarVisible = false
             },
             onBackToHome = { tab ->
                 pendingHomeTab = tab
@@ -156,7 +154,6 @@ fun RewatchApp() {
 
     Scaffold(
         bottomBar = {
-            // 2. Wrap the BottomBar in AnimatedVisibility
             AnimatedVisibility(
                 visible = isBottomBarVisible,
                 enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec()), // Slides in from the bottom
@@ -187,7 +184,6 @@ fun RewatchApp() {
             outerPadding = outerPadding,
         )
     }
-    // Extracted Overlay logic
     Overlays(
         bottomSheetMedia = bottomSheetMedia,
         isOverlayVisible = isOverlayVisible,

@@ -122,7 +122,7 @@ fun MediaPage(
         creationCallback = { it.create(mediaId) },
     ),
 ) {
-    // Hoist the state! Collect it at the screen-level composable.
+    // Collect the state at the screen-level composable
     val watchlistItem by viewModel.watchlistItem.collectAsStateWithLifecycle()
     val watchedListItem by viewModel.watchedListItem.collectAsStateWithLifecycle()
 
@@ -165,7 +165,7 @@ fun MediaContent(
         buildTabs(movie, expandedSectionIds, handleToggle, mediaId, spacing, actions)
     }
     val windowInfo = LocalWindowInfo.current
-// containerSize is already in exact pixels!
+// containerSize is already in pixels
     val screenSize = remember(windowInfo.containerSize) {
         maxOf(windowInfo.containerSize.width, windowInfo.containerSize.height)
     }
@@ -245,7 +245,6 @@ fun MediaContent(
     }
 }
 
-// 4. Extracted a Header component to reduce the size of the LazyColumn block
 private fun LazyListScope.mediaHeaderItems(
     movie: MediaDetail,
     spacing: Dp,
@@ -302,7 +301,6 @@ private fun LazyListScope.mediaHeaderItems(
                 pad = spacing,
                 overview = movie.overview,
                 tagline = movie.tagline,
-                // Ensure TaglineAndOverview no longer has .animateContentSize() inside it!
             )
         }
     }
@@ -445,7 +443,7 @@ private fun buildTabs(
                 itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
             ),
         )
-        // ... TV SHOW: Seasons tab ...
+        // TV show: seasons tab
         if (mediaId.type == MediaType.TV_SHOW) add(
             TabItem.expandable(
                 title = "Seasons",
@@ -464,7 +462,7 @@ private fun buildTabs(
                 },
             ),
         )
-        // ... SEASON: Episodes tab ...
+        // Season: episodes tab
         if (mediaId.type == MediaType.SEASON) add(
             TabItem.expandable(
                 title = "Episodes",
@@ -483,7 +481,7 @@ private fun buildTabs(
                 },
             ),
         )
-        // ... Details and Watch tabs remain the same, they just ignore the lambda parameters
+        // The details and watch tabs ignore the lambda parameters
         add(
             TabItem(
                 title = "Details",
@@ -495,7 +493,7 @@ private fun buildTabs(
                 },
             ),
         )
-        // ... Watch tab ...
+        // Watch tab
         add(
             TabItem(
                 title = "Watch",
@@ -542,11 +540,11 @@ fun LazyListScope.tabbedSection(
     activeTab: String?,
     onTabSelected: (String) -> Unit,
 ) {
-    // 1. Perform the available tabs calculation
+    // Perform the available tabs calculation
     val availableTabs = allTabs.filter { it.isAvailable() }
 
     if (availableTabs.isNotEmpty()) {
-        // 2. Resolve the active tab (fallback to the first available if none is selected/found)
+        // Resolve the active tab (fallback to the first available if none is selected/found)
         val resolvedActiveTab = availableTabs.find { it.title == activeTab } ?: availableTabs.first()
 
         item(key = "tabs_row") {
@@ -562,7 +560,7 @@ fun LazyListScope.tabbedSection(
                 Spacer(Modifier.height(7.dp))
             }
         }
-        // 3. Render the content seamlessly
+        // Render the content seamlessly
         // Pass the state into the content execution
         resolvedActiveTab.content(this)
     }
@@ -573,13 +571,13 @@ fun TaglineAndOverview(
     pad: Dp,
     overview: String?,
     tagline: String?,
-    modifier: Modifier = Modifier, // It's good practice to expose a modifier
+    modifier: Modifier = Modifier,
 ) {
     if (tagline.isNullOrBlank() && overview.isNullOrBlank()) return
 
     Column(
         modifier = modifier
-            .animateContentSize() // <-- ADD THIS HERE
+            .animateContentSize()
             .padding(horizontal = pad),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -632,7 +630,7 @@ fun TmdbRatings(
                     .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(20.dp)),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                // 1. TMDB Logo
+                // TMDB Logo
                 Image(
                     painter = painterResource(id = R.drawable.tmdb_logo),
                     contentDescription = "TMDB logo",
@@ -641,7 +639,7 @@ fun TmdbRatings(
                         .padding(vertical = 10.dp)
                         .width(60.dp),
                 )
-                // 2. Rating
+                // Rating
                 if (vote > 0) {
                     TmdbDivider()
                     Row(
@@ -662,7 +660,7 @@ fun TmdbRatings(
                         )
                     }
                 }
-                // 3. Vote Count
+                // Vote Count
                 if (count > 0) {
                     TmdbDivider()
                     Text(
@@ -673,7 +671,7 @@ fun TmdbRatings(
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                     )
                 }
-                // 4. External Links
+                // External Links
                 externalIds.forEach { (label, url) ->
                     TmdbDivider()
                     Row(
@@ -710,11 +708,10 @@ fun TmdbRatings(
     }
 }
 
-// Extracted to keep the main layout clean
 @Composable
 private fun TmdbDivider() {
     VerticalDivider(
-        modifier = Modifier.height(16.dp), // Notice: NO horizontal padding here anymore
+        modifier = Modifier.height(16.dp),
         color = Color.White.copy(alpha = 0.3f),
     )
 }

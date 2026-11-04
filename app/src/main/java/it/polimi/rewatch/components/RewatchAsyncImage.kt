@@ -60,7 +60,7 @@ fun RewatchAsyncImage(
     fallbackIcon: ImageVector? = null,
     fallbackIconTint: Color = Color.LightGray,
 ) {
-    // 1. Define the fallback UI once to reuse for both loading and error states
+    // Define the fallback UI once to reuse for both loading and error states
     val fallbackContent: @Composable SubcomposeAsyncImageScope.(AsyncImagePainter.State) -> Unit = {
         if (fallbackResId != null) {
             Image(
@@ -81,7 +81,6 @@ fun RewatchAsyncImage(
             }
         }
     }
-    // 2. Pass it directly into the built-in slots
     SubcomposeAsyncImage(
         model = ImageRequest.Builder(LocalContext.current)
             .data(model)

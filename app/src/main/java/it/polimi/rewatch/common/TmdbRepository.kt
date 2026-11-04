@@ -42,9 +42,9 @@ suspend fun <T> fetchMultiplePages(count: Int, block: suspend (Int) -> List<T>):
 /**
  * Repository to retrieve details about the Movies, TV Shows, Seasons, Episodes and People.
  */
-@Singleton // Tells Hilt to only make one of these for the whole app
+@Singleton
 class TmdbRepository @Inject constructor(
-    private val tmdb: Tmdb3, // Hilt delivers your API client here!
+    private val tmdb: Tmdb3,
 ) {
     /**
      * This function retrieves 2 pages of discoverable movies to be shown in the [HomePage]
@@ -122,7 +122,6 @@ class TmdbRepository @Inject constructor(
      * This function retrieves data to be displayed in the movie instance of [MediaPage]
      */
     suspend fun movieData(movieId: Int): MovieData = withContext(Dispatchers.IO) {
-//        tmdb.show.getDetails()
         val details = tmdb.movies.getDetails(
             movieId = movieId,
             appendResponses = listOf(
@@ -146,7 +145,6 @@ class TmdbRepository @Inject constructor(
      * This function retrieves data to be displayed in the TV show instance of [MediaPage]
      */
     suspend fun tvData(showId: Int): MovieData = withContext(Dispatchers.IO) {
-//        tmdb.show.getDetails()
         val details = tmdb.show.getDetails(
             showId = showId,
             appendResponses = listOf(
@@ -223,40 +221,6 @@ class TmdbRepository @Inject constructor(
     suspend fun movieDetails(id: Int): PosterInfo = tmdb.movies.getDetails(id).let(::PosterInfo)
     suspend fun showDetails(id: Int): PosterInfo = tmdb.show.getDetails(id).let(::PosterInfo)
 
-//    suspend fun getTrackingData(fakeRepo: FakeRepository): TrackingData = coroutineScope {
-//        // 1. Recuperiamo i dati "grezzi" (simulando Firebase)
-//        // 2. Lanciamo le chiamate API in parallelo per la Watchlist
-//        val watchlistDeferred = fakeRepo.watchlistFlow.map { result ->
-//            result.mapCatching { list ->
-//                coroutineScope {
-//                    list.map { item ->
-//                        async(Dispatchers.IO) {
-//                            val details = item.id.getDetails(this@TmdbRepository)
-//                            item.copy(mediaData = details!!)
-//                        }
-//                    }.awaitAll()
-//                }
-//            }
-//        }
-//        // 3. Facciamo lo stesso per i Watched
-//        val watchedDeferred = fakeRepo.watchedFlow.map { result ->
-//            result.mapCatching { list ->
-//                coroutineScope {
-//                    list.map { item ->
-//                        async(Dispatchers.IO) {
-//                            val details = item.id.getDetails(this@TmdbRepository)
-//                            item.copy(mediaData = details!!)
-//                        }
-//                    }.awaitAll()
-//                }
-//            }
-//        }
-//        // 4. Attendiamo che tutte le chiamate finiscano e restituiamo il risultato
-//        TrackingData(
-//            watchlist = watchlistDeferred.awaitAll(),
-//            watched = watchedDeferred.awaitAll(),
-//        )
-//    }
     /**
      * Adds [PosterInfo] information to an empty [WatchlistMedia]
      */
@@ -268,7 +232,6 @@ class TmdbRepository @Inject constructor(
             Log.w("TmdbRepo", "Failed to enrich ${item.id}, using cached data", e)
             item // return un-enriched item instead of crashing
         }
-        // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
     }
 
     /**
@@ -276,8 +239,7 @@ class TmdbRepository @Inject constructor(
      */
     suspend fun enrichWatchedItem(item: WatchedMedia) = withContext(Dispatchers.IO) {
         val details = item.id.getDetails(this@TmdbRepository)
-        // Creiamo una COPIA dell'oggetto originale con i nuovi mediaData
-        item.copy(mediaData = details!!) // copy mantiene gli altri campi
+        item.copy(mediaData = details!!)
     }
 
     /**
@@ -299,19 +261,16 @@ class TmdbRepository @Inject constructor(
                 SearchType.MOVIES -> {
                     tmdb.search.findMovies(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
-                        .map(::PosterInfo) // Maps TmdbMovie to your Media class
+                        .map(::PosterInfo)
                 }
 
                 SearchType.TV -> {
-                    // Note: The exact method name depends on your TMDB library wrapper,
-                    // it might be findTv(), searchTv(), or findTvShows()
                     tmdb.search.findShows(query = query, page = 1)
                         .results.sortedByDescending { it.popularity }
-                        .map(::PosterInfo) // Maps TmdbTvShow to your Media class
+                        .map(::PosterInfo)
                 }
-//
                 SearchType.CAST -> {
-                    tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo) // Maps TmdbTvShow to your Media class
+                    tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo)
                 }
 
                 SearchType.ALL -> {
@@ -322,10 +281,9 @@ class TmdbRepository @Inject constructor(
                             is TmdbPerson -> PosterInfo(it)
                             else -> PosterInfo(it)
                         }
-                    } // Maps TmdbTvShow to your Media class
+                    }
                 }
 
-//                else -> emptyList()
             }
         } catch (e: Exception) {
             e.printStackTrace()

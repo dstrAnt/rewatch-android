@@ -30,7 +30,7 @@ data class MediaDetail(
     val certification: String?,
     val watchProviders: Map<String, TmdbProviders>,
     val rating: Float?,
-    val reviews: List<TmdbReview>, // Consider replacing 'Any' with a specific Review type
+    val reviews: List<TmdbReview>,
     val cast: List<TmdbCast>,
     val crew: List<TmdbCrew>,
     val voteAverage: Float?,
@@ -151,7 +151,7 @@ data class MediaDetail(
         tagline = null,
         releaseDate = episode.airDate, // TMDB uses 'firstAirDate' for TV shows
         posterImage = null,
-        backdropImage = episode.backdropImage, // se non funziona, prova stillPath
+        backdropImage = episode.backdropImage,
         specificDetails = MediaSpecificDetails.Episode(
             season = episode.seasonNumber,
             episodeNumber = episode.episodeNumber,

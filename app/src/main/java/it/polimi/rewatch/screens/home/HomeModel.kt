@@ -8,7 +8,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-// Dati che compongono la nostra Homepage
+// Data shown on the home page
 data class MediaData(
     val trending: List<PosterInfo>,
     val popular: List<PosterInfo>,

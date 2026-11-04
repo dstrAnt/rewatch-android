@@ -50,13 +50,13 @@ class SearchViewModel @Inject constructor(
                 if (currentQuery.isBlank()) {
                     emit(UiState.Success(SearchUiState(_query.value, emptyList())))
                 } else {
-                    // 1. INSTANT LOADING: Emits immediately before the delay
+                    // INSTANT LOADING: Emits immediately before the delay
                     emit(UiState.Loading)
-                    // 2. MANUAL DEBOUNCE: Suspend for 200ms.
+                    // MANUAL DEBOUNCE: Suspend for 200ms.
                     // If the user types again before 200ms, 'transformLatest' cancels
                     // this block and starts over, instantly emitting Loading again.
                     delay(200L)
-                    // 3. EXECUTE SEARCH: Only runs if the 200ms delay finishes uninterrupted.
+                    // EXECUTE SEARCH: Only runs if the 200ms delay finishes uninterrupted.
                     try {
                         withContext(Dispatchers.IO) {
                             val results = repository.searchMedia(currentQuery, currentMediaType)
@@ -74,7 +74,7 @@ class SearchViewModel @Inject constructor(
                         _query.value,
                         emptyList(),
                     ),
-                ), // Start with Success(emptyList()) based on your UX
+                ), // Start with an empty result
             )
 
     fun onQueryChange(newQuery: String) {

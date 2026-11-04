@@ -23,7 +23,7 @@ fun HomeSkeleton() {
     CustomLazyGrid(
         contentPadding = PaddingValues(bottom = 24.dp, top = 92.dp),
         userScrollEnabled = false,
-    ) { columnCount -> // <-- 1. Cattura la variabile calcolata dalla CustomLazyGrid
+    ) { columnCount -> // Columns computed by CustomLazyGrid
         repeat(3) {
             skeletonSection(columnCount)
         }
@@ -37,7 +37,7 @@ private fun LazyGridScope.skeletonSection(columnCount: Int) {
                 .fillMaxWidth()
                 .padding(top = 15.dp),
         ) {
-            // --- Titolo Sezione ---
+            // --- Section title ---
             SkeletonPart(
                 modifier = Modifier.padding(vertical = 8.dp),
                 width = 120.dp,

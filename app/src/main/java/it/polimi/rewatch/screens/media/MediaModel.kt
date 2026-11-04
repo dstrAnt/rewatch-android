@@ -24,7 +24,7 @@ class MediaViewModel @AssistedInject constructor(
     @Assisted private val mediaId: MediaId,
     private val repository: TmdbRepository,
     persistRepo: PersistRepository,
-) : UiFetchViewModel<MovieData>() { // <-- Changed to your unified MediaDetail class
+) : UiFetchViewModel<MovieData>() {
     @AssistedFactory
     interface Factory {
         fun create(mediaId: MediaId): MediaViewModel

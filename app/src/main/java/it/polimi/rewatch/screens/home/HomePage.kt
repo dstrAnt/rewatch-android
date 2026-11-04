@@ -82,16 +82,15 @@ fun HomePage(
     }
 
     CollapsingLayout(
-        // 1. Define your heights
+        // Heights
         collapsingTopHeight = 64.dp,
         pinnedBottomHeight = 50.dp,
-        // 2. Slot in the part that vanishes
+        // The part that vanishes on scroll
         collapsingTopBar = {
             Row(
                 Modifier
                     .fillMaxWidth()
                     .background(headerColor)
-                    //  .padding(top = 16.dp)
                     .padding(top = 10.dp),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -104,7 +103,7 @@ fun HomePage(
                 )
             }
         },
-        // 3. Slot in the part that stays pinned (e.g., TabRow or SearchBar)
+        // The part that stays pinned
         pinnedBottomBar = {
             CustomTabRow(
                 availableTabs = tabs,
@@ -157,7 +156,7 @@ fun HomeContent(
     }
 
     CustomLazyGrid(state = state) {
-        // 1. You must place the Spacer at the top so the list starts below the TopBar
+        // The Spacer makes the list start below the top bar
         item {
             Spacer(modifier = Modifier.height(spacerHeight))
         }
@@ -176,7 +175,6 @@ fun HomeContent(
                     actions,
                 )
             }
-        //BottomOverlayStretchExample()
     }
 }
 

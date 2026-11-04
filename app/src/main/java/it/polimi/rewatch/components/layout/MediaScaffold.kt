@@ -66,15 +66,15 @@ fun AppearingTopBar(
 ) {
     val toolbarAlpha by remember {
         derivedStateOf {
-            // 1. Extract both index and offset in a single pass
+            // Extract both index and offset in a single pass
             val (index, offset) = when (scrollState) {
                 is LazyListState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
                 is LazyGridState -> scrollState.firstVisibleItemIndex to scrollState.firstVisibleItemScrollOffset
                 else -> return@derivedStateOf 1f // Fallback: fully visible if state is unsupported
             }
-            // 2. Early exit
+            // Early exit
             if (index > 0) return@derivedStateOf 1f
-            // 3. Simple linear interpolation (lerp) logic
+            // Simple linear interpolation (lerp) logic
             ((offset - 450f) / 250f).coerceIn(0f, 1f)
         }
     }
@@ -117,7 +117,5 @@ fun AppearingTopBar(
             containerColor = Color.Black.copy(alpha = toolbarAlpha),
             scrolledContainerColor = Color.Black.copy(alpha = toolbarAlpha),
         ),
-        // Crucial: Add status bar insets so the buttons don't hit the clock/battery
-//        windowInsets = WindowInsets.statusBars
     )
 }

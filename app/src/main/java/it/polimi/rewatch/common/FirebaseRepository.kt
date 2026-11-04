@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDateTime
 
-// 3. The Firebase Implementation
 /**
  * Repository to access Firebase methods and services
  */
@@ -168,7 +167,7 @@ class FirebaseRepository @Inject constructor(
     // Keep synchronous version for reads where user might not exist yet
     private fun currentUid(): String? = auth.currentUser?.uid
 
-    // --- Firestore helpers (unchanged pattern, but uses uid not email) ---
+    // --- Firestore helpers ---
     private fun requireUid(): String =
         auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
@@ -235,7 +234,7 @@ class FirebaseRepository @Inject constructor(
         batch.commit().await()
     }
 
-    // --- Observe (now reacts to any auth state, not just email) ---
+    // --- Observe ---
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun <T> observeMedia(
         sub: String,
@@ -248,7 +247,6 @@ class FirebaseRepository @Inject constructor(
                 -> {
                 callbackFlow {
                     val uid = currentUid() ?: run {
-                        // trySend(Result.success(emptyList()));
                         close()
                         return@callbackFlow
                     }
@@ -268,7 +266,6 @@ class FirebaseRepository @Inject constructor(
         }
     }
 
-    // Everything below is unchanged
     override val watchlistFlow = observeMedia("watchlist") { it.toWatchlistMedia() }
         .shareIn(appScope, SharingStarted.WhileSubscribed(5000), replay = 1)
     override val watchedFlow = observeMedia("watched") { it.toWatchedMedia() }

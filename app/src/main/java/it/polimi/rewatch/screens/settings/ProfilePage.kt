@@ -50,6 +50,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.lifecycle.HiltViewModel
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.common.AuthState
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.PersistRepository
@@ -111,13 +112,9 @@ fun ProfilePage(
 
     fun handleLogout() {
         vm.logout()
-        //actions.onClearAndNavigateToSettings()
     }
 
     Scaffold(
-//        topBar = {
-//            BasicTopBar("Profile", rememberVectorPainter(Icons.Default.Person), false) {}
-//        },
         modifier = Modifier
             .padding(
                 start = outerPadding.calculateStartPadding(LayoutDirection.Ltr),
@@ -186,8 +183,13 @@ fun ProfilePage(
                     Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Text("Rewatch-Android v0.9b", style = MaterialTheme.typography.bodySmall)
+                    Text("Rewatch-Android v${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall)
                     Text("Politecnico di Milano © 2026", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
         }

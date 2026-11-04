@@ -40,7 +40,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
             bottom = outerPadding.calculateBottomPadding(),
         ),
     ) {
-        // 1. Backdrop
+        // Backdrop
         item {
             val horizontalPadding =
                 outerPadding.calculateStartPadding(LayoutDirection.Ltr) + outerPadding.calculateEndPadding(
@@ -54,7 +54,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 shape = RoundedCornerShape(0.dp),
             )
         }
-        // 2. Header Section (Title, Poster, Info)
+        // Header Section (Title, Poster, Info)
         item {
             Row(
                 modifier = Modifier
@@ -85,7 +85,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 ) // Poster
             }
         }
-        // 3. Overview Section
+        // Overview Section
         item {
             Column(
                 Modifier.padding(horizontal = pad),
@@ -100,7 +100,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 }
             }
         }
-        // 4. Ratings
+        // Ratings
         item {
             Box(
                 Modifier
@@ -111,7 +111,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 SkeletonPart(width = 250.dp, height = 44.dp, shape = RoundedCornerShape(20.dp))
             }
         }
-        // 5. Tracking
+        // Tracking
         item {
             Column {
                 HorizontalDivider()
@@ -126,7 +126,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 }
             }
         }
-        // 6. Tabs
+        // Tabs
         item {
             Column {
                 HorizontalDivider()
@@ -143,7 +143,7 @@ fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
                 Spacer(Modifier.height(7.dp))
             }
         }
-        // 7. Cast List Items
+        // Cast List Items
         items(5) {
             Row(
                 Modifier

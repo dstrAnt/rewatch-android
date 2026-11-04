@@ -29,12 +29,11 @@ fun CustomLazyGrid(
     userScrollEnabled: Boolean = true,
     content: LazyGridScope.(Int) -> Unit,
 ) = BoxWithConstraints {
-    // 1. Define your adaptive minimum size
+    // Adaptive minimum cell size
     val minCellSize = 90.dp
-    // 2. Calculate the columns (Available Width / Min Cell Size)
+    // Calculate the columns (Available Width / Min Cell Size)
     // We use max(1, ...) to ensure it never crashes with 0 columns on tiny screens
     val calculatedColumnCount = max(1, (maxWidth / minCellSize).toInt())
-    // Now you have the exact integer to use however you want!
     LazyVerticalGrid(
         columns = Fixed(calculatedColumnCount),
         state = state,

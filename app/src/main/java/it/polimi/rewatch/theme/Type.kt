@@ -36,7 +36,7 @@ val GoogleSans =
                 FontVariation.weight(500),
             ),
         ),
-        // Map Bold (W700) - Just in case you need it later!
+        // Map Bold (W700)
         Font(
             resId = R.font.google,
             weight = FontWeight.Bold,
@@ -46,10 +46,10 @@ val GoogleSans =
         ),
     )
 
-// 1. Grab the default Material 3 baseline typography
+// Grab the default Material 3 baseline typography
 private val baseline = Typography()
 
-// 2. Map your font family to all styles, and only override your custom sizes
+// Map the font family to all styles and only override custom sizes
 val AppTypography = Typography(
     // Display
     displayLarge = baseline.displayLarge.copy(fontFamily = GoogleSans),
@@ -66,14 +66,14 @@ val AppTypography = Typography(
     // Body
     bodyLarge = baseline.bodyLarge.copy(
         fontFamily = GoogleSans,
-        fontSize = 14.sp, // From your original code (M3 default is 16.sp)
+        fontSize = 14.sp,
     ),
     bodyMedium = baseline.bodyMedium.copy(fontFamily = GoogleSans),
     bodySmall = baseline.bodySmall.copy(fontFamily = GoogleSans),
     // Label
     labelLarge = baseline.labelLarge.copy(
         fontFamily = GoogleSans,
-        fontSize = 15.sp, // From your original code (M3 default is 14.sp)
+        fontSize = 15.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
     ),

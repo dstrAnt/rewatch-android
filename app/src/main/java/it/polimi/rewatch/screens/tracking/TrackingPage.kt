@@ -145,9 +145,9 @@ fun TrackingPage(
             loadingContent = ::TrackingSkeleton,
         ) { currentList ->
             CustomLazyGrid(contentPadding = PaddingValues(bottom = 5.dp)) {
-                // 1. Route to the correct list and order
+                // Route to the correct list and order
                 val items = currentList.filter { it.id.type == type }
-                // 2. Sort and group the unified data structure
+                // Sort and group the unified data structure
                 val groupedItems = items.run {
                     when (activeOrder) {
                         SortOption.POPULARITY ->
@@ -210,7 +210,7 @@ fun TrackingPage(
                             }
                         }
                     } else
-                // 1. CHIPS DI ORDINAMENTO (Span completo)
+                // Sort chips (full span)
                     itemFullSpan {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -232,9 +232,9 @@ fun TrackingPage(
                             )
                         }
                     }
-                // 3. RENDERIZZAZIONE DELLA GRIGLIA A SEZIONI
+                // Grid sections
                 groupedItems.forEach { (header, items) ->
-                    // Titolo della sezione (span completo)
+                    // Section title (full span)
                     itemFullSpan {
                         Text(
                             text = header,
@@ -243,7 +243,7 @@ fun TrackingPage(
                             modifier = Modifier.padding(top = 16.dp, bottom = 4.dp, start = 4.dp),
                         )
                     }
-                    // Elementi della sezione
+                    // Section items
                     items(key = { "${it.id}" }, items = items) { media ->
                         if (selectedTab == WatchTabItem.WATCHED) PosterStarsItem(media, actions)
                         else PosterItem(media.mediaData, actions, modifier = Modifier.animateItem())

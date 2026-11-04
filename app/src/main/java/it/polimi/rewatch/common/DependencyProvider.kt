@@ -24,9 +24,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     @Provides
-    @Singleton // Ensures only one instance is ever created
+    @Singleton
     fun provideTmdbClient(): Tmdb3 {
-        // Hilt will call this function whenever something needs Tmdb3
         return Tmdb3(BuildConfig.TMDB_API_KEY)
     }
 }
@@ -37,8 +36,6 @@ object FirebaseModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
-        // This works perfectly even if you initialized Firebase manually
-        // in your Application class!
         return Firebase.auth
     }
 
@@ -64,7 +61,6 @@ abstract class RepositoryModule {
 @Retention(AnnotationRetention.RUNTIME)
 annotation class ApplicationScope
 
-// Module
 @Module
 @InstallIn(SingletonComponent::class)
 object CoroutineScopeModule {
