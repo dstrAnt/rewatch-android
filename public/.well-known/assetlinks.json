@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "it.polimi.rewatch",
+      "sha256_cert_fingerprints": [
+        "01:DF:F9:86:30:80:77:F9:A0:1E:D5:31:8A:F8:CE:11:27:65:C5:89:74:9D:F6:DA:94:88:5E:9B:36:05:79:7B",
+		"88:91:20:C1:46:AF:15:36:0B:E6:36:FF:D5:F2:A4:AC:B4:6A:AB:09:DA:D3:5C:4E:2D:2C:77:8B:1B:D0:CC:93"
+      ]
+    }
+  }
+]

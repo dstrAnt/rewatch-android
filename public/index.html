@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReWatch - Your Movie & TV Companion</title>
+    <meta name="description" content="ReWatch is the ultimate Android application for discovering and tracking movies and TV shows, synchronized seamlessly across your devices.">
+    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Material 3 Dark Theme Colors */
+            --app-primary: #D0BCFF; /* Purple80 */
+            --on-primary: #381E72;
+            --app-primary-dark: #6650a4; /* Purple40 */
+            --bg-dark: #1C1B1F;
+            --surface-dark: #2B2930;
+            --text-main: #E6E1E5;
+            --text-secondary: #CAC4D0;
+            --border-color: #49454F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--bg-dark);
+            padding: 1.25rem 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            padding: 6rem 5% 8rem 5%;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1.5px;
+            color: var(--text-main);
+        }
+
+        .hero-description {
+            font-size: clamp(1.125rem, 2vw, 1.25rem);
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .hero-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background-color: var(--app-primary);
+            color: var(--on-primary);
+            padding: 1.125rem 2.25rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: background-color 0.2s ease;
+        }
+
+        .hero-btn:hover {
+            background-color: #E8DEF8;
+        }
+
+        .hero-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .hero-app-icon {
+            width: 100%;
+            max-width: 160px;
+            height: auto;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+            margin-bottom: 2rem;
+        }
+
+        /* --- Features Section --- */
+        .features {
+            background-color: var(--bg-dark);
+            padding: 5rem 5%;
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-header h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+        }
+
+        .features-header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .feature-card {
+            background-color: var(--surface-dark);
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(208, 188, 255, 0.1);
+            color: var(--app-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--text-main);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--bg-dark);
+            padding: 3rem 5%;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        footer a {
+            color: inherit;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <div class="header-title">ReWatch</div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-container">
+            <img src="app_icon.png" alt="ReWatch App Icon" class="hero-app-icon">
+            <h1 class="hero-title">All your movies and TV shows, in one place.</h1>
+            <p class="hero-description">
+                ReWatch is the ultimate companion for your entertainment. Discover trending content from the TMDB database, maintain your personal watchlist, and keep track of everything you've watched—securely synchronized across all your devices.
+            </p>
+            <a href="https://github.com/dstrAnt/rewatch-android/releases/latest/download/ReWatch.apk" class="hero-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4483-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993s-.4482.9997-.9993.9997zm-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993s-.4482.9997-.9993.9997zm11.4045-6.02l1.9973-3.4592a.415.415 0 00-.1521-.5676.4162.4162 0 00-.5684.1524l-2.0195 3.498C15.6593 8.3093 13.9142 7.9712 12 7.9712c-1.9146 0-3.66.3381-5.1407.974l-2.0186-3.498a.415.415 0 00-.5684-.1524.4146.4146 0 00-.1522.5676l1.9965 3.4592C2.6517 11.2323.238 14.8021 0 18.995h24c-.238-4.193-2.6516-7.7627-6.1185-9.6736z"/>
+                </svg>
+                Download for Android
+            </a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="features-container">
+            <div class="features-header">
+                <h2>Designed for movie lovers.</h2>
+                <p>Everything you need to organize your digital entertainment experience seamlessly and securely.</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                        </svg>
+                    </div>
+                    <h3>Media Discovery</h3>
+                    <p>Browse trending, popular, and top-rated movies and TV shows instantly. Find exactly what you are looking for with powerful search functionality.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"/>
+                        </svg>
+                    </div>
+                    <h3>Personal Watchlist</h3>
+                    <p>Easily track "Watched" and "To Watch" items. Your lists are backed by real-time Firebase synchronization so you never lose your data.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <h3>Deep Insights</h3>
+                    <p>Dive into detailed information for any media, including comprehensive cast lists, crew details, and tailored recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Developed at Politecnico di Milano &bull; 2026 &bull; <a href="https://github.com/dstrAnt/rewatch-android">Source code on GitHub</a></p>
+        <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+    </footer>
+
+</body>
+</html>
