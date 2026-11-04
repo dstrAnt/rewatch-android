@@ -31,6 +31,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.test.espresso.action.ViewActions.swipeLeft
 import app.moviebase.tmdb.Tmdb3
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.BottomTabs
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
@@ -47,7 +48,7 @@ class SearchPageTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    val searchViewModel = SearchViewModel(TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+    val searchViewModel = SearchViewModel(TmdbRepository(Tmdb3(BuildConfig.TMDB_API_KEY)))
 
     @Before
     fun setup() {

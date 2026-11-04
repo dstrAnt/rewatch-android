@@ -1,0 +1,10 @@
+# Copy this file to local.properties and fill in the values. Git ignores local.properties.
+# Without these values the project still compiles, but the app does not work.
+
+# TMDB API key: https://www.themoviedb.org/settings/api
+TMDB_API_KEY=
+
+# Firebase console > Project settings > General > Your apps
+FIREBASE_API_KEY=
+FIREBASE_PROJECT_ID=
+FIREBASE_APP_ID=

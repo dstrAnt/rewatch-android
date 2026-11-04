@@ -52,22 +52,19 @@ for authentication and data synchronization.
 
 ### Prerequisites
 
-- Android Studio Ladybug (2024.2.1+) or newer
-- JDK 17
-- TMDB API Key
+- A recent Android Studio that supports AGP 9.2
+- JDK 21
+- A TMDB API key
+- A Firebase project with Firestore and Authentication (Anonymous and Email link sign-in)
 
 ### Configuration
 
-1. **API Key:** Add your TMDB API key to `local.properties`:
-   ```properties
-   TMDB_API_KEY=your_api_key_here
-   ```
+1. Copy `local.properties.example` to `local.properties`.
+2. Fill in your TMDB API key and the values of your Firebase Android app, which you can find in the
+   Firebase console under *Project settings > General > Your apps*.
+3. Sync Gradle and run the `:app` module.
 
-2. **Firebase:**
-    - Add your `google-services.json` to the `app/` directory.
-    - Enable Email/Password Auth and Firestore in your Firebase project.
-
-3. **Build:** Sync Gradle and run the `:app` module.
+Without these values the project still compiles, but the app does not work.
 
 ---
 

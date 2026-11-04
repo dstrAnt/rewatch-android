@@ -10,13 +10,24 @@ plugins {
     kotlin("plugin.serialization")
 
     id("jacoco")
-//    id("com.google.gms.google-services")
 }
 
 val localProperties = Properties()
 val localPropertiesFile: File = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(localPropertiesFile.inputStream())
+}
+
+/**
+ * Reads a value from local.properties (see local.properties.example). A missing value becomes an
+ * empty string with a warning, so the project still compiles after a fresh clone.
+ */
+fun localProperty(name: String): String {
+    val value = localProperties.getProperty(name)
+    if (value.isNullOrBlank()) {
+        logger.warn("$name is missing from local.properties: the app will compile but will not work.")
+    }
+    return value.orEmpty()
 }
 
 android {
@@ -36,11 +47,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 //        testInstrumentationRunner = "it.polimi.rewatch.CustomTestRunner"
-        buildConfigField(
-            "String",
-            "TMDB_API_KEY",
-            "\"${localProperties.getProperty("TMDB_API_KEY")}\""
-        )
+        listOf("TMDB_API_KEY", "FIREBASE_API_KEY", "FIREBASE_PROJECT_ID", "FIREBASE_APP_ID").forEach { name ->
+            buildConfigField("String", name, "\"${localProperty(name)}\"")
+        }
     }
 
     buildTypes {

@@ -10,10 +10,9 @@ class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val options = FirebaseOptions.Builder()
-            .setProjectId("app-rewatch")
-            .setApplicationId("1:57189479251:android:23c118b07b08572eede7a6")   // from google-services.json
-            .setApiKey("***REMOVED_FIREBASE_KEY***")                      // from google-services.json
-            .setStorageBucket("app-rewatch.appspot.com")
+            .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
+            .setApplicationId(BuildConfig.FIREBASE_APP_ID)
+            .setApiKey(BuildConfig.FIREBASE_API_KEY)
             .build()
 
         FirebaseApp.initializeApp(this, options)

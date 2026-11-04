@@ -27,6 +27,7 @@ import app.moviebase.tmdb.model.TmdbPersonDetail
 import app.moviebase.tmdb.model.TmdbPersonImages
 import app.moviebase.tmdb.model.TmdbPersonMovieCredits
 import app.moviebase.tmdb.model.TmdbPersonShowCredits
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.model.PersonId
@@ -61,7 +62,7 @@ class PersonPageTest {
 
     val defaultOuterPadding = PaddingValues();
 
-    val defaultPersonViewModel = PersonViewModel(personId = defaultPersonId, TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+    val defaultPersonViewModel = PersonViewModel(personId = defaultPersonId, TmdbRepository(Tmdb3(BuildConfig.TMDB_API_KEY)))
 
     fun defaultSetup() {
         composeTestRule.setContent {

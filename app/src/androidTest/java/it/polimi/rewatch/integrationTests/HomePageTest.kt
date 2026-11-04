@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.espresso.action.ViewActions.swipeUp
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.TmdbClientConfig
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
 import it.polimi.rewatch.model.MediaId
@@ -52,7 +53,7 @@ class HomePageTest {
 
     val defaultStartTab = HomeTabItem.MOVIES
 
-    val tmdb = Tmdb3("***REMOVED_TMDB_KEY***")
+    val tmdb = Tmdb3(BuildConfig.TMDB_API_KEY)
 
     val repository = TmdbRepository(tmdb)
 

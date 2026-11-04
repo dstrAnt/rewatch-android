@@ -19,6 +19,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import app.moviebase.tmdb.Tmdb3
 import app.moviebase.tmdb.model.TmdbShow
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.FakeRepository.Companion.empty
 import it.polimi.rewatch.common.NavigationActions
@@ -91,7 +92,7 @@ class TrackingPageTest {
         // Ensuring that item enrichment does not happen during tests
         fakeRepo.allowEnrichment = false
 
-        val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")), persistRepo = fakeRepo)
+        val trackingViewModel = TrackingViewModel(tmdbRepo = TmdbRepository(Tmdb3(BuildConfig.TMDB_API_KEY)), persistRepo = fakeRepo)
 
         composeTestRule.setContent {
             TrackingPage(actions = actions, outerPadding = outerPadding, type = mediaType, viewModel = trackingViewModel)

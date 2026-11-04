@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import app.moviebase.tmdb.Tmdb3
+import it.polimi.rewatch.BuildConfig
 import it.polimi.rewatch.common.FakeRepository
 import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.common.TmdbRepository
@@ -40,7 +41,7 @@ internal class ThemeTesting {
     // Setup for Dark/Light Mode
     fun setup(dark: Boolean) {
 
-        mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+        mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3(BuildConfig.TMDB_API_KEY)))
 
         composeTestRule.setContent {
             RewatchTheme(darkTheme = dark) {
@@ -52,7 +53,7 @@ internal class ThemeTesting {
     // Setup for Dark/Light Mode without Dynamic Coloring
     fun setupNoDynamicColor(dark: Boolean) {
 
-        mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3("***REMOVED_TMDB_KEY***")))
+        mediaViewModel = MediaViewModel(mediaId = defaultMedia, persistRepo = fakeRepo, repository = TmdbRepository(Tmdb3(BuildConfig.TMDB_API_KEY)))
 
         composeTestRule.setContent {
             RewatchTheme(darkTheme = dark, dynamicColor = false) {
