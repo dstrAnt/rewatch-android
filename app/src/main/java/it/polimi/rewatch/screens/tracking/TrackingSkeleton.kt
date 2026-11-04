@@ -39,7 +39,6 @@ fun TrackingSkeleton(modifier: Modifier = Modifier) {
                         shape = RoundedCornerShape(5.dp),
                     )
                 }
-
             }
         }
 

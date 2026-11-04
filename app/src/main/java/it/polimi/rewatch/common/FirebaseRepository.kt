@@ -14,6 +14,7 @@ import it.polimi.rewatch.model.TrackingMediaDto
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
+import java.time.LocalDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
@@ -26,7 +27,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import java.time.LocalDateTime
 
 /**
  * Repository to access Firebase methods and services
@@ -117,11 +117,7 @@ class FirebaseRepository @Inject constructor(
     /**
      * Called after the user chooses merge or discard on a collision.
      */
-    override suspend fun resolveCollision(
-        anonymousUid: String,
-        credential: AuthCredential,
-        merge: Boolean,
-    ): Result<Unit> = runCatching {
+    override suspend fun resolveCollision(anonymousUid: String, credential: AuthCredential, merge: Boolean): Result<Unit> = runCatching {
         val anonUser = auth.currentUser
             ?: throw IllegalStateException("No current user")
 
@@ -168,14 +164,11 @@ class FirebaseRepository @Inject constructor(
     private fun currentUid(): String? = auth.currentUser?.uid
 
     // --- Firestore helpers ---
-    private fun requireUid(): String =
-        auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
+    private fun requireUid(): String = auth.currentUser?.uid ?: throw IllegalStateException("User not logged in")
 
-    private fun userDocRef(uid: String = requireUid()) =
-        db.collection("users").document(uid)
+    private fun userDocRef(uid: String = requireUid()) = db.collection("users").document(uid)
 
-    private fun collectionRef(sub: String, uid: String): CollectionReference =
-        db.collection("users").document(uid).collection(sub)
+    private fun collectionRef(sub: String, uid: String): CollectionReference = db.collection("users").document(uid).collection(sub)
 
     /**
      * Ensures a Firebase user exists (anonymous if needed).
@@ -198,17 +191,15 @@ class FirebaseRepository @Inject constructor(
         }
     }
 
-    private fun setDoc(sub: String, dto: TrackingMediaDto) =
-        launchWrite("set ${dto.documentId} in $sub") {
-            val uid = ensureAuthenticated()
-            collectionRef(sub, uid).document(dto.documentId).set(dto).await()
-        }
+    private fun setDoc(sub: String, dto: TrackingMediaDto) = launchWrite("set ${dto.documentId} in $sub") {
+        val uid = ensureAuthenticated()
+        collectionRef(sub, uid).document(dto.documentId).set(dto).await()
+    }
 
-    private fun deleteDoc(sub: String, id: MediaId) =
-        launchWrite("delete ${id.getUid()} from $sub") {
-            val uid = ensureAuthenticated()
-            collectionRef(sub, uid).document(id.getUid()).delete().await()
-        }
+    private fun deleteDoc(sub: String, id: MediaId) = launchWrite("delete ${id.getUid()} from $sub") {
+        val uid = ensureAuthenticated()
+        collectionRef(sub, uid).document(id.getUid()).delete().await()
+    }
 
     // --- Data migration helpers ---
     private suspend fun copyUserData(fromUid: String, toUid: String) {
@@ -236,15 +227,13 @@ class FirebaseRepository @Inject constructor(
 
     // --- Observe ---
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun <T> observeMedia(
-        sub: String,
-        mapper: (TrackingMediaDto) -> T,
-    ): Flow<Result<List<T>>> = authState.flatMapLatest { state ->
+    private fun <T> observeMedia(sub: String, mapper: (TrackingMediaDto) -> T): Flow<Result<List<T>>> = authState.flatMapLatest { state ->
         when (state) {
             is AuthState.SignedOut -> flowOf(Result.success(emptyList()))
+
             is AuthState.Anonymous,
             is AuthState.Authenticated,
-                -> {
+            -> {
                 callbackFlow {
                     val uid = currentUid() ?: run {
                         close()
@@ -254,6 +243,7 @@ class FirebaseRepository @Inject constructor(
                     val registration = ref.addSnapshotListener { snapshot, error ->
                         when {
                             error != null -> trySend(Result.failure(error))
+
                             else -> {
                                 val models = snapshot?.toObjects(TrackingMediaDto::class.java)?.map(mapper)
                                 models?.let { trySend(Result.success(it)) }
@@ -275,8 +265,7 @@ class FirebaseRepository @Inject constructor(
 
     override fun addToWatchlist(id: MediaId) = setDoc("watchlist", TrackingMediaDto(WatchlistMedia(id)))
     override fun removeFromWatchlist(id: MediaId) = deleteDoc("watchlist", id)
-    override fun toggleWatchlist(id: MediaId) =
-        if (currentWatchlist.any { it.id == id }) removeFromWatchlist(id) else addToWatchlist(id)
+    override fun toggleWatchlist(id: MediaId) = if (currentWatchlist.any { it.id == id }) removeFromWatchlist(id) else addToWatchlist(id)
 
     override fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) =
         setDoc("watched", TrackingMediaDto(WatchedMedia(id, rating = rating, date = date)))
@@ -287,7 +276,8 @@ class FirebaseRepository @Inject constructor(
         if (existing != null) {
             if (existing.rating == 0.0f) removeFromWatchedList(id)
         } else {
-            addToWatchedList(id, 0.0f, LocalDateTime.now()); removeFromWatchlist(id)
+            addToWatchedList(id, 0.0f, LocalDateTime.now())
+            removeFromWatchlist(id)
         }
     }
 

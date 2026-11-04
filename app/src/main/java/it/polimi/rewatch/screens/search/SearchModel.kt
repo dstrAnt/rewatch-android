@@ -22,19 +22,17 @@ import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.withContext
 
 enum class SearchType(val title: String) {
-    ALL("All"), MOVIES("Movies"), TV("Tv Shows"), CAST("People"),
+    ALL("All"),
+    MOVIES("Movies"),
+    TV("Tv Shows"),
+    CAST("People"),
 }
 
-data class SearchUiState(
-    val query: String = "",
-    val results: List<PosterInfo>,
-)
+data class SearchUiState(val query: String = "", val results: List<PosterInfo>)
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class SearchViewModel @Inject constructor(
-    private val repository: TmdbRepository,
-) : ViewModel() {
+class SearchViewModel @Inject constructor(private val repository: TmdbRepository) : ViewModel() {
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
     private val _mediaType = MutableStateFlow(SearchType.ALL)

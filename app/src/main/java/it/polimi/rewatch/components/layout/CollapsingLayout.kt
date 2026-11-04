@@ -28,8 +28,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import it.polimi.rewatch.common.headerColor
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 /**
  * [CollapsingLayout] allows to create a top bar that hides as the user scrolls down
@@ -52,8 +52,10 @@ fun CollapsingLayout(
     val topBarOffsetHeightPx by remember {
         derivedStateOf {
             if (listState.firstVisibleItemIndex == 0) {
-                -(listState.firstVisibleItemScrollOffset.toFloat()
-                    .coerceAtMost(collapsingHeightPx))
+                -(
+                    listState.firstVisibleItemScrollOffset.toFloat()
+                        .coerceAtMost(collapsingHeightPx)
+                    )
             } else {
                 -collapsingHeightPx
             }

@@ -67,15 +67,15 @@ import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.screens.tracking.getRatingHeader
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 // From LocalDate to Long (milliseconds, UTC)
 fun LocalDate.toMillis(): Long {
@@ -90,15 +90,12 @@ fun Long.toLocalDate(): LocalDate {
 }
 
 @HiltViewModel(assistedFactory = BottomSheetViewModel.Factory::class)
-class BottomSheetViewModel @AssistedInject constructor(
-    @Assisted private val id: MediaId,
-    val persistRepo: PersistRepository,
-) : ViewModel() {
+class BottomSheetViewModel @AssistedInject constructor(@Assisted private val id: MediaId, val persistRepo: PersistRepository) :
+    ViewModel() {
     @AssistedFactory
     interface Factory {
         fun create(id: MediaId): BottomSheetViewModel
     }
-
 
     val watchedItem = persistRepo.watchedFlow
         .map { result -> result.getOrNull()?.find { it.id == id } }
@@ -172,7 +169,7 @@ fun BottomSheet(
         scrimColor = Color.Black.copy(alpha = 0.8f),
         sheetState = sheetState,
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        modifier = Modifier.testTag("RewatchBottomSheet")
+        modifier = Modifier.testTag("RewatchBottomSheet"),
     ) {
         rememberOverscrollEffect()
 
@@ -248,12 +245,8 @@ fun BottomSheet(
 
 // --- Extracted Stateless Components ---
 @Composable
-private fun BottomSheetHeader(
-    title: String,
-    releaseDate: String?,
-    onClick: () -> Unit,
-) {
-    Column (modifier = Modifier.testTag("bottomSheetHeader")){
+private fun BottomSheetHeader(title: String, releaseDate: String?, onClick: () -> Unit) {
+    Column(modifier = Modifier.testTag("bottomSheetHeader")) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleMedium,
@@ -266,12 +259,7 @@ private fun BottomSheetHeader(
 }
 
 @Composable
-private fun BottomSheetActions(
-    isWatched: Boolean,
-    isWatchlisted: Boolean,
-    onWatchClick: () -> Unit,
-    onWatchlistClick: () -> Unit,
-) = Row(
+private fun BottomSheetActions(isWatched: Boolean, isWatchlisted: Boolean, onWatchClick: () -> Unit, onWatchlistClick: () -> Unit) = Row(
     modifier = Modifier.fillMaxWidth().testTag("bottomSheetActions"),
     horizontalArrangement = Arrangement.SpaceAround,
 ) {
@@ -288,10 +276,7 @@ private fun BottomSheetActions(
 }
 
 @Composable
-private fun ColumnScope.BottomSheetRating(
-    rating: Float,
-    onRatingChanged: (Float) -> Unit,
-) {
+private fun ColumnScope.BottomSheetRating(rating: Float, onRatingChanged: (Float) -> Unit) {
     StarRating(
         rating = rating,
         starSize = 45.dp,
@@ -308,11 +293,7 @@ private fun ColumnScope.BottomSheetRating(
 }
 
 @Composable
-private fun BottomSheetWatchStatus(
-    isWatched: Boolean,
-    watchDate: String?,
-    onDateClick: () -> Unit,
-) {
+private fun BottomSheetWatchStatus(isWatched: Boolean, watchDate: String?, onDateClick: () -> Unit) {
     if (isWatched) {
         Row {
             Text("Content watched on ")
@@ -329,11 +310,7 @@ private fun BottomSheetWatchStatus(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun WatchDatePickerDialog(
-    initialSelectedDateMillis: Long,
-    onDismiss: () -> Unit,
-    onDateSelected: (Long) -> Unit,
-) {
+private fun WatchDatePickerDialog(initialSelectedDateMillis: Long, onDismiss: () -> Unit, onDateSelected: (Long) -> Unit) {
     val tomorrowMillis = remember {
         LocalDate.now().plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
     }
@@ -361,7 +338,7 @@ private fun WatchDatePickerDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Dismiss") }
         },
-        modifier = Modifier.testTag("datePickerDialog")
+        modifier = Modifier.testTag("datePickerDialog"),
     ) {
         DatePicker(state = datePickerState)
     }
@@ -369,10 +346,7 @@ private fun WatchDatePickerDialog(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DismissableSnackbarHost(
-    hostState: SnackbarHostState,
-    modifier: Modifier = Modifier,
-) {
+private fun DismissableSnackbarHost(hostState: SnackbarHostState, modifier: Modifier = Modifier) {
     SnackbarHost(
         hostState = hostState,
         modifier = modifier,
@@ -394,11 +368,7 @@ private fun DismissableSnackbarHost(
 }
 
 @Composable
-fun SheetIconButton(
-    onClick: () -> Unit,
-    icon: ImageVector,
-    label: String,
-) {
+fun SheetIconButton(onClick: () -> Unit, icon: ImageVector, label: String) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

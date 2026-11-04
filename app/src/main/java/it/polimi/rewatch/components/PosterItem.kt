@@ -31,7 +31,6 @@ import it.polimi.rewatch.common.NavigationActions
 import it.polimi.rewatch.model.MediaId
 import it.polimi.rewatch.model.PosterInfo
 
-
 /**
  * A standard UI component for displaying media posters in a grid or list.
  *
@@ -53,11 +52,7 @@ import it.polimi.rewatch.model.PosterInfo
  * @param modifier The [Modifier] to be applied to the outer container.
  */
 @Composable
-fun PosterItem(
-    media: PosterInfo,
-    actions: NavigationActions,
-    modifier: Modifier = Modifier,
-) = PosterItem(
+fun PosterItem(media: PosterInfo, actions: NavigationActions, modifier: Modifier = Modifier) = PosterItem(
     posterPath = media.posterPath,
     title = media.title,
     modifier = modifier,
@@ -118,4 +113,3 @@ private fun PosterItem(
         )
     }
 }
-

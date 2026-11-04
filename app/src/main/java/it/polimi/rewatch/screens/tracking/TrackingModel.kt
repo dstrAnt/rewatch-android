@@ -15,16 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
-data class TrackingData(
-    val watchlist: List<WatchlistMedia>,
-    val watched: List<WatchedMedia>,
-)
+data class TrackingData(val watchlist: List<WatchlistMedia>, val watched: List<WatchedMedia>)
 
 @HiltViewModel
-class TrackingViewModel @Inject constructor(
-    private val tmdbRepo: TmdbRepository,
-    private val persistRepo: PersistRepository,
-) : ViewModel() {
+class TrackingViewModel @Inject constructor(private val tmdbRepo: TmdbRepository, private val persistRepo: PersistRepository) :
+    ViewModel() {
 
     val watchlist = persistRepo.watchlistFlow
         .map { result ->
@@ -60,7 +55,7 @@ class TrackingViewModel @Inject constructor(
                 },
                 onFailure = { error ->
                     UiState.Error(error.message ?: "Unknown error")
-                }
+                },
             )
         }
         .stateIn(
@@ -69,4 +64,3 @@ class TrackingViewModel @Inject constructor(
             UiState.Loading, // Initial value is Loading, not an empty list
         )
 }
-

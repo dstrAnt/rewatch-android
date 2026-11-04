@@ -99,7 +99,6 @@ class MainActivity : ComponentActivity() {
 
 fun <T> animationSpec() = tween<T>(durationMillis = 300)
 
-
 @Composable
 fun RewatchApp() {
     val backStack = rememberNavBackStack(HomeNavTabs)
@@ -150,14 +149,12 @@ fun RewatchApp() {
         }
     }
 
-
-
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
                 visible = isBottomBarVisible,
                 enter = slideInVertically(initialOffsetY = { it }, animationSpec = animationSpec()), // Slides in from the bottom
-                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec()),   // Slides out to the bottom
+                exit = slideOutVertically(targetOffsetY = { it }, animationSpec = animationSpec()), // Slides out to the bottom
             ) {
                 BottomBar(
                     currentTab = pagerState.currentBottomTab(),
@@ -322,10 +319,7 @@ private fun Overlays(
 }
 
 @Composable
-private fun BottomBar(
-    currentTab: BottomTabs,
-    onTabSelected: (BottomTabs) -> Unit,
-) {
+private fun BottomBar(currentTab: BottomTabs, onTabSelected: (BottomTabs) -> Unit) {
     val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     NavigationBar(
         modifier = Modifier.height(65.dp + systemBarHeight),
@@ -386,7 +380,8 @@ enum class BottomTabs(val label: String, val iconRes: Int? = null, val iconVecto
     SEARCH("Search", iconVector = Icons.Default.Search),
     MOVIE("Movies", iconRes = R.drawable.movie),
     TV("Tv Shows", iconRes = R.drawable.tv),
-    PROFILE("Profile", iconVector = Icons.Default.Person);
+    PROFILE("Profile", iconVector = Icons.Default.Person),
+    ;
 
     @Composable
     fun getPainter(): Painter = when {
@@ -397,7 +392,6 @@ enum class BottomTabs(val label: String, val iconRes: Int? = null, val iconVecto
 
     val iconSize: Dp get() = if (iconRes != null) 20.dp else 24.dp
 }
-
 
 fun PagerState.currentBottomTab(): BottomTabs = BottomTabs.entries[currentPage]
 suspend fun PagerState.scrollToBottomTab(tab: BottomTabs) = scrollToPage(BottomTabs.entries.indexOf(tab))

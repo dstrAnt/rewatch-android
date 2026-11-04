@@ -25,7 +25,6 @@ import it.polimi.rewatch.common.SkeletonPart
 import it.polimi.rewatch.common.layoutEvade
 import it.polimi.rewatch.common.relativeMove
 
-
 @Composable
 fun MovieSkeleton(outerPadding: PaddingValues = PaddingValues(0.dp)) {
     val pad = 16.dp

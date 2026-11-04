@@ -112,7 +112,8 @@ fun PersonSkeleton() {
                                 .padding(horizontal = 16.dp)
                                 .fillMaxWidth(),
                         ) {
-                            repeat(3) { // 3 lines of bio text
+                            repeat(3) {
+                                // 3 lines of bio text
                                 SkeletonPart(
                                     modifier = Modifier
                                         .fillMaxWidth()

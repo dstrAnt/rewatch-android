@@ -1,6 +1,5 @@
 package it.polimi.rewatch.common
 
-
 import app.moviebase.tmdb.model.TmdbShowDetail
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.EmailAuthProvider
@@ -12,13 +11,12 @@ import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.time.LocalDate
+import java.time.LocalDateTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import java.time.LocalDate
-import java.time.LocalDateTime
-
 
 interface PersistRepository {
     suspend fun sendSignInLink(email: String): Result<Unit>
@@ -83,28 +81,26 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 
     init {
-        if(!emptyWatchList) {
+        if (!emptyWatchList) {
             _watchlistFlow.tryEmit(Result.success(fakeWatchlist))
-        }
-        else{
+        } else {
             _watchlistFlow.tryEmit(Result.success(emptyList()))
         }
         if (!emptyWatchedList) {
             _watchedFlow.tryEmit(Result.success(fakeWatch))
-        }
-        else{
+        } else {
             _watchedFlow.tryEmit(Result.success(emptyList()))
         }
     }
 
     override suspend fun sendSignInLink(email: String): Result<Unit> {
-        if(loadStateTracking)
+        if (loadStateTracking)
             delay(5000)
         return if (email.equals(defaultTestEmail)) Result.failure(exception = Throwable()) else Result.success(Unit)
     }
 
     override suspend fun verifySignInLink(email: String, link: String): Result<LinkResult> {
-        if(loadStateTracking)
+        if (loadStateTracking)
             delay(5000)
         _email = email
         _authState.tryEmit(AuthState.Authenticated("", email))
@@ -117,7 +113,7 @@ class FakeRepository @Inject constructor() : PersistRepository {
                 else -> 1111
             }
             if (email.equals(defaultMergeTestEmail) || email.equals(defaultMergeTestEmail2))
-                  return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredential("hello", "world")))
+                return Result.success(LinkResult.Collision(choice.toString(), EmailAuthProvider.getCredential("hello", "world")))
             else return Result.success(LinkResult.SignedIn)
         }
     }
@@ -132,14 +128,10 @@ class FakeRepository @Inject constructor() : PersistRepository {
         return Result.success(Unit)
     }
 
-    override suspend fun resolveCollision(
-        anonymousUid: String,
-        credential: AuthCredential,
-        merge: Boolean,
-    ): Result<Unit> {
-        if(loadStateTracking)
+    override suspend fun resolveCollision(anonymousUid: String, credential: AuthCredential, merge: Boolean): Result<Unit> {
+        if (loadStateTracking)
             delay(5000)
-        return if(anonymousUid.equals("0")) Result.success(Unit) else Result.failure(Throwable())
+        return if (anonymousUid.equals("0")) Result.success(Unit) else Result.failure(Throwable())
     }
 
     private inline fun <T> MutableSharedFlow<Result<List<T>>>.updateList(crossinline transform: (List<T>) -> List<T>) {
@@ -158,21 +150,14 @@ class FakeRepository @Inject constructor() : PersistRepository {
         updateList { currentList -> currentList.filterNot(condition) }
     }
 
-    override fun addToWatchlist(id: MediaId) =
-        _watchlistFlow.addItem(WatchlistMedia(id))
+    override fun addToWatchlist(id: MediaId) = _watchlistFlow.addItem(WatchlistMedia(id))
 
-
-    override fun removeFromWatchlist(id: MediaId) =
-        _watchlistFlow.removeItem { it.id == id }
-
-
+    override fun removeFromWatchlist(id: MediaId) = _watchlistFlow.removeItem { it.id == id }
 
     override fun addToWatchedList(id: MediaId, rating: Float, date: LocalDateTime) =
         _watchedFlow.addItem(WatchedMedia(id, rating = rating, date = date))
 
-
-    override fun removeFromWatchedList(id: MediaId) =
-        _watchedFlow.removeItem { it.id == id }
+    override fun removeFromWatchedList(id: MediaId) = _watchedFlow.removeItem { it.id == id }
 
     override fun setRating(id: MediaId, rating: Float) {
         _watchedFlow.updateList { currentList ->
@@ -222,7 +207,7 @@ class FakeRepository @Inject constructor() : PersistRepository {
     }
 }
 
-fun shortLocalDateTime(year: Int, month: Int, day: Int) : LocalDateTime{
+fun shortLocalDateTime(year: Int, month: Int, day: Int): LocalDateTime {
     return LocalDateTime.of(year, month, day, 0, 0)
 }
 
@@ -231,66 +216,66 @@ val fakeWatchlist = listOf(
         id = MovieId(550),
     ),
     WatchlistMedia(
-        id = TvId(1390), mediaData = PosterInfo(TmdbShowDetail(popularity = 5000f))
+        id = TvId(1390), mediaData = PosterInfo(TmdbShowDetail(popularity = 5000f)),
     ),
     WatchlistMedia(
         id = TvId(1393),
         mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers", voteAverage = 5.5f)),
-        date = shortLocalDateTime(2026, 2, 23)
+        date = shortLocalDateTime(2026, 2, 23),
     ),
     WatchlistMedia(
         id = MovieId(1393),
         mediaData = PosterInfo(TmdbShowDetail(popularity = 50f, name = "Scavengers - The Movie", voteAverage = 7.0f)),
-        date = shortLocalDateTime(2026, 2, 23)
+        date = shortLocalDateTime(2026, 2, 23),
     ),
     WatchlistMedia(
-        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 600f, voteAverage = 7.2f, name = "Feelings",))
+        id = TvId(1395), mediaData = PosterInfo(TmdbShowDetail(popularity = 600f, voteAverage = 7.2f, name = "Feelings")),
     ),
     WatchlistMedia(
-        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders"))
+        id = MovieId(83533), mediaData = PosterInfo(TmdbShowDetail(popularity = 350f, voteAverage = 2.5f, name = "Alice in the Wonders")),
     ),
     WatchlistMedia(
         id = MovieId(1317288),
-        mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 8.5f, name = "Betamax - The Return"))
+        mediaData = PosterInfo(TmdbShowDetail(popularity = 2000f, voteAverage = 8.5f, name = "Betamax - The Return")),
     ),
     WatchlistMedia(
-        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f, name = "1984"))
+        id = MovieId(1317287), mediaData = PosterInfo(TmdbShowDetail(popularity = 15f, voteAverage = 5.0f, name = "1984")),
     ),
     WatchlistMedia(
         id = MovieId(1317289), mediaData = PosterInfo(TmdbShowDetail(popularity = 30f, voteAverage = 4.0f)),
-        date = shortLocalDateTime(2026, 5, 18)
+        date = shortLocalDateTime(2026, 5, 18),
     ),
     WatchlistMedia(
-        id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f, voteAverage = 3.5f, name = "Tito Puente"))
+        id = MovieId(551), mediaData = PosterInfo(TmdbShowDetail(popularity = 500f, voteAverage = 3.5f, name = "Tito Puente")),
     ),
     WatchlistMedia(
-        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f,)),
-        date = shortLocalDateTime(2025, 12, 2)
+        id = MovieId(83532), mediaData = PosterInfo(TmdbShowDetail(popularity = 80f, voteAverage = 1.5f)),
+        date = shortLocalDateTime(2025, 12, 2),
     ),
     WatchlistMedia(
         id = TvId(1394), mediaData = PosterInfo(TmdbShowDetail(popularity = 8f, name = "Chickens vs Space")),
-        date = shortLocalDateTime(2025, 11, 3)
+        date = shortLocalDateTime(2025, 11, 3),
     ),
     WatchlistMedia(
-        id = MovieId(99396), mediaData = PosterInfo(TmdbShowDetail(popularity = 8000f))
+        id = MovieId(99396), mediaData = PosterInfo(TmdbShowDetail(popularity = 8000f)),
     ),
     WatchlistMedia(
-        id = MovieId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f, voteAverage = 0f))
+        id = MovieId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f, voteAverage = 0f)),
     ),
     WatchlistMedia(
         id = TvId(93405), mediaData = PosterInfo(TmdbShowDetail(popularity = 1100f, voteAverage = 8.7f, name = "Nelson Mandela")),
         date = LocalDateTime.of(LocalDate.now().year, 5, 14, 0, 0),
     ),
     WatchlistMedia(
-        id = TvId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f,  voteAverage = 2.2f, name = "Tennis Origins"))
-    )
+        id = TvId(99394), mediaData = PosterInfo(TmdbShowDetail(popularity = 800f, voteAverage = 2.2f, name = "Tennis Origins")),
+    ),
 )
 val fakeWatch = listOf(
     WatchedMedia(
         id = TvId(1390),
         rating = 8.5f,
         date = LocalDateTime.of(2026, 3, 23, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail( name = "William Tiafoe"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "William Tiafoe")),
     ),
     WatchedMedia(
         id = TvId(1399),
@@ -301,31 +286,31 @@ val fakeWatch = listOf(
         id = TvId(1393),
         rating = 1.5f,
         date = LocalDateTime.of(2024, 3, 25, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Super Portrait of A Man, a Legend"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Super Portrait of A Man, a Legend")),
     ),
     WatchedMedia(
         id = MovieId(10392),
         rating = 0f,
         date = LocalDateTime.of(2024, 3, 25, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "The Real(ity) Hero"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "The Real(ity) Hero")),
     ),
     WatchedMedia(
         id = MovieId(549),
         rating = 2.0f,
         date = LocalDateTime.of(LocalDate.now().year, 4, 23, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "A Magic World, A Hope"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "A Magic World, A Hope")),
     ),
     WatchedMedia(
         id = MovieId(83541),
         rating = 8.5f,
         date = LocalDateTime.of(2026, 2, 23, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Be that one"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Be that one")),
     ),
     WatchedMedia(
         id = MovieId(83540),
         rating = 5.0f,
         date = LocalDateTime.of(2026, 4, 23, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Sarah, Where Are U?"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Sarah, Where Are U?")),
     ),
     WatchedMedia(
         id = TvId(1394),
@@ -336,19 +321,19 @@ val fakeWatch = listOf(
         id = TvId(1319),
         rating = 1.0f,
         date = LocalDateTime.of(2026, 6, 2, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Felix Escalibur"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Felix Escalibur")),
     ),
     WatchedMedia(
         id = TvId(1395),
         rating = 9.0f,
         date = LocalDateTime.of(LocalDate.now().year, 3, 13, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Casper The Ghost"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Casper The Ghost")),
     ),
     WatchedMedia(
         id = TvId(1349),
         rating = 7.5f,
         date = LocalDateTime.of(2026, 3, 10, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(name = "Naruto - The Great Return"))
+        mediaData = PosterInfo(TmdbShowDetail(name = "Naruto - The Great Return")),
     ),
     WatchedMedia(
         id = MovieId(8349),
@@ -359,7 +344,7 @@ val fakeWatch = listOf(
         id = TvId(1329),
         rating = 7.2f,
         date = LocalDateTime.of(2026, 6, 7, 0, 0),
-        mediaData = PosterInfo(TmdbShowDetail(voteAverage = 2.0f, name = "1000 Lives... And Beyond"))
+        mediaData = PosterInfo(TmdbShowDetail(voteAverage = 2.0f, name = "1000 Lives... And Beyond")),
     ),
     WatchedMedia(
         id = TvId(1339),
@@ -372,4 +357,3 @@ val fakeWatch = listOf(
         date = LocalDateTime.of(LocalDate.now().year, LocalDate.now().month, 17, 0, 0),
     ),
 )
-

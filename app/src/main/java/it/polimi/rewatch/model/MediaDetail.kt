@@ -47,9 +47,9 @@ data class MediaDetail(
         get() {
             if (specificDetails !is MediaSpecificDetails.Movie) return false
             return specificDetails.genres.isNotEmpty() ||
-                    specificDetails.budget > 0 ||
-                    specificDetails.releaseDate != null ||
-                    !specificDetails.productionCompanies.isNullOrEmpty()
+                specificDetails.budget > 0 ||
+                specificDetails.releaseDate != null ||
+                !specificDetails.productionCompanies.isNullOrEmpty()
         }
 
     // Constructor for Movie Data
@@ -58,7 +58,9 @@ data class MediaDetail(
         posterPath = movie.posterPath,
         overview = movie.overview,
         director = movie.credits?.crew?.find { it.job == "Director" }?.name,
-        certification = movie.releaseDates?.results?.find { it.iso3166 == "US" }?.releaseDates?.find { it.certification != "" }?.certification,
+        certification = movie.releaseDates?.results?.find {
+            it.iso3166 == "US"
+        }?.releaseDates?.find { it.certification != "" }?.certification,
         watchProviders = movie.watchProviders?.results.orEmpty(),
         rating = movie.voteAverage,
         reviews = movie.reviews?.results.orEmpty(),
@@ -162,7 +164,8 @@ data class MediaDetail(
 // Sealed interface for the parts that differ
 sealed interface MediaSpecificDetails {
     data class Movie(
-        val budget: Long, val revenue: Long,
+        val budget: Long,
+        val revenue: Long,
         val runtime: Int?,
         val productionCompanies: List<TmdbCompany>?,
         val productionCountries: List<TmdbCountry>?,
@@ -172,20 +175,12 @@ sealed interface MediaSpecificDetails {
 
     data class Show(val status: TmdbShowStatus?, val seasons: List<TmdbSeason>) : MediaSpecificDetails
 
-    data class Episode(
-        val season: Int,
-        val episodeNumber: Int,
-    ) : MediaSpecificDetails
+    data class Episode(val season: Int, val episodeNumber: Int) : MediaSpecificDetails
 
-    data class Season(
-        val episodes: List<TmdbEpisode>?,
-    ) : MediaSpecificDetails
+    data class Season(val episodes: List<TmdbEpisode>?) : MediaSpecificDetails
 }
 
-fun toExternalLinks(
-    externalIds: TmdbExternalIds?,
-    videos: List<TmdbVideo>?,
-): Map<String, String> {
+fun toExternalLinks(externalIds: TmdbExternalIds?, videos: List<TmdbVideo>?): Map<String, String> {
     return buildMap {
         externalIds?.imdbId?.let { put("IMDb", "https://www.imdb.com/title/$it/") }
 

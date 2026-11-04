@@ -13,12 +13,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import it.polimi.rewatch.BuildConfig
+import javax.inject.Qualifier
+import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import javax.inject.Qualifier
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -51,10 +51,7 @@ object FirebaseModule {
 abstract class RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindPersistRepository(
-        impl:
-        FirebaseRepository,
-    ): PersistRepository
+    abstract fun bindPersistRepository(impl: FirebaseRepository): PersistRepository
 }
 
 @Qualifier
@@ -67,12 +64,11 @@ object CoroutineScopeModule {
     @ApplicationScope
     @Singleton
     @Provides
-    fun provideApplicationScope(): CoroutineScope =
-        CoroutineScope(
-            SupervisorJob() +
-                    Dispatchers.Default +
-                    CoroutineExceptionHandler { _, throwable ->
-                        Log.e("AppScope", "Uncaught coroutine exception", throwable)
-                    },
-        )
+    fun provideApplicationScope(): CoroutineScope = CoroutineScope(
+        SupervisorJob() +
+            Dispatchers.Default +
+            CoroutineExceptionHandler { _, throwable ->
+                Log.e("AppScope", "Uncaught coroutine exception", throwable)
+            },
+    )
 }

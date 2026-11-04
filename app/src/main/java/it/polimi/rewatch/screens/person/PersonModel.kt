@@ -29,7 +29,7 @@ data class PersonDetailsData(
 
 enum class PersonSortOrder(val label: String) {
     POPULARITY("Popularity"),
-    DATE("Date")
+    DATE("Date"),
 }
 
 @HiltViewModel(assistedFactory = PersonViewModel.Factory::class)
@@ -39,9 +39,7 @@ class PersonViewModel @AssistedInject constructor(
 ) : UiFetchViewModel<PersonDetailsData>() {
     @AssistedFactory
     interface Factory {
-        fun create(
-            @Assisted("personId") personId: Int,
-        ): PersonViewModel
+        fun create(@Assisted("personId") personId: Int): PersonViewModel
     }
 
     private val _currentTab = MutableStateFlow<String?>(null)

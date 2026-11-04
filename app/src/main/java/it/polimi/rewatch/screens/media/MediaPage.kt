@@ -108,8 +108,8 @@ import it.polimi.rewatch.model.PosterInfo
 import it.polimi.rewatch.model.SeasonId
 import it.polimi.rewatch.model.WatchedMedia
 import it.polimi.rewatch.model.WatchlistMedia
-import kotlinx.datetime.LocalDate
 import java.util.Locale
+import kotlinx.datetime.LocalDate
 
 @Composable
 fun MediaPage(
@@ -294,9 +294,11 @@ private fun LazyListScope.mediaHeaderItems(
     }
 
     item(key = "header_tagline") {
-        Box(modifier = Modifier
-            .animateItem()
-            .testTag("header_tagline")) {
+        Box(
+            modifier = Modifier
+                .animateItem()
+                .testTag("header_tagline"),
+        ) {
             TaglineAndOverview(
                 pad = spacing,
                 overview = movie.overview,
@@ -306,9 +308,11 @@ private fun LazyListScope.mediaHeaderItems(
     }
 
     item(key = "header_ratings") {
-        Box(modifier = Modifier
-            .animateItem()
-            .testTag("header_ratings")) {
+        Box(
+            modifier = Modifier
+                .animateItem()
+                .testTag("header_ratings"),
+        ) {
             TmdbRatings(
                 voteCount = movie.voteCount,
                 voteAverage = movie.voteAverage,
@@ -319,9 +323,11 @@ private fun LazyListScope.mediaHeaderItems(
 
     if (mediaId.type == MediaType.MOVIE || mediaId.type == MediaType.TV_SHOW) {
         item(key = "header_tracking") {
-            Box(modifier = Modifier
-                .animateItem()
-                .testTag("header_tracking")) {
+            Box(
+                modifier = Modifier
+                    .animateItem()
+                    .testTag("header_tracking"),
+            ) {
                 TrackingInfo(
                     watchlistItem = watchlistItem,
                     watchedListItem = watchedListItem,
@@ -333,11 +339,7 @@ private fun LazyListScope.mediaHeaderItems(
 }
 
 @Composable
-private fun TrackingInfo(
-    watchlistItem: WatchlistMedia?,
-    watchedListItem: WatchedMedia?,
-    onClick: () -> Unit,
-) {
+private fun TrackingInfo(watchlistItem: WatchlistMedia?, watchedListItem: WatchedMedia?, onClick: () -> Unit) {
     HorizontalDivider()
     Box(
         modifier = Modifier
@@ -421,103 +423,96 @@ private fun buildTabs(
     mediaId: MediaId,
     pad: Dp,
     actions: NavigationActions,
-): List<TabItem> =
-    buildList {
-        add(
-            TabItem.expandable(
-                title = "Cast",
-                itemsList = movie.cast,
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
-            ),
-        )
-        add(
-            TabItem.expandable(
-                title = "Crew",
-                itemsList = movie.crew.sortedByDescending { it.job == "Director" },
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
-            ),
-        )
-        // TV show: seasons tab
-        if (mediaId.type == MediaType.TV_SHOW) add(
-            TabItem.expandable(
-                title = "Seasons",
-                itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                showDividers = true,
-                itemContent = { season ->
-                    EpisodeItem(
-                        number = season.seasonNumber,
-                        name = season.name,
-                        date = season.airDate,
-                        count = season.episodeCount?.let { "$it episodes" }.orEmpty(),
-                    ) { SeasonId(mediaId.parentId, season.seasonNumber).onClick(actions) }
-                },
-            ),
-        )
-        // Season: episodes tab
-        if (mediaId.type == MediaType.SEASON) add(
-            TabItem.expandable(
-                title = "Episodes",
-                itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
-                expandedSectionIds = expandedSectionIds,
-                onToggleSection = handleToggle,
-                initialVisibleCount = 7,
-                showDividers = true,
-                itemContent = { episode ->
-                    EpisodeItem(
-                        number = episode.episodeNumber,
-                        name = episode.name,
-                        date = episode.airDate,
-                        count = episode.runtime?.let { "$it min" }.orEmpty(),
-                    ) { EpisodeId(mediaId.parentId, episode.seasonNumber, episode.episodeNumber).onClick(actions) }
-                },
-            ),
-        )
-        // The details and watch tabs ignore the lambda parameters
-        add(
-            TabItem(
-                title = "Details",
-                isAvailable = { movie.isDetailsAvailable },
-                content = {
-                    item(key = "details_tab") {
-                        DetailsTab(pad, movie, modifier = Modifier.animateItem())
-                    }
-                },
-            ),
-        )
-        // Watch tab
-        add(
-            TabItem(
-                title = "Watch",
-                isAvailable = {
-                    movie.watchProviders["US"]?.run {
-                        buy.isNotEmpty() || flatrate.isNotEmpty()
-                    } ?: false
-                },
-                content = {
-                    item(key = "watch_tab") {
-                        WatchTab(pad, movie.watchProviders["US"], modifier = Modifier.animateItem())
-                    }
-                },
-            ),
-        )
-    }
+): List<TabItem> = buildList {
+    add(
+        TabItem.expandable(
+            title = "Cast",
+            itemsList = movie.cast,
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+            initialVisibleCount = 7,
+            itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
+        ),
+    )
+    add(
+        TabItem.expandable(
+            title = "Crew",
+            itemsList = movie.crew.sortedByDescending { it.job == "Director" },
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+            initialVisibleCount = 7,
+            itemContent = { PersonItem(it) { actions.onNavigateToPerson(it.id) } },
+        ),
+    )
+    // TV show: seasons tab
+    if (mediaId.type == MediaType.TV_SHOW) add(
+        TabItem.expandable(
+            title = "Seasons",
+            itemsList = (movie.specificDetails as? MediaSpecificDetails.Show)?.seasons.orEmpty(),
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+            initialVisibleCount = 7,
+            showDividers = true,
+            itemContent = { season ->
+                EpisodeItem(
+                    number = season.seasonNumber,
+                    name = season.name,
+                    date = season.airDate,
+                    count = season.episodeCount?.let { "$it episodes" }.orEmpty(),
+                ) { SeasonId(mediaId.parentId, season.seasonNumber).onClick(actions) }
+            },
+        ),
+    )
+    // Season: episodes tab
+    if (mediaId.type == MediaType.SEASON) add(
+        TabItem.expandable(
+            title = "Episodes",
+            itemsList = (movie.specificDetails as? MediaSpecificDetails.Season)?.episodes.orEmpty(),
+            expandedSectionIds = expandedSectionIds,
+            onToggleSection = handleToggle,
+            initialVisibleCount = 7,
+            showDividers = true,
+            itemContent = { episode ->
+                EpisodeItem(
+                    number = episode.episodeNumber,
+                    name = episode.name,
+                    date = episode.airDate,
+                    count = episode.runtime?.let { "$it min" }.orEmpty(),
+                ) { EpisodeId(mediaId.parentId, episode.seasonNumber, episode.episodeNumber).onClick(actions) }
+            },
+        ),
+    )
+    // The details and watch tabs ignore the lambda parameters
+    add(
+        TabItem(
+            title = "Details",
+            isAvailable = { movie.isDetailsAvailable },
+            content = {
+                item(key = "details_tab") {
+                    DetailsTab(pad, movie, modifier = Modifier.animateItem())
+                }
+            },
+        ),
+    )
+    // Watch tab
+    add(
+        TabItem(
+            title = "Watch",
+            isAvailable = {
+                movie.watchProviders["US"]?.run {
+                    buy.isNotEmpty() || flatrate.isNotEmpty()
+                } ?: false
+            },
+            content = {
+                item(key = "watch_tab") {
+                    WatchTab(pad, movie.watchProviders["US"], modifier = Modifier.animateItem())
+                }
+            },
+        ),
+    )
+}
 
-
-fun LazyListScope.optionalTitledSection(
-    isVisible: Boolean,
-    title: String,
-    pad: Dp,
-    content: LazyListScope.() -> Unit,
-) {
+fun LazyListScope.optionalTitledSection(isVisible: Boolean, title: String, pad: Dp, content: LazyListScope.() -> Unit) {
     if (isVisible) {
         item(key = "title_$title") {
             Column(Modifier.animateItem()) {
@@ -535,11 +530,7 @@ fun LazyListScope.optionalTitledSection(
     }
 }
 
-fun LazyListScope.tabbedSection(
-    allTabs: List<TabItem>,
-    activeTab: String?,
-    onTabSelected: (String) -> Unit,
-) {
+fun LazyListScope.tabbedSection(allTabs: List<TabItem>, activeTab: String?, onTabSelected: (String) -> Unit) {
     // Perform the available tabs calculation
     val availableTabs = allTabs.filter { it.isAvailable() }
 
@@ -567,12 +558,7 @@ fun LazyListScope.tabbedSection(
 }
 
 @Composable
-fun TaglineAndOverview(
-    pad: Dp,
-    overview: String?,
-    tagline: String?,
-    modifier: Modifier = Modifier,
-) {
+fun TaglineAndOverview(pad: Dp, overview: String?, tagline: String?, modifier: Modifier = Modifier) {
     if (tagline.isNullOrBlank() && overview.isNullOrBlank()) return
 
     Column(
@@ -599,11 +585,7 @@ fun TaglineAndOverview(
 }
 
 @Composable
-fun TmdbRatings(
-    voteCount: Int?,
-    voteAverage: Float?,
-    externalIds: Map<String, String>,
-) {
+fun TmdbRatings(voteCount: Int?, voteAverage: Float?, externalIds: Map<String, String>) {
     val vote = voteAverage?.toDouble() ?: 0.0
     val count = voteCount ?: 0
 
@@ -717,11 +699,7 @@ private fun TmdbDivider() {
 }
 
 @Composable
-fun BackdropImage(
-    image: TmdbImage?,
-    padding: PaddingValues,
-    modifier: Modifier = Modifier,
-) {
+fun BackdropImage(image: TmdbImage?, padding: PaddingValues, modifier: Modifier = Modifier) {
     if (image == null) {
         Spacer(Modifier.height(padding.calculateTopPadding() + 60.dp))
         return
@@ -851,11 +829,7 @@ fun TitleAndInfoSection(
 }
 
 @Composable
-fun WatchTab(
-    pad: Dp,
-    providers: TmdbProviders?,
-    modifier: Modifier = Modifier,
-) {
+fun WatchTab(pad: Dp, providers: TmdbProviders?, modifier: Modifier = Modifier) {
     Column(
         verticalArrangement = Arrangement.spacedBy(pad),
         modifier = modifier.padding(vertical = 15.dp),
@@ -881,11 +855,7 @@ fun WatchTab(
 }
 
 @Composable
-fun DetailsTab(
-    pad: Dp,
-    details: MediaDetail,
-    modifier: Modifier = Modifier,
-) {
+fun DetailsTab(pad: Dp, details: MediaDetail, modifier: Modifier = Modifier) {
     if (details.specificDetails !is MediaSpecificDetails.Movie) return
     val movie: MediaSpecificDetails.Movie = details.specificDetails
     val genres = movie.genres
@@ -936,10 +906,7 @@ fun DetailsTab(
 }
 
 @Composable
-fun DetailRow(
-    label: String,
-    content: @Composable () -> Unit = {},
-) {
+fun DetailRow(label: String, content: @Composable () -> Unit = {}) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -978,11 +945,7 @@ fun CompanyItem(company: TmdbCompany) {
 }
 
 @Composable
-fun <T> SimilarSection(
-    similar: List<T>,
-    modifier: Modifier = Modifier,
-    content: @Composable (LazyItemScope.(T) -> Unit),
-) {
+fun <T> SimilarSection(similar: List<T>, modifier: Modifier = Modifier, content: @Composable (LazyItemScope.(T) -> Unit)) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -994,11 +957,7 @@ fun <T> SimilarSection(
 }
 
 @Composable
-fun PersonItem(
-    person: TmdbAnyPerson?,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) = ListItem(
+fun PersonItem(person: TmdbAnyPerson?, modifier: Modifier = Modifier, onClick: () -> Unit) = ListItem(
     leadingContent = {
         RewatchAsyncImage(
             model = person?.profileImage?.let { build(it, width = 70, height = 70) },
@@ -1090,10 +1049,7 @@ fun ReviewItem(review: TmdbReview?) {
 }
 
 @Composable
-fun WatchProviders(
-    title: String,
-    providers: List<TmdbProvider>,
-) {
+fun WatchProviders(title: String, providers: List<TmdbProvider>) {
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {

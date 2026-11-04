@@ -76,12 +76,7 @@ import it.polimi.rewatch.model.PosterInfo
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
-fun SearchPage(
-    viewModel: SearchViewModel = viewModel(),
-    actions: NavigationActions,
-    outerPadding: PaddingValues,
-    pagerState: PagerState,
-) {
+fun SearchPage(viewModel: SearchViewModel = viewModel(), actions: NavigationActions, outerPadding: PaddingValues, pagerState: PagerState) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val searchResults by viewModel.searchResults.collectAsStateWithLifecycle()
     val mediaType by viewModel.mediaType.collectAsStateWithLifecycle()
@@ -279,12 +274,7 @@ private fun SearchInputField(
 }
 
 @Composable
-private fun EmptySearchState(
-    onSearchClick: () -> Unit,
-    icon: ImageVector,
-    title: String,
-    subtitle: String,
-) {
+private fun EmptySearchState(onSearchClick: () -> Unit, icon: ImageVector, title: String, subtitle: String) {
     Column(
         Modifier
             .padding(horizontal = 16.dp)
@@ -322,11 +312,7 @@ private fun EmptySearchState(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SearchResultsList(
-    results: List<PosterInfo>,
-    actions: NavigationActions,
-    onItemClick: () -> Unit,
-) {
+private fun SearchResultsList(results: List<PosterInfo>, actions: NavigationActions, onItemClick: () -> Unit) {
     val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
 

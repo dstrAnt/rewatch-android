@@ -67,17 +67,16 @@ enum class SortOption(val label: String) {
     POPULARITY("Popularity"),
     RATING("Rating"),
     ALPHABETICAL("A-Z"),
-    DATE("Date")
+    DATE("Date"),
 }
 
 enum class WatchTabItem(val title: String) {
-    WATCHLIST("Watchlist"), WATCHED("Watched")
+    WATCHLIST("Watchlist"),
+    WATCHED("Watched"),
 }
 
 @Composable
-fun getTrackingPainter(
-    type: MediaType,
-): Painter {
+fun getTrackingPainter(type: MediaType): Painter {
     return when (type) {
         MediaType.MOVIE -> painterResource(R.drawable.movie)
         MediaType.TV_SHOW -> painterResource(R.drawable.tv)
@@ -106,7 +105,7 @@ fun TrackingPage(
     val tabSortOrders = remember {
         mutableStateMapOf(
             WatchTabItem.WATCHLIST to SortOption.DATE, // Default for Watchlist
-            WatchTabItem.WATCHED to SortOption.DATE,   // Default for Watched
+            WatchTabItem.WATCHED to SortOption.DATE, // Default for Watched
         )
     }
     val availableSortOptions = mapOf(
@@ -132,7 +131,7 @@ fun TrackingPage(
                 ),
             )
         },
-        modifier = Modifier.testTag("tracking_page")
+        modifier = Modifier.testTag("tracking_page"),
     ) { paddingValues ->
         AnimatedUiState(
             currentUiState,
@@ -204,13 +203,13 @@ fun TrackingPage(
                             Spacer(Modifier.height(16.dp))
                             Button(
                                 onClick = { actions.onBackToHome(getHomeTab(type)) },
-                                modifier = Modifier.testTag("backToHomeButton")
+                                modifier = Modifier.testTag("backToHomeButton"),
                             ) {
                                 Text("Explore")
                             }
                         }
                     } else
-                // Sort chips (full span)
+                    // Sort chips (full span)
                     itemFullSpan {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -254,18 +253,12 @@ fun TrackingPage(
     }
 }
 
-fun <T, R : Comparable<R>> Iterable<T>.sortedByDirection(
-    ascending: Boolean,
-    selector: (T) -> R?,
-): List<T> {
+fun <T, R : Comparable<R>> Iterable<T>.sortedByDirection(ascending: Boolean, selector: (T) -> R?): List<T> {
     return if (ascending) sortedBy(selector) else sortedByDescending(selector)
 }
 
 @Composable
-private fun LazyGridItemScope.PosterStarsItem(
-    media: TrackingMedia,
-    actions: NavigationActions,
-) {
+private fun LazyGridItemScope.PosterStarsItem(media: TrackingMedia, actions: NavigationActions) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.spacedBy(3.dp),
@@ -308,13 +301,7 @@ private fun TopTabBar(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T> SortFilterChips(
-    options: List<T>,
-    selectedSort: T,
-    onSortSelected: (T) -> Unit,
-    isAscending: Boolean,
-    label: (T) -> String,
-) {
+fun <T> SortFilterChips(options: List<T>, selectedSort: T, onSortSelected: (T) -> Unit, isAscending: Boolean, label: (T) -> String) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -347,7 +334,6 @@ fun <T> SortFilterChips(
         }
     }
 }
-
 
 fun getDateHeader(date: LocalDateTime?): String {
     if (date == null) return "No Date"

@@ -144,11 +144,7 @@ fun StarRating(
  * @param fraction A value between 0f and 1f representing the width percentage.
  */
 class FractionalClip(private val fraction: Float) : Shape {
-    override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density,
-    ): Outline {
+    override fun createOutline(size: Size, layoutDirection: LayoutDirection, density: Density): Outline {
         return Outline.Rectangle(
             Rect(0f, 0f, size.width * fraction, size.height),
         )

@@ -56,9 +56,9 @@ import it.polimi.rewatch.components.layout.CollapsingLayout
 import it.polimi.rewatch.components.layout.CustomLazyGrid
 import it.polimi.rewatch.model.PosterInfo
 
-
 enum class HomeTabItem(val title: String) {
-    MOVIES("Movies"), SHOWS("Tv Shows")
+    MOVIES("Movies"),
+    SHOWS("Tv Shows"),
 }
 
 /**
@@ -66,12 +66,7 @@ enum class HomeTabItem(val title: String) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomePage(
-    viewModel: HomeViewModel = hiltViewModel(),
-    actions: NavigationActions,
-    outerPadding: PaddingValues,
-    startTab: HomeTabItem?,
-) {
+fun HomePage(viewModel: HomeViewModel = hiltViewModel(), actions: NavigationActions, outerPadding: PaddingValues, startTab: HomeTabItem?) {
     val tabs = HomeTabItem.entries
     var selectedTab by rememberSaveable { mutableStateOf(HomeTabItem.entries.first()) }
 
@@ -115,7 +110,7 @@ fun HomePage(
                 divider = {},
             )
         },
-        modifier = Modifier.testTag("home_page")
+        modifier = Modifier.testTag("home_page"),
     ) { state, spacerHeight ->
         AnimatedUiState(
             state = viewModel.uiState,
@@ -139,13 +134,7 @@ fun HomePage(
 }
 
 @Composable
-fun HomeContent(
-    data: HomeData,
-    actions: NavigationActions,
-    selectedTab: HomeTabItem,
-    state: LazyGridState,
-    spacerHeight: Dp,
-) {
+fun HomeContent(data: HomeData, actions: NavigationActions, selectedTab: HomeTabItem, state: LazyGridState, spacerHeight: Dp) {
     var expandedSectionIds by rememberSaveable(selectedTab) { mutableStateOf(emptySet<String>()) }
     val handleToggle: (String) -> Unit = { id ->
         expandedSectionIds = if (id in expandedSectionIds) expandedSectionIds - id else expandedSectionIds + id
@@ -177,7 +166,6 @@ fun HomeContent(
             }
     }
 }
-
 
 fun LazyGridScope.movieSection(
     title: String,
@@ -213,7 +201,7 @@ fun LazyGridScope.movieSection(
     itemsIndexed(
         items = displayedMovies,
         key = { index, movie ->
-            "${title}_${movie.id}_${index}"
+            "${title}_${movie.id}_$index"
         },
     ) { _, movie ->
         PosterItem(
@@ -237,13 +225,7 @@ fun LazyGridScope.movieSection(
 }
 
 @Composable
-fun HomeButton(
-    string: String,
-    isExpanded: Boolean,
-    onClick: () -> Unit,
-    title: String,
-    modifier: Modifier = Modifier,
-) {
+fun HomeButton(string: String, isExpanded: Boolean, onClick: () -> Unit, title: String, modifier: Modifier = Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth(),
@@ -261,7 +243,7 @@ fun HomeButton(
             ) {
                 Text(
                     text = string,
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
                 )
 
                 Icon(

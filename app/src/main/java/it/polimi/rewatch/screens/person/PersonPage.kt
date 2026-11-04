@@ -85,7 +85,7 @@ fun PersonPage(
     AnimatedUiState(
         state = viewModel.uiState,
         loadingContent = { PersonSkeleton() },
-        modifier = Modifier.testTag("person_page")
+        modifier = Modifier.testTag("person_page"),
     ) { data ->
         PersonContent(
             data = data,
@@ -254,12 +254,7 @@ private fun BirthInfo(dateOfBirth: String?, dateOfDeath: String?) {
 }
 
 @Composable
-private fun InfoColumn(
-    label: String,
-    value: String,
-    alignment: Alignment.Horizontal,
-    modifier: Modifier = Modifier,
-) {
+private fun InfoColumn(label: String, value: String, alignment: Alignment.Horizontal, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = alignment) {
         Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
         Text(

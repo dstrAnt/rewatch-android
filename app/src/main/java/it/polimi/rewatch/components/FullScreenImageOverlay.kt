@@ -55,10 +55,7 @@ import kotlin.math.abs
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun FullScreenImageOverlay(
-    imageUrl: String,
-    onDismiss: () -> Unit,
-) {
+fun FullScreenImageOverlay(imageUrl: String, onDismiss: () -> Unit) {
     var offsetY by remember { mutableFloatStateOf(0f) }
     val backProgress = remember { mutableFloatStateOf(0f) }
     val animatedOffsetY by animateFloatAsState(targetValue = offsetY, label = "offsetY")
@@ -87,7 +84,7 @@ fun FullScreenImageOverlay(
             model = imageUrl,
             contentDescription = "Full Screen",
             contentScale = ContentScale.Fit,
-            modifier = Modifier.testTag("subComposeAsyncImage")
+            modifier = Modifier.testTag("subComposeAsyncImage"),
         ) {
             val scope = this
             val state by painter.state.collectAsState()
@@ -155,7 +152,6 @@ private fun BoxScope.OverlayCloseButton(onDismiss: () -> Unit) {
     }
 }
 
-
 private fun Modifier.swipeToDismiss(
     offsetY: Float,
     animatedScale: Float,
@@ -180,7 +176,8 @@ private fun Modifier.swipeToDismiss(
         .pointerInput(Unit) {
             detectTapGestures(onTap = { /* Do nothing */ })
         }
-        .pointerInput(Unit) { // This block runs only once, but it reads the latest state
+        .pointerInput(Unit) {
+            // This block runs only once, but it reads the latest state
             detectVerticalDragGestures(
                 onDragEnd = {
                     if (abs(currentOffsetY) > dismissThreshold) {

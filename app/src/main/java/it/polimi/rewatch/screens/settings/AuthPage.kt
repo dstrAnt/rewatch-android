@@ -62,16 +62,13 @@ import it.polimi.rewatch.common.PersistRepository
 import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 
-
 fun String.isValidEmail(): Boolean {
     return Patterns.EMAIL_ADDRESS.matcher(this).matches()
 }
 
 // --- ViewModel ---
 @HiltViewModel
-class AuthViewModel @Inject constructor(
-    private val repo: PersistRepository,
-) : ViewModel() {
+class AuthViewModel @Inject constructor(private val repo: PersistRepository) : ViewModel() {
     var email by mutableStateOf("")
     var uiState by mutableStateOf<AuthUiState>(AuthUiState.Idle)
 
@@ -101,7 +98,7 @@ class AuthViewModel @Inject constructor(
                     when (result) {
                         is LinkResult.Linked,
                         is LinkResult.SignedIn,
-                            -> uiState = AuthUiState.Success
+                        -> uiState = AuthUiState.Success
 
                         is LinkResult.Collision -> {
                             pendingCollision = result
@@ -138,11 +135,7 @@ sealed interface AuthUiState {
 
 // --- Compose Screen ---
 @Composable
-fun AuthPage(
-    outerPadding: PaddingValues,
-    viewModel: AuthViewModel = hiltViewModel(),
-    actions: NavigationActions,
-) {
+fun AuthPage(outerPadding: PaddingValues, viewModel: AuthViewModel = hiltViewModel(), actions: NavigationActions) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
 
@@ -195,7 +188,7 @@ fun AuthPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(scrollState)
-                .imePadding()     // handle keyboard space need
+                .imePadding() // handle keyboard space need
                 .padding(
                     top = padding.calculateTopPadding(),
                     bottom = outerPadding.calculateBottomPadding(),
@@ -205,7 +198,9 @@ fun AuthPage(
         ) {
             when (val ui = viewModel.uiState) {
                 is AuthUiState.Loading -> LoadingContent(ui.message)
+
                 is AuthUiState.LinkSent -> LinkSentContent()
+
                 is AuthUiState.Success -> SuccessContent {
                     actions.onNavigateBack()
                 }
@@ -237,11 +232,7 @@ fun AuthPage(
 }
 
 @Composable
-private fun IdleContent(
-    email: String,
-    onEmailChange: (String) -> Unit,
-    onSendLink: () -> Unit,
-) {
+private fun IdleContent(email: String, onEmailChange: (String) -> Unit, onSendLink: () -> Unit) {
     Column(
         Modifier
             .widthIn(max = 400.dp)
@@ -291,9 +282,7 @@ private fun IdleContent(
 }
 
 @Composable
-private fun SuccessContent(
-    onMerge: () -> Unit,
-) {
+private fun SuccessContent(onMerge: () -> Unit) {
     Column(
         Modifier
             .widthIn(max = 400.dp)
@@ -345,10 +334,7 @@ private fun LinkSentContent() {
 }
 
 @Composable
-private fun MergePromptContent(
-    onMerge: () -> Unit,
-    onDiscard: () -> Unit,
-) {
+private fun MergePromptContent(onMerge: () -> Unit, onDiscard: () -> Unit) {
     Column(
         Modifier
             .widthIn(max = 400.dp)

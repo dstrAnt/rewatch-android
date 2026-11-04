@@ -9,22 +9,12 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
 // Data shown on the home page
-data class MediaData(
-    val trending: List<PosterInfo>,
-    val popular: List<PosterInfo>,
-    val recent: List<PosterInfo>,
-)
+data class MediaData(val trending: List<PosterInfo>, val popular: List<PosterInfo>, val recent: List<PosterInfo>)
 
-data class HomeData(
-    val movieData: MediaData,
-    val showData: MediaData,
-)
-
+data class HomeData(val movieData: MediaData, val showData: MediaData)
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val repository: TmdbRepository,
-) : UiFetchViewModel<HomeData>() {
+class HomeViewModel @Inject constructor(private val repository: TmdbRepository) : UiFetchViewModel<HomeData>() {
 
     init {
         executeFetch()

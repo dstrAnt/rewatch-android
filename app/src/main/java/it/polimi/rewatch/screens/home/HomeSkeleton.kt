@@ -23,7 +23,8 @@ fun HomeSkeleton() {
     CustomLazyGrid(
         contentPadding = PaddingValues(bottom = 24.dp, top = 92.dp),
         userScrollEnabled = false,
-    ) { columnCount -> // Columns computed by CustomLazyGrid
+    ) { columnCount ->
+        // Columns computed by CustomLazyGrid
         repeat(3) {
             skeletonSection(columnCount)
         }

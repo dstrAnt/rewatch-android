@@ -59,11 +59,7 @@ fun MediaScaffold(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppearingTopBar(
-    scrollState: ScrollableState,
-    title: String?,
-    onNavigateBack: () -> Unit,
-) {
+fun AppearingTopBar(scrollState: ScrollableState, title: String?, onNavigateBack: () -> Unit) {
     val toolbarAlpha by remember {
         derivedStateOf {
             // Extract both index and offset in a single pass

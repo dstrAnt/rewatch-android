@@ -60,11 +60,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
-    val repository: PersistRepository,
-) : ViewModel() {
+class ProfileViewModel @Inject constructor(val repository: PersistRepository) : ViewModel() {
     val state = repository.authState
 
     private val _errorMessage = MutableStateFlow<String?>(null)
@@ -88,7 +85,6 @@ class ProfileViewModel @Inject constructor(
     fun logout() {
         repository.logout()
     }
-
 }
 
 /**
@@ -97,11 +93,7 @@ class ProfileViewModel @Inject constructor(
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ProfilePage(
-    outerPadding: PaddingValues,
-    actions: NavigationActions,
-    vm: ProfileViewModel = hiltViewModel(),
-) {
+fun ProfilePage(outerPadding: PaddingValues, actions: NavigationActions, vm: ProfileViewModel = hiltViewModel()) {
     val authState by vm.state.collectAsStateWithLifecycle(AuthState.SignedOut)
 
     val watchedMovies by vm.watchedMovies.collectAsStateWithLifecycle(0)
@@ -197,12 +189,7 @@ fun ProfilePage(
 }
 
 @Composable
-private fun LogButton(
-    color: Color,
-    callback: () -> Unit,
-    label: String,
-    icon: ImageVector,
-) {
+private fun LogButton(color: Color, callback: () -> Unit, label: String, icon: ImageVector) {
     val boxShape = RoundedCornerShape(5.dp)
     Row(
         modifier = Modifier
@@ -224,7 +211,6 @@ private fun LogButton(
         Icon(icon, contentDescription = null, tint = color)
     }
 }
-
 
 @Composable
 fun ProfileBoxRow(label: String, value: String, withDivider: Boolean = false) {

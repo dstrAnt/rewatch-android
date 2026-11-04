@@ -26,12 +26,12 @@ import it.polimi.rewatch.screens.person.PersonPage
 import it.polimi.rewatch.screens.search.SearchType
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
 
 suspend fun <T> fetchMultiplePages(count: Int, block: suspend (Int) -> List<T>): List<T> = coroutineScope {
     (1..count).map { page ->
@@ -43,15 +43,12 @@ suspend fun <T> fetchMultiplePages(count: Int, block: suspend (Int) -> List<T>):
  * Repository to retrieve details about the Movies, TV Shows, Seasons, Episodes and People.
  */
 @Singleton
-class TmdbRepository @Inject constructor(
-    private val tmdb: Tmdb3,
-) {
+class TmdbRepository @Inject constructor(private val tmdb: Tmdb3) {
     /**
      * This function retrieves 2 pages of discoverable movies to be shown in the [HomePage]
      */
     suspend fun getHomeMovieData(): MediaData = withContext(Dispatchers.IO) {
         val threeMonthsAgo = LocalDate.now().minusMonths(3).toString()
-
 
         val trendingDeferred = async {
             fetchMultiplePages(2) { page ->
@@ -248,10 +245,7 @@ class TmdbRepository @Inject constructor(
      * @param searchType Type of content to search for
      * @return List of [PosterInfo] representing the results of the searching operation; [emptyList] if no results were found
      */
-    suspend fun searchMedia(
-        query: String,
-        searchType: SearchType,
-    ): List<PosterInfo> {
+    suspend fun searchMedia(query: String, searchType: SearchType): List<PosterInfo> {
         if (query.isBlank()) {
             return emptyList()
         }
@@ -269,6 +263,7 @@ class TmdbRepository @Inject constructor(
                         .results.sortedByDescending { it.popularity }
                         .map(::PosterInfo)
                 }
+
                 SearchType.CAST -> {
                     tmdb.search.findPeople(query = query, page = 1).results.map(::PosterInfo)
                 }
@@ -283,7 +278,6 @@ class TmdbRepository @Inject constructor(
                         }
                     }
                 }
-
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -291,4 +285,3 @@ class TmdbRepository @Inject constructor(
         }
     }
 }
-

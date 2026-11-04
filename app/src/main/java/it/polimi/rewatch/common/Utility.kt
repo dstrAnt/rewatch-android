@@ -124,29 +124,22 @@ fun String.formatDate(format: String): String {
 /**
  * Applies a negative vertical offset to the component it is applied to
  */
-fun Modifier.relativeMove(y: Dp) =
-    this.layout { measurable, constraints ->
-        val placeable = measurable.measure(constraints)
-        layout(
-            placeable.width,
-            placeable.height + y.roundToPx(),
-        ) {
-            // Placing it at the negative Y offset
-            placeable.placeRelative(0, y.roundToPx())
-        }
+fun Modifier.relativeMove(y: Dp) = this.layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints)
+    layout(
+        placeable.width,
+        placeable.height + y.roundToPx(),
+    ) {
+        // Placing it at the negative Y offset
+        placeable.placeRelative(0, y.roundToPx())
     }
+}
 
 /**
  * Element that displays a button for expandable sections. Based on the expansion status, it shows different labels and arrow icons
  */
 @Composable
-fun ExpandBtn(
-    compressedString: String,
-    expandedString: String,
-    isExpanded: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun ExpandBtn(compressedString: String, expandedString: String, isExpanded: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val string = if (isExpanded) expandedString else compressedString
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -167,10 +160,7 @@ fun ExpandBtn(
  * Element that encloses the given [content] in a slightly rounded gray rectangle, and allows to add an optional [onClick] callback
  */
 @Composable
-fun BorderBox(
-    onClick: () -> Unit = {},
-    content: @Composable (() -> Unit),
-) {
+fun BorderBox(onClick: () -> Unit = {}, content: @Composable (() -> Unit)) {
     val shape = RoundedCornerShape(5.dp)
 
     Box(
@@ -211,12 +201,7 @@ fun Double.getShortNotation(): String {
  * Basic block of all skeleton screens, displays a pulsating rectangle with entirely customizable size and shape
  */
 @Composable
-fun SkeletonPart(
-    modifier: Modifier = Modifier,
-    width: Dp? = null,
-    height: Dp? = null,
-    shape: Shape = RoundedCornerShape(4.dp),
-) {
+fun SkeletonPart(modifier: Modifier = Modifier, width: Dp? = null, height: Dp? = null, shape: Shape = RoundedCornerShape(4.dp)) {
     Box(
         modifier = modifier
             .then(if (width != null) Modifier.width(width) else Modifier)
@@ -247,9 +232,7 @@ fun Modifier.pulseEffect(): Modifier = composed {
 /**
  * Modifier that allow its component to ignore the horizontal padding of its father
  */
-fun Modifier.layoutEvade(
-    padding: Dp = 7.dp,
-) = this.layout { measurable, constraints ->
+fun Modifier.layoutEvade(padding: Dp = 7.dp) = this.layout { measurable, constraints ->
     val paddingPx = padding.roundToPx()
     // Tell the header it is allowed to be wider than the grid allows
     val expandedConstraints = constraints.copy(
@@ -266,11 +249,7 @@ fun Modifier.layoutEvade(
  * Data class to manage information about tabs in [MediaPage]
  */
 @OptIn(ExperimentalFoundationApi::class)
-data class TabItem(
-    val title: String,
-    val isAvailable: () -> Boolean,
-    val content: LazyListScope.() -> Unit,
-) {
+data class TabItem(val title: String, val isAvailable: () -> Boolean, val content: LazyListScope.() -> Unit) {
     companion object {
         fun <T> expandable(
             title: String,
@@ -367,9 +346,13 @@ fun ExpandableText(
         // Clickable and expandable only if the text exceeds maxLines + 1
         val canExpand = textLayoutResult.lineCount > maxLines + 1
         val currentMaxLines = when {
-            !canExpand -> Int.MAX_VALUE // If it's maxLines + 1 or less, just show it all
-            isExpanded -> Int.MAX_VALUE // If the user clicked to expand, show it all
-            else -> maxLines            // Otherwise, clip it at maxLines
+            !canExpand -> Int.MAX_VALUE
+
+            // If it's maxLines + 1 or less, just show it all
+            isExpanded -> Int.MAX_VALUE
+
+            // If the user clicked to expand, show it all
+            else -> maxLines // Otherwise, clip it at maxLines
         }
         // Render the text
         Text(
@@ -407,7 +390,7 @@ fun <T> CustomTabRow(
     ),
     divider = divider,
     containerColor = containerColor,
-    modifier = Modifier.testTag("Tab_Row")
+    modifier = Modifier.testTag("Tab_Row"),
 ) {
     availableTabs.forEach {
         Tab(
@@ -515,15 +498,17 @@ const val SCRIM_ALPHA = 0.3f
  * @return A [ContentTransform] configured for a "back" or "pop" navigation feel.
  */
 fun popContentTransform() = (
-        // Returning (back) screen slides in AND fades back up to 1.0 alpha
-        (slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } +
-                fadeIn(tween(ANIM_DURATION, easing = EaseInOutCubic), initialAlpha = SCRIM_ALPHA)) togetherWith
-                // Exiting screen slides out normally
-                slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }
-        ).apply {
-        // Keeps the exiting screen hovering ON TOP of the returning screen
-        targetContentZIndex = -1f
-    }
+    // Returning (back) screen slides in AND fades back up to 1.0 alpha
+    (
+        slideInHorizontally(cubicTween) { fullWidth -> -fullWidth / PARALLAX_FACTOR } +
+            fadeIn(tween(ANIM_DURATION, easing = EaseInOutCubic), initialAlpha = SCRIM_ALPHA)
+        ) togetherWith
+        // Exiting screen slides out normally
+        slideOutHorizontally(cubicTween) { fullWidth -> fullWidth }
+    ).apply {
+    // Keeps the exiting screen hovering ON TOP of the returning screen
+    targetContentZIndex = -1f
+}
 
 /**
  * Defines the [ContentTransform] for standard forward transitions.
@@ -534,11 +519,14 @@ fun popContentTransform() = (
  * @return A [ContentTransform] configured for a "forward" navigation feel.
  */
 fun transitionSpec() = (
-        // Returning (back) screen slides in AND fades back up to 1.0 alpha
-        slideInHorizontally(standardTween) { it } togetherWith
-                // Exiting (back) screen slides back AND fades out to simulate a scrim
-                (slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR } +
-                        fadeOut(tween(ANIM_DURATION, easing = EaseOut), targetAlpha = SCRIM_ALPHA)))
+    // Returning (back) screen slides in AND fades back up to 1.0 alpha
+    slideInHorizontally(standardTween) { it } togetherWith
+        // Exiting (back) screen slides back AND fades out to simulate a scrim
+        (
+            slideOutHorizontally(standardTween) { -it / PARALLAX_FACTOR } +
+                fadeOut(tween(ANIM_DURATION, easing = EaseOut), targetAlpha = SCRIM_ALPHA)
+            )
+    )
 
 /**
  * Component to display two icons slightly overlapped on the same row
@@ -588,13 +576,7 @@ fun Logo() {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IconTopBar(
-    title: String,
-    icon: Painter,
-    clickEnabled: Boolean = true,
-    color: Color = headerColor,
-    onBack: () -> Unit,
-) {
+fun IconTopBar(title: String, icon: Painter, clickEnabled: Boolean = true, color: Color = headerColor, onBack: () -> Unit) {
     TopAppBar(
         title = {
             Text(title)
@@ -663,9 +645,7 @@ fun Modifier.fillMaxByOrientation(): Modifier = composed {
  * @see LazyGridScope.item
  * @see GridItemSpan
  */
-fun LazyGridScope.itemFullSpan(
-    content: @Composable (LazyGridItemScope.() -> Unit),
-): Unit = item(
+fun LazyGridScope.itemFullSpan(content: @Composable (LazyGridItemScope.() -> Unit)): Unit = item(
     span = { GridItemSpan(maxLineSpan) },
     content = content,
 )
