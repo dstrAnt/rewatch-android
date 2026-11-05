@@ -167,6 +167,8 @@ The code is released under the [MIT License](LICENSE).
 
 <br />
 
+
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/images/logo-dark.png" />
