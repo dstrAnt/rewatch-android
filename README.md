@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  Built by three students for the <i>Design and Implementation of Mobile Applications</i> exam at Politecnico di Milano, A.A. 2025/26.
+</p>
+
+<p align="center">
   <a href="https://github.com/dstrAnt/rewatch-android/releases/latest"><img src="https://img.shields.io/badge/Download_the_APK-c39e20?style=for-the-badge&logo=android&logoColor=white" alt="Download the APK" /></a>
   <a href="https://app-rewatch.firebaseapp.com/"><img src="https://img.shields.io/badge/Visit_the_website-1f2c5d?style=for-the-badge&logo=firebase&logoColor=white" alt="Visit the website" /></a>
 </p>
@@ -27,15 +31,25 @@
 
 ## 🍿 What's inside
 
-<p align="center">
-  <picture><source media="(min-width: 1140px)" srcset="docs/images/phone-home.png" width="19.2%" /><source media="(min-width: 1012px)" srcset="docs/images/phone-home.png" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/phone-home.png" width="34%" /><img src="docs/images/phone-home.png" width="48%" alt="Home page with trending movies" /></picture><!--
-  --><img src="docs/images/spacer.png" width="2.5%" height="1" alt="" /><!--
-  --><picture><source media="(min-width: 1140px)" srcset="docs/images/phone-details.png" width="19.2%" /><source media="(min-width: 1012px)" srcset="docs/images/phone-details.png" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/phone-details.png" width="34%" /><img src="docs/images/phone-details.png" width="48%" alt="Movie details page" /></picture><!--
-  --><picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.5%" height="1" /><img src="docs/images/spacer.png" width="0" height="1" alt="" /></picture><!--
-  --><picture><source media="(min-width: 1140px)" srcset="docs/images/phone-search.png" width="19.2%" /><source media="(min-width: 1012px)" srcset="docs/images/phone-search.png" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/phone-search.png" width="34%" /><img src="docs/images/phone-search.png" width="48%" alt="Search results" /></picture><!--
-  --><img src="docs/images/spacer.png" width="2.5%" height="1" alt="" /><!--
-  --><picture><source media="(min-width: 1140px)" srcset="docs/images/phone-lists.png" width="19.2%" /><source media="(min-width: 1012px)" srcset="docs/images/phone-lists.png" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/phone-lists.png" width="34%" /><img src="docs/images/phone-lists.png" width="48%" alt="List of watched movies with ratings" /></picture>
-</p>
+<div align="justify">
+  <img src="docs/images/spacer.png" width="0" height="1" alt="" />
+  <picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="0" height="0" /><source media="(min-width: 470px)" srcset="docs/images/phone-home.png" width="190" /><img src="docs/images/phone-home.png" width="47%" alt="Home page with trending movies" /></picture>
+  <picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="0" height="0" /><source media="(min-width: 470px)" srcset="docs/images/phone-details.png" width="190" /><img src="docs/images/phone-details.png" width="47%" alt="Movie details page" /></picture>
+  <img src="docs/images/spacer.png" width="0" height="1" alt="" /><!--
+  --><picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="0" height="0" /><img src="docs/images/spacer.png" width="100%" height="1" alt="" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/phone-home.png" width="150" /><source media="(min-width: 1012px)" srcset="docs/images/phone-home.png" width="21.16%" /><img src="docs/images/spacer.png" width="0" height="0" alt="Home page with trending movies" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/spacer.png" width="21" height="1" /><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.96%" height="1" /><img src="docs/images/spacer.png" width="0" height="0" alt="" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/phone-details.png" width="150" /><source media="(min-width: 1012px)" srcset="docs/images/phone-details.png" width="21.16%" /><img src="docs/images/spacer.png" width="0" height="0" alt="Movie details page" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/spacer.png" width="21" height="1" /><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.96%" height="1" /><img src="docs/images/spacer.png" width="0" height="0" alt="" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/phone-search.png" width="150" /><source media="(min-width: 1012px)" srcset="docs/images/phone-search.png" width="21.16%" /><img src="docs/images/spacer.png" width="0" height="0" alt="Search results" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/spacer.png" width="21" height="1" /><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.96%" height="1" /><img src="docs/images/spacer.png" width="0" height="0" alt="" /></picture><!--
+  --><picture><source media="(min-width: 1152px)" srcset="docs/images/phone-lists.png" width="150" /><source media="(min-width: 1012px)" srcset="docs/images/phone-lists.png" width="21.16%" /><img src="docs/images/spacer.png" width="0" height="0" alt="List of watched movies with ratings" /></picture><!--
+  --><img src="docs/images/spacer.png" width="1" height="1" alt="" />
+  <picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="0" height="0" /><source media="(min-width: 470px)" srcset="docs/images/phone-search.png" width="190" /><img src="docs/images/phone-search.png" width="47%" alt="Search results" /></picture>
+  <picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="0" height="0" /><source media="(min-width: 470px)" srcset="docs/images/phone-lists.png" width="190" /><img src="docs/images/phone-lists.png" width="47%" alt="List of watched movies with ratings" /></picture>
+  <img src="docs/images/spacer.png" width="0" height="1" alt="" /><!--
+  --><img src="docs/images/spacer.png" width="100%" height="1" alt="" />
+</div>
 
 - **Find tonight's movie.** What's trending, top rated and newest, for both movies and TV shows.
 - **Go down the rabbit hole.** Cast, crew, reviews, similar titles and where to watch, right down to a single episode.
@@ -54,18 +68,20 @@ And a few more things:
 
 We put extra care into the app's smoothness and UI, inspired by the best products on the market today.
 
-<p align="center">
-  <picture><source media="(min-width: 1012px)" srcset="docs/images/demo-home.webp" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/demo-home.webp" width="34%" /><img src="docs/images/demo-home.webp" width="48%" alt="Scrolling through the home page" /></picture><!--
-  --><picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="18%" height="1" /><source media="(min-width: 600px)" srcset="docs/images/spacer.png" width="10.67%" height="1" /><img src="docs/images/spacer.png" width="2.5%" height="1" alt="" /></picture><!--
-  --><picture><source media="(min-width: 1012px)" srcset="docs/images/demo-details.webp" width="23%" /><source media="(min-width: 600px)" srcset="docs/images/demo-details.webp" width="34%" /><img src="docs/images/demo-details.webp" width="48%" alt="Moving through a TV show, its seasons and an episode" /></picture>
-</p>
+<div align="justify">
+  <img src="docs/images/spacer.png" width="0" height="1" alt="" />
+  <picture><source media="(min-width: 470px)" srcset="docs/images/demo-home.webp" width="190" /><img src="docs/images/demo-home.webp" width="47%" alt="Scrolling through the home page" /></picture>
+  <picture><source media="(min-width: 470px)" srcset="docs/images/demo-details.webp" width="190" /><img src="docs/images/demo-details.webp" width="47%" alt="Moving through a TV show, its seasons and an episode" /></picture>
+  <img src="docs/images/spacer.png" width="0" height="1" alt="" />
+  <img src="docs/images/spacer.png" width="100%" height="1" alt="" />
+</div>
 
 ### On a tablet
 
 <p align="center">
-  <picture><source media="(min-width: 1012px)" srcset="docs/images/tablet-home.png" width="48.5%" /><img src="docs/images/tablet-home.png" width="100%" alt="Home page on a tablet" /></picture><!--
-  --><picture><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.5%" height="1" /><img src="docs/images/spacer.png" width="0" height="1" alt="" /></picture><!--
-  --><picture><source media="(min-width: 1012px)" srcset="docs/images/tablet-details.png" width="48.5%" /><img src="docs/images/tablet-details.png" width="100%" alt="Movie details on a tablet" /></picture>
+  <picture><source media="(min-width: 1280px)" srcset="docs/images/tablet-home.png" width="400" /><source media="(min-width: 1012px)" srcset="docs/images/tablet-home.png" width="47.7%" /><source media="(min-width: 406px)" srcset="docs/images/tablet-home.png" width="340" /><img src="docs/images/tablet-home.png" width="100%" alt="Home page on a tablet" /></picture><!--
+  --><picture><source media="(min-width: 1280px)" srcset="docs/images/spacer.png" width="21" height="1" /><source media="(min-width: 1012px)" srcset="docs/images/spacer.png" width="2.5%" height="1" /><img src="docs/images/spacer.png" width="100%" height="1" alt="" /></picture><!--
+  --><picture><source media="(min-width: 1280px)" srcset="docs/images/tablet-details.png" width="400" /><source media="(min-width: 1012px)" srcset="docs/images/tablet-details.png" width="47.7%" /><source media="(min-width: 406px)" srcset="docs/images/tablet-details.png" width="340" /><img src="docs/images/tablet-details.png" width="100%" alt="Movie details on a tablet" /></picture>
 </p>
 
 ## 🛠️ Under the hood
@@ -142,8 +158,6 @@ flowchart LR
 
 ## 👋 The team
 
-Three students, one course: *Design and Implementation of Mobile Applications* at Politecnico di Milano, A.A. 2025/26.
-
 <table align="center">
   <tr>
     <td align="center" valign="top" width="230"><a href="https://github.com/dstrAnt"><img src="https://img.shields.io/badge/dstrAnt-1f2c5d?style=flat-square&logo=github&logoColor=white" alt="dstrAnt on GitHub" /></a><br />App, UI and UX</td>
@@ -166,8 +180,6 @@ The code is released under the [MIT License](LICENSE).
 - The Google Sans font in `app/src/main/res/font` is licensed under the [SIL Open Font License 1.1](https://openfontlicense.org).
 
 <br />
-
-
 
 <p align="center">
   <picture>
